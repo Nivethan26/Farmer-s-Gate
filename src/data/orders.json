@@ -1,0 +1,77 @@
+[
+  {
+    "id": "order-1",
+    "buyerId": "buyer-1",
+    "buyerName": "Amara Silva",
+    "items": [
+      {
+        "productId": "prod-1",
+        "productName": "Fresh Tomatoes",
+        "qty": 10,
+        "pricePerKg": 120
+      },
+      {
+        "productId": "prod-3",
+        "productName": "Green Chilies",
+        "qty": 5,
+        "pricePerKg": 250
+      }
+    ],
+    "subtotal": 2450,
+    "deliveryFee": 250,
+    "total": 2700,
+    "status": "delivered",
+    "receiptUrl": null,
+    "createdAt": "2025-10-01T10:30:00Z",
+    "paidAt": "2025-10-01T11:00:00Z",
+    "deliveredAt": "2025-10-03T14:00:00Z"
+  },
+  {
+    "id": "order-2",
+    "buyerId": "buyer-1",
+    "buyerName": "Amara Silva",
+    "items": [
+      {
+        "productId": "prod-5",
+        "productName": "White Rice (Samba)",
+        "qty": 50,
+        "pricePerKg": 150
+      }
+    ],
+    "subtotal": 7500,
+    "deliveryFee": 500,
+    "total": 8000,
+    "status": "paid",
+    "receiptUrl": "receipt-order-2.jpg",
+    "createdAt": "2025-10-10T09:00:00Z",
+    "paidAt": "2025-10-10T10:00:00Z",
+    "deliveredAt": null
+  },
+  {
+    "id": "order-3",
+    "buyerId": "buyer-2",
+    "buyerName": "Priya Jayawardena",
+    "items": [
+      {
+        "productId": "prod-2",
+        "productName": "Red Onions",
+        "qty": 100,
+        "pricePerKg": 180
+      },
+      {
+        "productId": "prod-10",
+        "productName": "Potatoes",
+        "qty": 100,
+        "pricePerKg": 110
+      }
+    ],
+    "subtotal": 29000,
+    "deliveryFee": 800,
+    "total": 29800,
+    "status": "pending",
+    "receiptUrl": "receipt-order-3.jpg",
+    "createdAt": "2025-10-14T14:30:00Z",
+    "paidAt": null,
+    "deliveredAt": null
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "cat-1",
+    "name": "Vegetables",
+    "slug": "vegetables",
+    "icon": "🥬"
+  },
+  {
+    "id": "cat-2",
+    "name": "Fruits",
+    "slug": "fruits",
+    "icon": "🍎"
+  },
+  {
+    "id": "cat-3",
+    "name": "Rice & Grains",
+    "slug": "rice-grains",
+    "icon": "🌾"
+  },
+  {
+    "id": "cat-4",
+    "name": "Spices",
+    "slug": "spices",
+    "icon": "🌶️"
+  },
+  {
+    "id": "cat-5",
+    "name": "Coconut Products",
+    "slug": "coconut",
+    "icon": "🥥"
+  }
+]
