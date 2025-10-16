@@ -1,0 +1,50 @@
+[
+  {
+    "id": "neg-1",
+    "productId": "prod-2",
+    "productName": "Red Onions",
+    "buyerId": "buyer-1",
+    "buyerName": "Amara Silva",
+    "sellerId": "seller-2",
+    "sellerName": "Kamal Silva",
+    "currentPrice": 180,
+    "requestedPrice": 160,
+    "notes": "Need bulk order of 200kg, can you offer a discount?",
+    "status": "open",
+    "createdAt": "2025-10-13T10:00:00Z",
+    "updatedAt": "2025-10-13T10:00:00Z"
+  },
+  {
+    "id": "neg-2",
+    "productId": "prod-5",
+    "productName": "White Rice (Samba)",
+    "buyerId": "buyer-2",
+    "buyerName": "Priya Jayawardena",
+    "sellerId": "seller-2",
+    "sellerName": "Kamal Silva",
+    "currentPrice": 150,
+    "requestedPrice": 145,
+    "notes": "Regular monthly order of 500kg",
+    "status": "countered",
+    "counterPrice": 148,
+    "counterNotes": "I can offer Rs. 148/kg for 500kg monthly commitment",
+    "createdAt": "2025-10-12T11:00:00Z",
+    "updatedAt": "2025-10-13T09:00:00Z"
+  },
+  {
+    "id": "neg-3",
+    "productId": "prod-4",
+    "productName": "Bananas (Ambul)",
+    "buyerId": "buyer-1",
+    "buyerName": "Amara Silva",
+    "sellerId": "seller-3",
+    "sellerName": "Sunil Fernando",
+    "currentPrice": 90,
+    "requestedPrice": 85,
+    "notes": "Weekly order of 100kg",
+    "status": "agreed",
+    "agreedPrice": 87,
+    "createdAt": "2025-10-10T15:00:00Z",
+    "updatedAt": "2025-10-11T10:00:00Z"
+  }
+]
