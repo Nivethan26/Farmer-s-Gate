@@ -126,7 +126,7 @@ const BuyerDashboard = () => {
                       {t('buyer.viewCart')} ({cartItems.length})
                     </Button>
                   </Link>
-                  <Link to="/account">
+                  <Link to="/profile">
                     <Button className="w-full" variant="outline">
                       <TrendingUp className="mr-2 h-4 w-4" />
                       {t('buyer.myProfile')}
