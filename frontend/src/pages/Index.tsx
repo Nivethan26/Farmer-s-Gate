@@ -3,7 +3,7 @@ import { ShoppingCart, Store, TrendingUp, Users, CheckCircle, Leaf, Package } fr
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import heroPaddyField from '@/assets/hero-paddy-field.jpg';
-
+import {Navbar} from '@/components/layout/Navbar';
 const Index = () => {
   const features = [
     {
@@ -45,6 +45,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background font-inter">
+    <Navbar />
       {/* Hero Section */}
       <section className="relative h-[600px] overflow-hidden">
         <div 

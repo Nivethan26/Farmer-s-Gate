@@ -1,5 +1,8 @@
 {
   "common": {
+    "Home": "முகப்பு",
+    "Contact": "தொடர்பு",
+    "About": "எங்களைப் பற்றி",
     "welcome": "வரவேற்கிறோம்",
     "login": "உள்நுழைக",
     "logout": "வெளியேறு",
@@ -35,6 +38,7 @@
     "emailPlaceholder": "buyer@agrilink.lk",
     "passwordPlaceholder": "உங்கள் கடவுச்சொல்லை உள்ளிடவும்",
     "loginButton": "உள்நுழைக",
+    "farmAddress": "பண்ணை முகவரி",
     "noAccount": "கணக்கு இல்லையா?",
     "signupLink": "பதிவு செய்க",
     "invalidCredentials": "தவறான மின்னஞ்சல் அல்லது கடவுச்சொல்",

@@ -1,5 +1,8 @@
 {
   "common": {
+    "Home": "මුල් පිටුව",
+    "Contact": "සම්බන්ධ කරන්න",
+    "About": "අප ගැන",
     "welcome": "ආයුබෝවන්",
     "login": "ඇතුල් වන්න",
     "logout": "ඉවත් වන්න",
@@ -35,6 +38,7 @@
     "emailPlaceholder": "buyer@agrilink.lk",
     "passwordPlaceholder": "ඔබගේ මුරපදය ඇතුළත් කරන්න",
     "loginButton": "පිවිසෙන්න",
+    "farmAddress": "ගොවිපල ලිපිනය",
     "noAccount": "ගිණුමක් නැද්ද?",
     "signupLink": "ලියාපදිංචි වන්න",
     "invalidCredentials": "වලංගු නොවන විද්‍යුත් තැපෑල හෝ මුරපදය",

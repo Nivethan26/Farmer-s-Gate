@@ -1,5 +1,8 @@
 {
   "common": {
+    "Home": "Home",
+    "Contact": "Contact",
+    "About": "About",
     "welcome": "Welcome",
     "login": "Login",
     "logout": "Logout",
