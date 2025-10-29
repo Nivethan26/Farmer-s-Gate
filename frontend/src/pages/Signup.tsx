@@ -27,7 +27,8 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { toast } from "sonner";
-import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
+import { Navbar } from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 
 const buyerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -90,6 +91,8 @@ const Signup = () => {
   };
 
   return (
+    <>
+    <Navbar />
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-amber-50 to-green-50 p-4 relative overflow-hidden">
       {/* Background Decorative Elements */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -107,11 +110,6 @@ const Signup = () => {
         <div className="absolute top-40 left-40 opacity-5 animate-spin-slow">
           <Sun className="h-24 w-24 text-amber-400" />
         </div>
-      </div>
-
-      {/* Language Switcher */}
-      <div className="absolute top-6 right-6 z-10">
-        <LanguageSwitcher />
       </div>
 
       {/* Main Card */}
@@ -713,6 +711,8 @@ const Signup = () => {
         }
       `}</style>
     </div>
+    <Footer />
+    </>
   );
 };
 

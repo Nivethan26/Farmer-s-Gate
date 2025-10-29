@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import heroPaddyField from '@/assets/hero-paddy-field.jpg';
 import {Navbar} from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 const Index = () => {
   const features = [
     {
@@ -153,11 +154,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t bg-card py-8">
-        <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>&copy; 2025 AgriLink Lanka. Connecting farmers with buyers across Sri Lanka.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

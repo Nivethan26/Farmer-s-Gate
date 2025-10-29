@@ -16,7 +16,8 @@ import {
 } from "@/components/ui/card";
 import { Sprout, Sun, Leaf, Wheat } from "lucide-react";
 import { toast } from "sonner";
-import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
+import { Navbar } from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 
 const Login = () => {
   const { t } = useTranslation();
@@ -55,6 +56,8 @@ const Login = () => {
   };
 
   return (
+    <>
+    <Navbar />
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-amber-50 to-green-50 p-4 relative overflow-hidden">
       {/* Background Decorative Elements */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -69,11 +72,6 @@ const Login = () => {
         <div className="absolute bottom-1/4 left-20 opacity-10 animate-float-delayed">
           <Leaf className="h-20 w-20 text-green-600" />
         </div>
-      </div>
-
-      {/* Language Switcher */}
-      <div className="absolute top-6 right-6 z-10">
-        <LanguageSwitcher />
       </div>
 
       {/* Main Card */}
@@ -162,7 +160,7 @@ const Login = () => {
           </form>
 
           {/* Demo Credentials */}
-          {/* <div className="mt-6 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 shadow-sm">
+          <div className="mt-6 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 shadow-sm">
             <p className="text-sm font-semibold mb-3 text-amber-800 flex items-center">
               <Sun className="h-4 w-4 mr-2 text-amber-600" />
               Demo Credentials
@@ -185,7 +183,7 @@ const Login = () => {
                 <span className="text-amber-600">agent@agrilink.lk / agent123</span>
               </div>
             </div>
-          </div> */}
+          </div>
 
           {/* Sign Up Link */}
           <div className="text-center pt-4 border-t border-green-100">
@@ -263,6 +261,8 @@ const Login = () => {
         }
       `}</style>
     </div>
+    <Footer  />
+    </>
   );
 };
 
