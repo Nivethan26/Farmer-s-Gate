@@ -16,10 +16,11 @@ import BuyerDashboard from "./pages/BuyerDashboard";
 import SellerDashboard from "./pages/SellerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import AgentDashboard from "./pages/AgentDashboard";
-import AccountProfile from "./pages/AccountProfile";
 import NotFound from "./pages/NotFound";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import RoleBasedDashboard from "./pages/RoleBasedDashboard";
+import AccountProfile from "./pages/AccountProfile";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,14 @@ const App = () => (
             
             <Route 
               path="/account" 
+              element={
+                <ProtectedRoute allowedRoles={['buyer', 'seller', 'admin', 'agent']}>
+                  <RoleBasedDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
               element={
                 <ProtectedRoute allowedRoles={['buyer', 'seller', 'admin', 'agent']}>
                   <AccountProfile />
