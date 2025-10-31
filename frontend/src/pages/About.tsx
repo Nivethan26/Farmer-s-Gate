@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Navbar } from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 
 const About = () => {
   const missionStats = [
@@ -50,25 +51,25 @@ const About = () => {
     {
       name: 'Saman Perera',
       role: 'Founder & CEO',
-      image: '👨‍💼',
+      image: '',
       description: 'Agricultural entrepreneur with 15+ years in farming technology'
     },
     {
       name: 'Nimali Fernando',
       role: 'Head of Operations',
-      image: '👩‍🌾',
+      image: '',
       description: 'Former agricultural officer with deep community connections'
     },
     {
       name: 'Kamal Rajapaksa',
       role: 'Technology Lead',
-      image: '👨‍💻',
+      image: '',
       description: 'Tech innovator passionate about agricultural transformation'
     },
     {
       name: 'Anoma Silva',
       role: 'Farmer Relations',
-      image: '👩‍🔬',
+      image: '',
       description: 'Agricultural scientist dedicated to farmer empowerment'
     }
   ];
@@ -291,6 +292,9 @@ const About = () => {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

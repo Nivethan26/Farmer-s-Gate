@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAppSelector } from '@/store/hooks';
+import type { RootState } from '@/store';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Package, ShoppingCart } from 'lucide-react';
+import { MapPin, Package, ShoppingCart, LogIn } from 'lucide-react';
 import { Product } from '@/store/catalogSlice';
 import { getProductNameTranslationKey } from '@/utils/translations';
 
@@ -14,6 +16,7 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   const { t } = useTranslation();
+  const user = useAppSelector((state: RootState) => state.auth.user);
   const productNameKey = getProductNameTranslationKey(product.name);
   const displayName = productNameKey ? t(productNameKey) : product.name;
   
@@ -59,10 +62,20 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
       <CardFooter className="p-4 pt-0">
         <Button
           className="w-full"
+          variant={!user ? "outline" : "default"}
           onClick={() => onAddToCart?.(product)}
         >
-          <ShoppingCart className="mr-2 h-4 w-4" />
-          {t('catalog.addToCart')}
+          {!user ? (
+            <>
+              <LogIn className="mr-2 h-4 w-4" />
+              Login to Buy
+            </>
+          ) : (
+            <>
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              {t('catalog.addToCart')}
+            </>
+          )}
         </Button>
       </CardFooter>
     </Card>
