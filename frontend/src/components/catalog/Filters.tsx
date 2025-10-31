@@ -54,10 +54,10 @@ export const Filters = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-lg">{t('catalog.filters')}</h3>
-        <Button variant="ghost" size="sm" onClick={handleReset}>
+    <div className="space-y-5">
+      <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+        <h3 className="font-bold text-lg text-gray-800">{t('catalog.filters')}</h3>
+        <Button variant="ghost" size="sm" onClick={handleReset} className="text-green-600 hover:text-green-700 hover:bg-green-50">
           <X className="mr-1 h-4 w-4" />
           {t('common.cancel')}
         </Button>
@@ -65,23 +65,24 @@ export const Filters = () => {
 
       {/* Categories */}
       <div className="space-y-3">
-        <Label className="text-base font-semibold">{t('catalog.categories')}</Label>
+        <Label className="text-sm font-bold text-gray-700 uppercase tracking-wider">{t('catalog.categories')}</Label>
         <div className="space-y-2">
           {categories.map((category) => {
             const categoryKey = getCategoryTranslationKey(category.id);
             const displayName = categoryKey ? t(categoryKey) : category.name;
             return (
-              <div key={category.id} className="flex items-center space-x-2">
+              <div key={category.id} className="flex items-center space-x-2 hover:bg-green-50/50 p-2 rounded-lg transition-colors cursor-pointer">
                 <Checkbox
                   id={`cat-${category.id}`}
                   checked={filters.categories.includes(category.id)}
                   onCheckedChange={() => handleCategoryToggle(category.id)}
+                  className="border-gray-300 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
                 />
                 <label
                   htmlFor={`cat-${category.id}`}
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center gap-2"
                 >
-                  {category.icon} {displayName}
+                  <span className="text-lg">{category.icon}</span> {displayName}
                 </label>
               </div>
             );
@@ -91,23 +92,25 @@ export const Filters = () => {
 
       {/* Supply Type */}
       <div className="space-y-3">
-        <Label className="text-base font-semibold">{t('seller.supplyType')}</Label>
+        <Label className="text-sm font-bold text-gray-700 uppercase tracking-wider">{t('seller.supplyType')}</Label>
         <div className="space-y-2">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 hover:bg-green-50/50 p-2 rounded-lg transition-colors cursor-pointer">
             <Checkbox
               id="wholesale"
               checked={filters.supplyTypes.includes('wholesale')}
               onCheckedChange={() => handleSupplyTypeToggle('wholesale')}
+              className="border-gray-300 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
             />
             <label htmlFor="wholesale" className="text-sm font-medium cursor-pointer">
               {t('seller.wholesale')}
             </label>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 hover:bg-amber-50/50 p-2 rounded-lg transition-colors cursor-pointer">
             <Checkbox
               id="small_scale"
               checked={filters.supplyTypes.includes('small_scale')}
               onCheckedChange={() => handleSupplyTypeToggle('small_scale')}
+              className="border-gray-300 data-[state=checked]:bg-amber-600 data-[state=checked]:border-amber-600"
             />
             <label htmlFor="small_scale" className="text-sm font-medium cursor-pointer">
               {t('seller.smallScale')}
@@ -118,7 +121,7 @@ export const Filters = () => {
 
       {/* Price Range */}
       <div className="space-y-3">
-        <Label className="text-base font-semibold">{t('catalog.priceRange')} (Rs./kg)</Label>
+        <Label className="text-sm font-bold text-gray-700 uppercase tracking-wider">{t('catalog.priceRange')} (Rs./kg)</Label>
         <div className="space-y-4">
           <Slider
             min={0}
@@ -133,14 +136,14 @@ export const Filters = () => {
               type="number"
               value={filters.minPrice}
               onChange={(e) => dispatch(setFilters({ minPrice: Number(e.target.value) }))}
-              className="w-20"
+              className="w-20 rounded-lg border-gray-300"
             />
-            <span>-</span>
+            <span className="text-gray-500 font-semibold">-</span>
             <Input
               type="number"
               value={filters.maxPrice}
               onChange={(e) => dispatch(setFilters({ maxPrice: Number(e.target.value) }))}
-              className="w-20"
+              className="w-20 rounded-lg border-gray-300"
             />
           </div>
         </div>
@@ -148,15 +151,16 @@ export const Filters = () => {
 
       {/* Districts */}
       <div className="space-y-3">
-        <Label className="text-base font-semibold">{t('catalog.location')} ({t('profile.district')})</Label>
-        <ScrollArea className="h-48">
+        <Label className="text-sm font-bold text-gray-700 uppercase tracking-wider">{t('catalog.location')} ({t('profile.district')})</Label>
+        <ScrollArea className="h-48 border border-gray-200 rounded-lg p-2">
           <div className="space-y-2 pr-4">
             {districts.map((district) => (
-              <div key={district} className="flex items-center space-x-2">
+              <div key={district} className="flex items-center space-x-2 hover:bg-green-50/50 p-2 rounded-lg transition-colors cursor-pointer">
                 <Checkbox
                   id={`dist-${district}`}
                   checked={filters.districts.includes(district)}
                   onCheckedChange={() => handleDistrictToggle(district)}
+                  className="border-gray-300 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
                 />
                 <label
                   htmlFor={`dist-${district}`}

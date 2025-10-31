@@ -1,73 +1,123 @@
-# Welcome to your Lovable project
+# AgriLink Lanka - Frontend
 
-## Project info
+## Overview
 
-**URL**: https://lovable.dev/projects/32fd2227-ae84-4a78-9964-505a1f268054
+AgriLink Lanka is a modern agricultural marketplace platform connecting Sri Lankan farmers with smart buyers. The frontend is built with cutting-edge web technologies to provide a seamless user experience.
 
-## How can I edit this code?
+## Technologies
 
-There are several ways of editing your application.
+- **Vite** - Fast build tool and dev server
+- **React 18** - Modern UI library
+- **TypeScript** - Type-safe development
+- **Tailwind CSS** - Utility-first styling
+- **shadcn/ui** - High-quality component library
+- **Redux Toolkit** - State management
+- **React Router** - Client-side routing
+- **i18next** - Internationalization
+- **Framer Motion** - Smooth animations
 
-**Use Lovable**
+## Getting Started
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/32fd2227-ae84-4a78-9964-505a1f268054) and start prompting.
+### Prerequisites
 
-Changes made via Lovable will be committed automatically to this repo.
+- Node.js (v18 or higher) - [Install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- npm or yarn package manager
 
-**Use your preferred IDE**
+### Installation
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+```bash
+# Clone the repository
+git clone <YOUR_REPO_URL>
+cd Farmer-s-Gate/frontend
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+# Install dependencies
+npm install
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Build for Production
 
-**Use GitHub Codespaces**
+```bash
+# Create production build
+npm run build
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Preview production build
+npm run preview
+```
 
-## What technologies are used for this project?
+## Project Structure
 
-This project is built with:
+```
+src/
+├── components/          # Reusable UI components
+│   ├── catalog/        # Product catalog components
+│   ├── common/         # Shared components
+│   ├── layout/         # Layout components (Navbar, Footer)
+│   └── ui/             # shadcn/ui components
+├── pages/              # Page components
+├── store/              # Redux store and slices
+├── utils/              # Utility functions
+├── assets/             # Static assets
+├── i18n/               # Translation files
+├── App.tsx             # Main app component
+└── main.tsx            # Entry point
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Key Features
 
-## How can I deploy this project?
+- **Responsive Design** - Mobile-first approach with Tailwind CSS
+- **Multi-language Support** - English, Sinhala, Tamil
+- **Product Catalog** - Advanced filtering and search
+- **Shopping Cart** - Real-time cart management
+- **User Authentication** - Secure login and registration
+- **Farmer Dashboard** - Product management for sellers
+- **Buyer Dashboard** - Order tracking and history
+- **Modern UI/UX** - Smooth animations and transitions
 
-Simply open [Lovable](https://lovable.dev/projects/32fd2227-ae84-4a78-9964-505a1f268054) and click on Share -> Publish.
+## Development
 
-## Can I connect a custom domain to my Lovable project?
+### Code Quality
 
-Yes, you can!
+```bash
+# Run linter
+npm run lint
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Adding New Components
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Use the shadcn CLI to add new components:
+
+```bash
+npx shadcn-ui@latest add [component-name]
+```
+
+## Environment Variables
+
+Create a `.env` file in the `frontend` directory:
+
+```env
+VITE_API_URL=your_api_url
+```
+
+## Internationalization
+
+Translation files are located in `src/i18n/locales/`. To add a new language:
+
+1. Create a new translation file in the locales directory
+2. Add the language configuration to `i18n/config.ts`
+3. Add language switcher option in `LanguageSwitcher.tsx`
+
+## Contributing
+
+1. Create a feature branch
+2. Make your changes
+3. Ensure all tests pass
+4. Submit a pull request
+
+## License
+
+Copyright © 2025 AgriLink Lanka. All rights reserved.
