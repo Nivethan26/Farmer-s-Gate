@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
 import { useAppSelector } from '@/store/hooks';
 import { selectUserOrders, selectUserNegotiations } from '@/store/selectors';
 import { Navbar } from '@/components/layout/Navbar';
@@ -12,10 +13,15 @@ import type { RootState } from '@/store';
 
 const BuyerDashboard = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const user = useAppSelector((state: RootState) => state.auth.user);
   const cartItems = useAppSelector((state: RootState) => state.cart.items);
   const orders = useAppSelector(selectUserOrders);
   const negotiations = useAppSelector(selectUserNegotiations);
+
+  useEffect(() => {
+    navigate('/catalog', { replace: true });
+  }, [navigate]);
 
   const pendingOrders = orders.filter((o) => o.status === 'pending').length;
 
