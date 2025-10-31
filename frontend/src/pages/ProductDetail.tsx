@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { MapPin, Package, Calendar, User, ShoppingCart, MessageSquare } from 'lucide-react';
+import { MapPin, Package, Calendar, User, ShoppingCart, MessageSquare, LogIn } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ProductDetail = () => {
@@ -52,6 +52,13 @@ const ProductDetail = () => {
   }
 
   const handleAddToCart = () => {
+    // Redirect to login if user is not logged in
+    if (!user) {
+      toast.info('Please login to add items to cart');
+      navigate('/login', { state: { from: `/product/${product.id}` } });
+      return;
+    }
+    
     dispatch(
       addToCart({
         productId: product.id,
@@ -187,12 +194,35 @@ const ProductDetail = () => {
                   </div>
 
                   <div className="flex gap-3">
-                    <Button className="flex-1" onClick={handleAddToCart}>
-                      <ShoppingCart className="mr-2 h-4 w-4" />
-                      Add to Cart
+                    <Button 
+                      className="flex-1" 
+                      variant={!user ? "outline" : "default"}
+                      onClick={handleAddToCart}
+                    >
+                      {!user ? (
+                        <>
+                          <LogIn className="mr-2 h-4 w-4" />
+                          Login to Buy
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart className="mr-2 h-4 w-4" />
+                          Add to Cart
+                        </>
+                      )}
                     </Button>
                     {product.supplyType === 'wholesale' && (
-                      <Button variant="outline" onClick={() => setNegotiateOpen(true)}>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          if (!user) {
+                            toast.info('Please login to negotiate prices');
+                            navigate('/login', { state: { from: `/product/${product.id}` } });
+                            return;
+                          }
+                          setNegotiateOpen(true);
+                        }}
+                      >
                         <MessageSquare className="mr-2 h-4 w-4" />
                         Negotiate
                       </Button>

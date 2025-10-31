@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Navbar } from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 import { toast } from 'sonner';
 
 const Contact = () => {
@@ -316,6 +317,9 @@ const Contact = () => {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

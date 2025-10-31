@@ -7,6 +7,7 @@ import { selectFilteredProducts } from '@/store/selectors';
 import { setFilters } from '@/store/catalogSlice';
 import { addToCart } from '@/store/cartSlice';
 import { Navbar } from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 import { ProductCard } from '@/components/catalog/ProductCard';
 import { Filters } from '@/components/catalog/Filters';
 import { Button } from '@/components/ui/button';
@@ -39,8 +40,11 @@ const Catalog = () => {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const handleAddToCart = (product: Product) => {
+    // Redirect to login if user is not logged in
     if (!user) {
-      toast.info('You can add items to cart as a guest!');
+      toast.info('Please login to add items to cart');
+      navigate('/login', { state: { from: '/catalog' } });
+      return;
     }
     
     dispatch(
@@ -151,6 +155,9 @@ const Catalog = () => {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
