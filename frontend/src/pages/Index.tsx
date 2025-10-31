@@ -180,49 +180,60 @@ const Index = () => {
       </section>
 
       {/* How It Works */}
-      <section className="py-12 md:py-16 bg-gradient-to-b from-background to-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-8 md:mb-12">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-3 font-medium text-sm">
+      <section className="py-8 md:py-12 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-green-400 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 right-10 w-40 h-40 bg-emerald-400 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 relative">
+          <div className="text-center mb-6 md:mb-10">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-5 py-2.5 rounded-full mb-4 font-semibold text-sm shadow-lg">
               <Zap className="h-4 w-4" />
               Simple Process
             </div>
-            <h2 className="font-poppins text-3xl md:text-4xl font-bold mb-2">How It Works</h2>
-            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">Get started in three easy steps</p>
+            <h2 className="font-poppins text-3xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-green-700 to-emerald-700 bg-clip-text text-transparent">How It Works</h2>
+            <p className="text-gray-600 text-base md:text-xl max-w-2xl mx-auto font-medium">Get started in three easy steps</p>
           </div>
-          <div className="grid gap-3 md:gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 max-w-2xl md:max-w-7xl mx-auto">
+          <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 max-w-2xl md:max-w-6xl mx-auto">
             {features.map((feature, index) => (
-              <Card key={index} className="group relative overflow-hidden border md:border-2 transition-all duration-300 hover:shadow-lg md:hover:shadow-2xl hover:scale-105 hover:border-primary/50 animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="absolute top-0 right-0 w-16 h-16 md:w-40 md:h-40 bg-primary/5 rounded-full -mr-8 -mt-8 md:-mr-20 md:-mt-20 group-hover:bg-primary/10 transition-colors" />
-                <CardContent className="p-3 md:p-10 lg:p-12 relative">
-                  {/* Step number badge */}
-                  <div className="absolute top-2 right-2 md:top-8 md:right-8">
-                    <div className="w-5 h-5 md:w-12 md:h-12 rounded-full bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-all">
-                      <span className="text-xs md:text-2xl font-bold text-primary">{index + 1}</span>
-                    </div>
+              <Card key={index} className="group relative overflow-hidden border-0 bg-white/80 backdrop-blur-sm transition-all duration-500 hover:shadow-2xl hover:scale-105 hover:-translate-y-2 animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                {/* Gradient background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 group-hover:from-green-500/10 group-hover:to-emerald-500/10 transition-all" />
+                
+                {/* Step number badge - top right */}
+                <div className="absolute top-3 right-3 md:top-5 md:right-5 z-10">
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <span className="text-sm md:text-lg font-bold text-white">{index + 1}</span>
                   </div>
+                </div>
 
-                  {/* Icon container - centered with better alignment */}
+                <CardContent className="p-5 md:p-7 relative">
+                  {/* Icon container */}
                   <div className="flex flex-col items-center text-center">
-                    <div className="relative mb-2 md:mb-6">
-                      {/* Icon background with glow */}
-                      <div className="absolute inset-0 bg-primary/20 rounded-lg md:rounded-3xl blur-md md:blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <div className="relative rounded-lg md:rounded-3xl bg-gradient-to-br from-primary to-primary/80 p-2 md:p-5 shadow-md md:shadow-xl group-hover:shadow-2xl transition-all group-hover:scale-110 duration-300">
-                        <feature.icon className="h-5 w-5 md:h-12 md:w-12 lg:h-14 lg:w-14 text-white" />
+                    <div className="relative mb-4 md:mb-5">
+                      {/* Icon glow effect */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity" />
+                      <div className="relative rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 p-3 md:p-4 shadow-xl group-hover:shadow-2xl transition-all group-hover:scale-110 duration-300">
+                        <feature.icon className="h-6 w-6 md:h-10 md:w-10 text-white" />
                       </div>
                     </div>
                     
                     {/* Title */}
-                    <h3 className="font-poppins text-sm md:text-2xl lg:text-3xl font-bold mb-1 md:mb-4 group-hover:text-primary transition-colors">
+                    <h3 className="font-poppins text-base md:text-xl lg:text-2xl font-bold mb-2 md:mb-3 text-gray-900 group-hover:text-green-600 transition-colors">
                       {feature.title}
                     </h3>
                     
                     {/* Description */}
-                    <p className="text-muted-foreground text-[10px] md:text-base lg:text-lg leading-snug md:leading-relaxed">
+                    <p className="text-gray-600 text-xs md:text-sm lg:text-base leading-relaxed">
                       {feature.description}
                     </p>
                   </div>
                 </CardContent>
+                
+                {/* Bottom accent line */}
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 to-emerald-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
               </Card>
             ))}
           </div>
@@ -230,29 +241,48 @@ const Index = () => {
       </section>
 
       {/* Categories */}
-      <section className="py-12 md:py-16 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-muted/50 to-background" />
+      <section className="py-8 md:py-12 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 relative overflow-hidden">
+        {/* Decorative background */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-10 right-10 w-32 h-32 bg-orange-400 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 left-10 w-40 h-40 bg-amber-400 rounded-full blur-3xl"></div>
+        </div>
+        
         <div className="container mx-auto px-4 relative">
-          <div className="text-center mb-8 md:mb-12">
-            <div className="inline-flex items-center gap-2 bg-secondary/10 text-secondary-foreground px-4 py-2 rounded-full mb-3 font-medium text-sm">
+          <div className="text-center mb-6 md:mb-10">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white px-5 py-2.5 rounded-full mb-4 font-semibold text-sm shadow-lg">
               <Package className="h-4 w-4" />
               Wide Selection
             </div>
-            <h2 className="font-poppins text-3xl md:text-4xl font-bold mb-2">Product Categories</h2>
-            <p className="text-muted-foreground text-base md:text-lg">Browse our fresh, organic products</p>
+            <h2 className="font-poppins text-3xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-orange-700 to-amber-700 bg-clip-text text-transparent">Product Categories</h2>
+            <p className="text-gray-600 text-base md:text-xl font-medium">Browse our fresh, organic products</p>
           </div>
-          <div className="grid gap-3 md:gap-8 grid-cols-2 md:grid-cols-4 max-w-2xl md:max-w-7xl mx-auto">
+          <div className="grid gap-4 md:gap-5 grid-cols-2 md:grid-cols-4 max-w-2xl md:max-w-6xl mx-auto">
             {categories.map((category, index) => (
-              <Card key={index} className="group cursor-pointer transition-all duration-300 hover:shadow-lg md:hover:shadow-2xl hover:-translate-y-1 md:hover:-translate-y-2 border md:border-2 hover:border-primary/30 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <CardContent className="p-3 md:p-10 lg:p-12 relative text-center">
-                  <div className={`mb-1.5 md:mb-6 inline-flex items-center justify-center w-9 h-9 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-lg md:rounded-3xl ${category.color} shadow-md md:shadow-xl group-hover:shadow-2xl transition-all group-hover:scale-110`}>
-                    <span className="text-lg md:text-4xl lg:text-5xl">{category.emoji}</span>
+              <Card key={index} className="group cursor-pointer transition-all duration-500 hover:shadow-2xl hover:-translate-y-3 border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                
+                <CardContent className="p-4 md:p-6 relative text-center">
+                  {/* Emoji container with color background */}
+                  <div className={`mb-3 md:mb-4 mx-auto inline-flex items-center justify-center w-14 h-14 md:w-20 md:h-20 rounded-2xl md:rounded-3xl ${category.color} shadow-lg group-hover:shadow-2xl transition-all group-hover:scale-110 group-hover:rotate-3`}>
+                    <span className="text-2xl md:text-4xl">{category.emoji}</span>
                   </div>
-                  <h3 className="mb-0.5 md:mb-3 font-poppins text-xs md:text-2xl lg:text-3xl font-bold group-hover:text-primary transition-colors">{category.name}</h3>
-                  <p className="text-muted-foreground text-[9px] md:text-base lg:text-lg font-medium">{category.count}</p>
-                  <ArrowRight className="h-2.5 w-2.5 md:h-6 md:w-6 text-primary mt-1 md:mt-5 mx-auto opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1 md:group-hover:translate-x-2" />
+                  
+                  {/* Category name */}
+                  <h3 className="mb-1 md:mb-2 font-poppins text-sm md:text-xl font-bold text-gray-900 group-hover:text-orange-600 transition-colors">{category.name}</h3>
+                  
+                  {/* Item count */}
+                  <p className="text-gray-600 text-xs md:text-sm font-semibold mb-2 md:mb-3">{category.count}</p>
+                  
+                  {/* Arrow indicator */}
+                  <div className="flex items-center justify-center">
+                    <ArrowRight className="h-4 w-4 md:h-5 md:w-5 text-orange-600 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-2" />
+                  </div>
                 </CardContent>
+                
+                {/* Bottom gradient accent */}
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-amber-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
               </Card>
             ))}
           </div>
