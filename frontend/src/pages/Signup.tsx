@@ -27,6 +27,8 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAppDispatch } from "@/store/hooks";
+import { registerUser } from "@/store/authSlice";
 import { Navbar } from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
@@ -61,6 +63,8 @@ const Signup = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("buyer");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
 
   const buyerForm = useForm<BuyerFormData>({
     resolver: zodResolver(buyerSchema),
@@ -72,22 +76,53 @@ const Signup = () => {
 
   const onBuyerSubmit = async (data: BuyerFormData) => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("Buyer signup:", data);
-    toast.success(t("auth.buyerAccountCreated"));
-    setIsLoading(false);
-    navigate("/login");
+    try {
+      const payload = { ...data, role: 'buyer' };
+      // @ts-ignore
+      const res = await dispatch(registerUser(payload));
+      // @ts-ignore
+      if (res.meta?.requestStatus === 'fulfilled') {
+        toast.success(t("auth.buyerAccountCreated"));
+        navigate('/login');
+      } else {
+        // try to read backend message
+        // @ts-ignore
+        const msg = res.payload || res.error?.message || t('auth.registrationFailed');
+        setError(msg);
+        toast.error(msg);
+      }
+    } catch (err: any) {
+      const msg = err?.payload || err?.message || t('auth.registrationFailed');
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const onSellerSubmit = async (data: SellerFormData) => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("Seller signup:", data);
-    toast.success(t("auth.sellerApplicationSubmitted"));
-    setIsLoading(false);
-    navigate("/login");
+    try {
+      const payload = { ...data, role: 'seller' };
+      // @ts-ignore
+      const res = await dispatch(registerUser(payload));
+      // @ts-ignore
+      if (res.meta?.requestStatus === 'fulfilled') {
+        toast.success(t("auth.sellerApplicationSubmitted"));
+        navigate('/login');
+      } else {
+        // @ts-ignore
+        const msg = res.payload || res.error?.message || t('auth.registrationFailed');
+        setError(msg);
+        toast.error(msg);
+      }
+    } catch (err: any) {
+      const msg = err?.payload || err?.message || t('auth.registrationFailed');
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -181,6 +216,11 @@ const Signup = () => {
                 onSubmit={buyerForm.handleSubmit(onBuyerSubmit)}
                 className="space-y-5"
               >
+                {error && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <Label
@@ -350,6 +390,11 @@ const Signup = () => {
                 onSubmit={sellerForm.handleSubmit(onSellerSubmit)}
                 className="space-y-5"
               >
+                {error && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <Label
