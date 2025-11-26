@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import usersData from '@/data/users.json';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import api from '@/services/api';
 
 export type UserRole = 'buyer' | 'seller' | 'admin' | 'agent';
 
@@ -29,6 +29,13 @@ interface AuthState {
   user: User | null;
 }
 
+interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+interface RegisterPayload extends Record<string, any> {}
+
 // Dummy credentials
 const dummyCredentials = [
   { email: 'buyer@agrilink.lk', password: 'buyer123', role: 'buyer' as UserRole, userId: 'buyer-1' },
@@ -52,47 +59,55 @@ const loadAuthState = (): AuthState => {
 
 const initialState: AuthState = loadAuthState();
 
+export const loginUser = createAsyncThunk(
+  'auth/loginUser',
+  async (payload: LoginPayload, { rejectWithValue }) => {
+    try {
+      const res = await api.post('/auth/login', payload);
+      const { token, user } = res.data;
+      // persist token and minimal auth info
+      localStorage.setItem('agrilink_token', token);
+      const state = { isAuthenticated: true, user };
+      localStorage.setItem('agrilink_auth', JSON.stringify(state));
+      return user;
+    } catch (err: any) {
+      const message = err?.response?.data?.error || err.message || 'Login failed';
+      return rejectWithValue(message);
+    }
+  }
+);
+
+export const registerUser = createAsyncThunk(
+  'auth/registerUser',
+  async (payload: RegisterPayload, { rejectWithValue }) => {
+    try {
+      const res = await api.post('/auth/register', payload);
+      // registration may also return token and user
+      const { token, user } = res.data;
+      if (token && user) {
+        localStorage.setItem('agrilink_token', token);
+        const state = { isAuthenticated: true, user };
+        localStorage.setItem('agrilink_auth', JSON.stringify(state));
+        return user;
+      }
+      return null;
+    } catch (err: any) {
+      const message = err?.response?.data?.error || err.message || 'Registration failed';
+      return rejectWithValue(message);
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    login: (state, action: PayloadAction<{ email: string; password: string }>) => {
-      const { email, password } = action.payload;
-      const credentials = dummyCredentials.find(
-        (c) => c.email === email && c.password === password
-      );
-
-      if (credentials) {
-        let userData: User | null = null;
-
-        // Find user data based on role
-        switch (credentials.role) {
-          case 'buyer':
-            userData = usersData.buyers.find((u) => u.id === credentials.userId) as User;
-            break;
-          case 'seller':
-            userData = usersData.sellers.find((u) => u.id === credentials.userId) as User;
-            break;
-          case 'agent':
-            userData = usersData.agents.find((u) => u.id === credentials.userId) as User;
-            break;
-          case 'admin':
-            userData = usersData.admins.find((u) => u.id === credentials.userId) as User;
-            break;
-        }
-
-        if (userData) {
-          state.isAuthenticated = true;
-          state.user = { ...userData, role: credentials.role };
-          localStorage.setItem('agrilink_auth', JSON.stringify(state));
-        }
-      }
-    },
     logout: (state) => {
       state.isAuthenticated = false;
       state.user = null;
       localStorage.removeItem('agrilink_auth');
       localStorage.removeItem('agrilink_cart');
+      localStorage.removeItem('agrilink_token');
     },
     updateProfile: (state, action: PayloadAction<Partial<User>>) => {
       if (state.user) {
@@ -101,7 +116,27 @@ const authSlice = createSlice({
       }
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(loginUser.fulfilled, (state, action: PayloadAction<User>) => {
+        state.isAuthenticated = true;
+        state.user = action.payload;
+      })
+      .addCase(loginUser.rejected, (state) => {
+        state.isAuthenticated = false;
+        state.user = null;
+      })
+      .addCase(registerUser.fulfilled, (state, action: PayloadAction<User | null>) => {
+        if (action.payload) {
+          state.isAuthenticated = true;
+          state.user = action.payload;
+        }
+      })
+      .addCase(registerUser.rejected, (state) => {
+        // keep existing state
+      });
+  },
 });
 
-export const { login, logout, updateProfile } = authSlice.actions;
+export const { logout, updateProfile } = authSlice.actions;
 export default authSlice.reducer;

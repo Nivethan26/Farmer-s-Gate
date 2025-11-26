@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import type { RootState } from "@/store";
-import { login } from "@/store/authSlice";
+import { loginUser } from "@/store/authSlice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector(
@@ -39,20 +40,32 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setIsLoading(true);
 
-    const stateBefore = isAuthenticated;
-    dispatch(login({ email, password }));
-
-    setTimeout(() => {
-      const stateAfter = isAuthenticated;
-      if (!stateBefore && stateAfter) {
-        toast.success(t("auth.loginSuccess"));
-      } else if (!stateAfter) {
-        toast.error(t("auth.invalidCredentials"));
+    try {
+      const resultAction = await dispatch(loginUser({ email, password }));
+      // Check action result status
+      // @ts-ignore
+      if (resultAction.meta?.requestStatus === 'fulfilled') {
+        // @ts-ignore
+        const user = resultAction.payload;
+        toast.success(t('auth.loginSuccess'));
+        // navigation handled by useEffect that watches auth state, but navigate now for immediacy
+        if (user && user.role) navigate(`/${user.role}`, { replace: true });
+      } else {
+        // @ts-ignore
+        const msg = resultAction.payload || t('auth.invalidCredentials');
+        setError(msg);
+        toast.error(msg);
       }
+    } catch (err: any) {
+      const msg = err?.payload || err?.message || t('auth.invalidCredentials');
+      setError(msg);
+      toast.error(msg);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -157,6 +170,12 @@ const Login = () => {
                 t("auth.loginButton")
               )}
             </Button>
+
+            {error && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
           </form>
 
           {/* Demo Credentials */}
