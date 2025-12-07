@@ -6,7 +6,7 @@ export interface CartItem {
   pricePerKg: number;
   qty: number;
   image: string;
-  sellerId: string;
+  sellerId: string; 
   sellerName: string;
 }
 
@@ -15,6 +15,8 @@ interface CartState {
   subtotal: number;
   deliveryFee: number;
   total: number;
+  totalWeight: number;
+  redeemedPoints: number;
 }
 
 // Load cart from localStorage
@@ -22,19 +24,34 @@ const loadCart = (): CartState => {
   try {
     const storedCart = localStorage.getItem('agrilink_cart');
     if (storedCart) {
-      return JSON.parse(storedCart);
+      const parsed = JSON.parse(storedCart);
+      // Recalculate totals to ensure consistency
+      const totals = calculateTotals(parsed.items || [], parsed.redeemedPoints || 0);
+      return { ...parsed, ...totals, redeemedPoints: parsed.redeemedPoints || 0 };
     }
   } catch (error) {
     console.error('Error loading cart:', error);
   }
-  return { items: [], subtotal: 0, deliveryFee: 0, total: 0 };
+  return { items: [], subtotal: 0, deliveryFee: 0, total: 0, totalWeight: 0, redeemedPoints: 0 };
 };
 
-const calculateTotals = (items: CartItem[]): { subtotal: number; deliveryFee: number; total: number } => {
+// Weight-based delivery fee calculation
+// 1 kg = Rs. 180, 2 kg = Rs. 300, then Rs. 120 per additional kg
+const calculateDeliveryFee = (totalWeight: number): number => {
+  if (totalWeight <= 0) return 0;
+  if (totalWeight <= 1) return 180;
+  if (totalWeight <= 2) return 300;
+  return 300 + (totalWeight - 2) * 120;
+};
+
+const calculateTotals = (items: CartItem[], redeemedPoints: number = 0): { subtotal: number; deliveryFee: number; total: number; totalWeight: number } => {
+  const totalWeight = items.reduce((sum, item) => sum + item.qty, 0);
   const subtotal = items.reduce((sum, item) => sum + item.pricePerKg * item.qty, 0);
-  const deliveryFee = subtotal > 0 ? (subtotal > 5000 ? 500 : 250) : 0;
-  const total = subtotal + deliveryFee;
-  return { subtotal, deliveryFee, total };
+  const deliveryFee = calculateDeliveryFee(totalWeight);
+  // 1 point = Rs. 1 discount
+  const pointsDiscount = Math.min(redeemedPoints, subtotal + deliveryFee);
+  const total = Math.max(0, subtotal + deliveryFee - pointsDiscount);
+  return { subtotal, deliveryFee, total, totalWeight };
 };
 
 const initialState: CartState = loadCart();
@@ -52,20 +69,22 @@ const cartSlice = createSlice({
         state.items.push(action.payload);
       }
       
-      const totals = calculateTotals(state.items);
+      const totals = calculateTotals(state.items, state.redeemedPoints);
       state.subtotal = totals.subtotal;
       state.deliveryFee = totals.deliveryFee;
       state.total = totals.total;
+      state.totalWeight = totals.totalWeight;
       
       localStorage.setItem('agrilink_cart', JSON.stringify(state));
     },
     removeFromCart: (state, action: PayloadAction<string>) => {
       state.items = state.items.filter((item) => item.productId !== action.payload);
       
-      const totals = calculateTotals(state.items);
+      const totals = calculateTotals(state.items, state.redeemedPoints);
       state.subtotal = totals.subtotal;
       state.deliveryFee = totals.deliveryFee;
       state.total = totals.total;
+      state.totalWeight = totals.totalWeight;
       
       localStorage.setItem('agrilink_cart', JSON.stringify(state));
     },
@@ -80,10 +99,11 @@ const cartSlice = createSlice({
         }
       }
       
-      const totals = calculateTotals(state.items);
+      const totals = calculateTotals(state.items, state.redeemedPoints);
       state.subtotal = totals.subtotal;
       state.deliveryFee = totals.deliveryFee;
       state.total = totals.total;
+      state.totalWeight = totals.totalWeight;
       
       localStorage.setItem('agrilink_cart', JSON.stringify(state));
     },
@@ -92,10 +112,21 @@ const cartSlice = createSlice({
       state.subtotal = 0;
       state.deliveryFee = 0;
       state.total = 0;
+      state.totalWeight = 0;
+      state.redeemedPoints = 0;
       localStorage.removeItem('agrilink_cart');
+    },
+    setRedeemedPoints: (state, action: PayloadAction<number>) => {
+      state.redeemedPoints = action.payload;
+      const totals = calculateTotals(state.items, state.redeemedPoints);
+      state.subtotal = totals.subtotal;
+      state.deliveryFee = totals.deliveryFee;
+      state.total = totals.total;
+      state.totalWeight = totals.totalWeight;
+      localStorage.setItem('agrilink_cart', JSON.stringify(state));
     },
   },
 });
 
-export const { addToCart, removeFromCart, updateQty, clearCart } = cartSlice.actions;
+export const { addToCart, removeFromCart, updateQty, clearCart, setRedeemedPoints } = cartSlice.actions;
 export default cartSlice.reducer;
