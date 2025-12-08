@@ -12,7 +12,7 @@
     "sellerName": "Nimal Perera",
     "description": "Fresh organic tomatoes from highland farms",
     "createdAt": "2025-10-10T10:00:00Z",
-    "expiresOn": "2025-10-25T23:59:59Z"
+    "expiresOn": "2026-10-25T23:59:59Z"
   },
   {
     "id": "prod-2",
@@ -27,7 +27,7 @@
     "sellerName": "Kamal Silva",
     "description": "Premium quality red onions, bulk orders available",
     "createdAt": "2025-10-08T08:30:00Z",
-    "expiresOn": "2025-11-08T23:59:59Z"
+    "expiresOn": "2026-11-08T23:59:59Z"
   },
   {
     "id": "prod-3",
@@ -42,7 +42,7 @@
     "sellerName": "Nimal Perera",
     "description": "Fresh hot green chilies",
     "createdAt": "2025-10-12T14:00:00Z",
-    "expiresOn": "2025-10-20T23:59:59Z"
+    "expiresOn": "2025-12-20T23:59:59Z"
   },
   {
     "id": "prod-4",
@@ -87,7 +87,7 @@
     "sellerName": "Nimal Perera",
     "description": "Fresh highland carrots",
     "createdAt": "2025-10-13T11:00:00Z",
-    "expiresOn": "2025-10-28T23:59:59Z"
+    "expiresOn": "2025-12-10T23:59:59Z"
   },
   {
     "id": "prod-7",
@@ -147,7 +147,7 @@
     "sellerName": "Nimal Perera",
     "description": "Fresh upcountry potatoes",
     "createdAt": "2025-10-06T09:00:00Z",
-    "expiresOn": "2025-11-06T23:59:59Z"
+    "expiresOn": "2025-12-06T23:59:59Z"
   },
   {
     "id": "prod-11",

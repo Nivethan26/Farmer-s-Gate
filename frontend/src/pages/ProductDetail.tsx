@@ -116,7 +116,7 @@ const ProductDetail = () => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-
+    console.log(negotiation);
     dispatch(createNegotiation(negotiation));
     toast.success('Negotiation request sent!');
     setNegotiateOpen(false);
