@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShoppingCart, Package, Clock, MessageSquare, Store, TrendingUp, Gift, ArrowRight, CheckCircle2, Truck, AlertCircle } from 'lucide-react';
+import { ShoppingCart, Package, Clock, MessageSquare, Store, TrendingUp, Gift, ArrowRight, CheckCircle2, Truck, AlertCircle, Home } from 'lucide-react';
 import type { RootState } from '@/store';
 
 const BuyerDashboard = () => {
@@ -87,16 +87,28 @@ const BuyerDashboard = () => {
                 {t('buyer.welcomeBack')}, <span className="font-semibold text-gray-900">{user?.name}</span>! 👋
               </p>
             </div>
-            <Button 
-              asChild 
-              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30"
-            >
-              <Link to="/catalog" className="flex items-center gap-2">
-                <Store className="h-4 w-4" />
-                Browse Products
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button 
+                asChild 
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-green-500/50 hover:scale-105"
+              >
+                <Link to="/" className="flex items-center gap-2">
+                  <Home className="h-4 w-4" />
+                  Home
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button 
+                asChild 
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-green-500/50 hover:scale-105"
+              >
+                <Link to="/catalog" className="flex items-center gap-2">
+                  <Store className="h-4 w-4" />
+                  Browse Products
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -229,11 +241,11 @@ const BuyerDashboard = () => {
                   </Link>
                   <Link to="/profile">
                     <Button 
-                      variant="outline" 
-                      className="w-full h-auto py-4 px-6 border-2 border-gray-200 hover:border-gray-400 hover:bg-gray-50 transition-all duration-300 group"
+                  variant="outline" 
+                  className="w-full h-auto py-4 px-6 border-2 border-blue-300 text-blue-600 hover:border-sky-400 hover:bg-sky-50 transition-all duration-300 group"
                     >
-                      <TrendingUp className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                      <span className="font-semibold">{t('buyer.myProfile')}</span>
+                  <TrendingUp className="mr-2 h-5 w-5 text-blue-600 group-hover:scale-110 transition-transform" />
+                  <span className="font-semibold text-blue-600">{t('buyer.myProfile')}</span>
                     </Button>
                   </Link>
                 </div>
