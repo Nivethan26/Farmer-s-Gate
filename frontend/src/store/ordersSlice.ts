@@ -16,11 +16,13 @@ export interface Order {
   subtotal: number;
   deliveryFee: number;
   total: number;
-  status: 'pending' | 'paid' | 'shipped' | 'delivered';
+  status: 'pending' | 'processing' | 'paid' | 'shipped' | 'delivered';
   receiptUrl: string | null;
   createdAt: string;
   paidAt: string | null;
   deliveredAt: string | null;
+  redeemedPoints?: number;
+  pointsEarned?: number;
 }
 
 interface OrdersState {
@@ -53,7 +55,7 @@ const ordersSlice = createSlice({
       const order = state.orders.find((o) => o.id === action.payload.id);
       if (order) {
         order.receiptUrl = action.payload.receiptUrl;
-        order.status = 'pending';
+        order.status = 'processing';
       }
     },
     markOrderPaid: (state, action: PayloadAction<string>) => {

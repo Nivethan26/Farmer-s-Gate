@@ -122,7 +122,9 @@
     "sortBy": "අනුව වර්ග කරන්න",
     "addToCart": "කරත්තයට එකතු කරන්න",
     "viewDetails": "විස්තර බලන්න",
-    "negotiate": "මිල සාකච්ඡා කරන්න",
+    "negotiate": "සාකච්ඡා කරන්න",
+    "negotiatePrice": "මිල සාකච්ඡා කරන්න",
+    "loginToBuy": "මිලදී ගැනීමට පිවිසෙන්න",
     "perKg": "කිලෝවකට",
     "inStock": "තොගයේ ඇත",
     "outOfStock": "තොගයේ නැත"

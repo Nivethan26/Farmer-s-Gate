@@ -1,5 +1,6 @@
 import { useAppSelector } from '@/store/hooks';
 import { selectUserOrders } from '@/store/selectors';
+import { useOrderNotifications } from '@/hooks/useOrderNotifications';
 import { Navbar } from '@/components/layout/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +17,9 @@ import { Package, Eye } from 'lucide-react';
 
 const BuyerOrders = () => {
   const orders = useAppSelector(selectUserOrders);
+  
+  // Watch for order status changes and show notifications
+  useOrderNotifications();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -25,6 +29,8 @@ const BuyerOrders = () => {
         return 'bg-blue-100 text-blue-800';
       case 'paid':
         return 'bg-yellow-100 text-yellow-800';
+      case 'processing':
+        return 'bg-purple-100 text-purple-800';
       case 'pending':
         return 'bg-orange-100 text-orange-800';
       default:
@@ -60,7 +66,7 @@ const BuyerOrders = () => {
                       </p>
                     </div>
                     <Badge className={getStatusColor(order.status)}>
-                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      {order.status === 'processing' ? 'Under Processing' : order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                     </Badge>
                   </div>
 
@@ -92,6 +98,22 @@ const BuyerOrders = () => {
                     </div>
                   </div>
 
+                  {(order.redeemedPoints || order.pointsEarned) && (
+                    <div className="mt-4 pt-4 border-t space-y-1">
+                      {order.redeemedPoints && order.redeemedPoints > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Points Redeemed:</span>
+                          <span className="font-medium">{order.redeemedPoints} points</span>
+                        </div>
+                      )}
+                      {order.pointsEarned && order.pointsEarned > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Points Earned:</span>
+                          <span className="font-medium text-green-600">+{order.pointsEarned} points</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   {order.receiptUrl && (
                     <div className="mt-4 pt-4 border-t">
                       <p className="text-sm text-muted-foreground">
