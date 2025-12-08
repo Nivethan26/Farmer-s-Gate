@@ -114,7 +114,7 @@ const Cart = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50/30">
         <Navbar />
         <div className="container mx-auto px-4 py-12 sm:py-16 lg:py-20">
-          <Card className="max-w-md mx-auto text-center shadow-2xl rounded-3xl border-0 overflow-hidden bg-white/80 backdrop-blur-sm">
+          <Card className="max-w-md mx-auto text-center shadow-2xl rounded-3xl border-0 overflow-hidden bg-white/80 backdrop-blur-sm transition-all duration-300 hover:shadow-[0_25px_70px_rgba(16,185,129,0.25)] hover:-translate-y-1">
             <CardContent className="pt-16 pb-16 px-8">
               <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 mb-6">
                 <ShoppingBag className="h-12 w-12 text-green-600" />
@@ -135,11 +135,11 @@ const Cart = () => {
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={() => navigate('/')}
-                  className="border-2"
+                  onClick={() => navigate('/buyer')}
+                  className="border-2 text-green-700 hover:text-green-800 hover:border-green-300 hover:bg-green-50"
                 >
                   <ChevronLeft className="mr-2 h-4 w-4" />
-                  Home
+                  Dashboard
                 </Button>
               </div>
             </CardContent>

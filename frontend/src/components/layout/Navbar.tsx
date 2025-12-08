@@ -206,11 +206,11 @@ export const Navbar = () => {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={() => navigate("/account")}
+                      onClick={() => navigate("/buyer")}
                       className="cursor-pointer text-green-700 hover:text-green-600 hover:bg-green-50"
                     >
                       <User className="mr-3 h-4 w-4" />
-                      <span>{t("nav.account")}</span>
+                      <span>{t("nav.dashboard")}</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -336,13 +336,13 @@ export const Navbar = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    navigate("/account");
+                    navigate("/buyer");
                     setMenuOpen(false);
                   }}
                   className="w-full justify-start text-green-700 hover:text-green-600 hover:bg-green-50 rounded-lg font-medium"
                 >
                   <User className="mr-3 h-4 w-4" />
-                  {t("nav.account")}
+                  {t("nav.dashboard")}
                 </Button>
                 <Button
                   variant="ghost"
