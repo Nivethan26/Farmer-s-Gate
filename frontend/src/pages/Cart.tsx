@@ -113,15 +113,6 @@ const Cart = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50/30">
         <Navbar />
-        <div className="container mx-auto px-4 py-12">
-          <Card className="group max-w-md mx-auto text-center transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-primary/20 cursor-pointer">
-            <CardContent className="pt-12 pb-12">
-              <ShoppingBag className="h-16 w-16 mx-auto mb-4 text-muted-foreground transition-transform duration-300 group-hover:scale-110 group-hover:text-primary" />
-              <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
-              <p className="text-muted-foreground mb-6">
-                Start adding products to your cart from our catalog
-              </p>
-              <Button onClick={() => navigate('/catalog')} className="transition-all duration-300 hover:scale-105 hover:shadow-lg">Browse Products</Button>
         <div className="container mx-auto px-4 py-12 sm:py-16 lg:py-20">
           <Card className="max-w-md mx-auto text-center shadow-2xl rounded-3xl border-0 overflow-hidden bg-white/80 backdrop-blur-sm">
             <CardContent className="pt-16 pb-16 px-8">
@@ -415,7 +406,6 @@ const Cart = () => {
 
       {/* Checkout Dialog */}
       <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-        <DialogContent className="hover:border-2 hover:border-black transition-all">
         <DialogContent className="max-w-xl sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">

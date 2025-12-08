@@ -107,7 +107,9 @@ const AdminDashboard = () => {
   const handleAddCategory = (data: CategoryFormData) => {
     const newCategory = {
       id: `cat-${Date.now()}`,
-      ...data,
+      name: data.name,
+      slug: data.slug,
+      icon: data.icon,
     };
     dispatch(addCategory(newCategory));
     toast.success(t('admin.categoryCreated'));
