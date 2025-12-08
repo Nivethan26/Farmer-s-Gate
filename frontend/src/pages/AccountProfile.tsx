@@ -13,18 +13,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { User, Mail, Phone, MapPin, IdCard, Edit2, Save, X, Lock, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Profile schema - only editable fields for buyers
 const profileSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().min(10, 'Phone number must be at least 10 digits').optional(),
   address: z.string().optional(),
   district: z.string().optional(),
-  farmName: z.string().optional(),
-  bankAccountName: z.string().optional(),
-  bankAccountNo: z.string().optional(),
-  bankName: z.string().optional(),
-  bankBranch: z.string().optional(),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -36,22 +33,37 @@ const AccountProfile = () => {
   const user = useAppSelector((state: RootState) => state.auth.user);
   const [isEditing, setIsEditing] = useState(false);
 
+  // Split name into first and last name if available, otherwise use name
+  const getFirstName = () => {
+    if (user?.firstName) return user.firstName;
+    if (user?.name) {
+      const parts = user.name.split(' ');
+      return parts[0] || user.name;
+    }
+    return '';
+  };
+
+  const getLastName = () => {
+    if (user?.lastName) return user.lastName;
+    if (user?.name) {
+      const parts = user.name.split(' ');
+      return parts.slice(1).join(' ') || '';
+    }
+    return '';
+  };
+
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: user?.name || '',
+      email: user?.email || '',
       phone: user?.phone || '',
       address: user?.address || '',
       district: user?.district || '',
-      farmName: user?.farmName || '',
-      bankAccountName: user?.bank?.accountName || '',
-      bankAccountNo: user?.bank?.accountNo || '',
-      bankName: user?.bank?.bankName || '',
-      bankBranch: user?.bank?.branch || '',
     },
   });
 
@@ -62,247 +74,317 @@ const AccountProfile = () => {
 
   const onSubmit = (data: ProfileFormData) => {
     const updates: any = {
-      name: data.name,
+      email: data.email,
       phone: data.phone,
       address: data.address,
       district: data.district,
     };
 
+    // For sellers, include additional fields
     if (user.role === 'seller') {
-      updates.farmName = data.farmName;
-      updates.bank = {
-        accountName: data.bankAccountName || '',
-        accountNo: data.bankAccountNo || '',
-        bankName: data.bankName || '',
-        branch: data.bankBranch || '',
-      };
+      // Seller-specific updates can be added here
     }
 
     dispatch(updateProfile(updates));
-    toast.success(t('profile.updateSuccess'));
+    toast.success('Profile updated successfully!');
     setIsEditing(false);
   };
 
+  const handleCancel = () => {
+    reset();
+    setIsEditing(false);
+  };
+
+  // For buyers, only these fields are editable
+  const isBuyer = user.role === 'buyer';
+  const editableFields = isBuyer ? ['email', 'phone', 'address', 'district'] : [];
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50/30">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="mb-6">
-            <Button variant="ghost" onClick={() => navigate(-1)}>
-              ← {t('common.back')}
-            </Button>
-          </div>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)}
+            className="mb-4 hover:bg-green-50 hover:text-green-700"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+          
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-poppins bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">
+            My Profile
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Manage your account information and preferences
+          </p>
+        </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('nav.account')}</CardTitle>
-              <CardDescription>
-                {t('profile.manageInfo')}
-              </CardDescription>
+        <div className="max-w-4xl mx-auto">
+          {/* Main Profile Card */}
+          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl font-bold flex items-center gap-2">
+                    <div className="h-1 w-1 rounded-full bg-green-600"></div>
+                    Personal Information
+                  </CardTitle>
+                  <CardDescription className="mt-1">
+                    {isBuyer ? 'You can update your email, phone, address, and district' : 'Update your personal details'}
+                  </CardDescription>
+                </div>
+                {!isEditing && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditing(true)}
+                    className="border-2 hover:bg-green-50 hover:border-green-300"
+                  >
+                    <Edit2 className="mr-2 h-4 w-4" />
+                    Edit
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                {/* Common Fields */}
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="email">{t('common.email')}</Label>
+                {/* Read-only Fields */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* First Name - Read Only */}
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName" className="text-sm font-semibold flex items-center gap-2">
+                      <User className="h-4 w-4 text-green-600" />
+                      First Name
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="firstName"
+                        value={getFirstName()}
+                        disabled
+                        className="bg-gray-50 border-gray-200 pr-10"
+                      />
+                      <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <p className="text-xs text-muted-foreground">This field cannot be changed</p>
+                  </div>
+
+                  {/* Last Name - Read Only */}
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName" className="text-sm font-semibold flex items-center gap-2">
+                      <User className="h-4 w-4 text-green-600" />
+                      Last Name
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="lastName"
+                        value={getLastName()}
+                        disabled
+                        className="bg-gray-50 border-gray-200 pr-10"
+                      />
+                      <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <p className="text-xs text-muted-foreground">This field cannot be changed</p>
+                  </div>
+                </div>
+
+                {/* Email - Editable for Buyers */}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-semibold flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-green-600" />
+                    Email Address
+                    {isBuyer && <span className="text-green-600">*</span>}
+                  </Label>
+                  {isEditing && editableFields.includes('email') ? (
+                    <>
+                      <Input
+                        id="email"
+                        type="email"
+                        {...register('email')}
+                        className="border-2 focus:border-green-400"
+                        placeholder="your.email@example.com"
+                      />
+                      {errors.email && (
+                        <p className="text-sm text-red-600">{errors.email.message}</p>
+                      )}
+                    </>
+                  ) : (
+                    <div className="relative">
+                      <Input
+                        id="email"
+                        value={user.email}
+                        disabled
+                        className="bg-gray-50 border-gray-200 pr-10"
+                      />
+                      {!isBuyer && (
+                        <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      )}
+                    </div>
+                  )}
+                  {!isBuyer && (
+                    <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+                  )}
+                </div>
+
+                {/* NIC - Read Only */}
+                <div className="space-y-2">
+                  <Label htmlFor="nic" className="text-sm font-semibold flex items-center gap-2">
+                    <IdCard className="h-4 w-4 text-green-600" />
+                    NIC Number
+                  </Label>
+                  <div className="relative">
                     <Input
-                      id="email"
-                      value={user.email}
+                      id="nic"
+                      value={user.nic || 'Not provided'}
                       disabled
-                      className="bg-muted"
+                      className="bg-gray-50 border-gray-200 pr-10"
                     />
-                    <p className="text-xs text-muted-foreground mt-1">{t('profile.emailCannotChange')}</p>
+                    <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   </div>
+                  <p className="text-xs text-muted-foreground">This field cannot be changed</p>
+                </div>
 
-                  <div>
-                    <Label htmlFor="role">{t('profile.role')}</Label>
-                    <Input
-                      id="role"
-                      value={user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                      disabled
-                      className="bg-muted capitalize"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="name">{t('profile.name')} *</Label>
-                    <Input
-                      id="name"
-                      {...register('name')}
-                      disabled={!isEditing}
-                      className={!isEditing ? 'bg-muted' : ''}
-                    />
-                    {errors.name && (
-                      <p className="text-sm text-destructive mt-1">{errors.name.message}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="phone">{t('profile.phone')} *</Label>
+                {/* Phone - Editable for Buyers */}
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-sm font-semibold flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-green-600" />
+                    Phone Number
+                    {isBuyer && <span className="text-green-600">*</span>}
+                  </Label>
+                  {isEditing && editableFields.includes('phone') ? (
+                    <>
+                      <Input
+                        id="phone"
+                        {...register('phone')}
+                        className="border-2 focus:border-green-400"
+                        placeholder="+94771234567"
+                      />
+                      {errors.phone && (
+                        <p className="text-sm text-red-600">{errors.phone.message}</p>
+                      )}
+                    </>
+                  ) : (
                     <Input
                       id="phone"
-                      {...register('phone')}
-                      disabled={!isEditing}
-                      className={!isEditing ? 'bg-muted' : ''}
+                      value={user.phone || 'Not provided'}
+                      disabled
+                      className="bg-gray-50 border-gray-200"
                     />
-                    {errors.phone && (
-                      <p className="text-sm text-destructive mt-1">{errors.phone.message}</p>
-                    )}
-                  </div>
+                  )}
+                </div>
 
-                  <div>
-                    <Label htmlFor="district">{t('profile.district')}</Label>
+                {/* District - Editable for Buyers */}
+                <div className="space-y-2">
+                  <Label htmlFor="district" className="text-sm font-semibold flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-green-600" />
+                    District
+                    {isBuyer && <span className="text-green-600">*</span>}
+                  </Label>
+                  {isEditing && editableFields.includes('district') ? (
                     <Input
                       id="district"
                       {...register('district')}
-                      disabled={!isEditing}
-                      className={!isEditing ? 'bg-muted' : ''}
+                      className="border-2 focus:border-green-400"
+                      placeholder="Enter your district"
                     />
-                  </div>
+                  ) : (
+                    <Input
+                      id="district"
+                      value={user.district || 'Not provided'}
+                      disabled
+                      className="bg-gray-50 border-gray-200"
+                    />
+                  )}
+                </div>
 
-                  <div>
-                    <Label htmlFor="address">{t('profile.address')}</Label>
+                {/* Address - Editable for Buyers */}
+                <div className="space-y-2">
+                  <Label htmlFor="address" className="text-sm font-semibold flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-green-600" />
+                    Address
+                    {isBuyer && <span className="text-green-600">*</span>}
+                  </Label>
+                  {isEditing && editableFields.includes('address') ? (
                     <Textarea
                       id="address"
                       {...register('address')}
-                      disabled={!isEditing}
-                      className={!isEditing ? 'bg-muted' : ''}
+                      className="border-2 focus:border-green-400 min-h-[100px]"
+                      placeholder="Enter your full address"
                     />
-                  </div>
-                </div>
-
-                {/* Seller-specific Fields */}
-                {user.role === 'seller' && (
-                  <div className="space-y-4 border-t pt-6">
-                    <h3 className="font-semibold text-lg">{t('profile.farmInfo')}</h3>
-                    
-                    <div>
-                      <Label htmlFor="farmName">{t('profile.farmName')}</Label>
-                      <Input
-                        id="farmName"
-                        {...register('farmName')}
-                        disabled={!isEditing}
-                        className={!isEditing ? 'bg-muted' : ''}
-                      />
-                    </div>
-
-                    <h3 className="font-semibold text-lg mt-6">{t('profile.bankDetails')}</h3>
-                    
-                    <div>
-                      <Label htmlFor="bankAccountName">{t('profile.accountName')}</Label>
-                      <Input
-                        id="bankAccountName"
-                        {...register('bankAccountName')}
-                        disabled={!isEditing}
-                        className={!isEditing ? 'bg-muted' : ''}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="bankAccountNo">{t('profile.accountNumber')}</Label>
-                      <Input
-                        id="bankAccountNo"
-                        {...register('bankAccountNo')}
-                        disabled={!isEditing}
-                        className={!isEditing ? 'bg-muted' : ''}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="bankName">{t('profile.bankName')}</Label>
-                      <Input
-                        id="bankName"
-                        {...register('bankName')}
-                        disabled={!isEditing}
-                        className={!isEditing ? 'bg-muted' : ''}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="bankBranch">{t('profile.branch')}</Label>
-                      <Input
-                        id="bankBranch"
-                        {...register('bankBranch')}
-                        disabled={!isEditing}
-                        className={!isEditing ? 'bg-muted' : ''}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Agent-specific Fields */}
-                {user.role === 'agent' && user.regions && (
-                  <div className="space-y-4 border-t pt-6">
-                    <h3 className="font-semibold text-lg">{t('profile.agentInfo')}</h3>
-                    
-                    <div>
-                      <Label>{t('profile.assignedRegions')}</Label>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {user.regions.map((region) => (
-                          <span
-                            key={region}
-                            className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
-                          >
-                            {region}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {user.officeContact && (
-                      <div>
-                        <Label>{t('profile.officeContact')}</Label>
-                        <Input value={user.officeContact} disabled className="bg-muted" />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Admin-specific Fields */}
-                {user.role === 'admin' && user.permissions && (
-                  <div className="space-y-4 border-t pt-6">
-                    <h3 className="font-semibold text-lg">{t('profile.adminInfo')}</h3>
-                    
-                    <div>
-                      <Label>{t('profile.permissions')}</Label>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {user.permissions.map((permission) => (
-                          <span
-                            key={permission}
-                            className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
-                          >
-                            {permission}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-3">
-                  {!isEditing ? (
-                    <Button type="button" onClick={() => setIsEditing(true)}>
-                      {t('profile.editProfile')}
-                    </Button>
                   ) : (
-                    <>
-                      <Button type="submit">{t('profile.saveChanges')}</Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setIsEditing(false)}
-                      >
-                        {t('common.cancel')}
-                      </Button>
-                    </>
+                    <Textarea
+                      id="address"
+                      value={user.address || 'Not provided'}
+                      disabled
+                      className="bg-gray-50 border-gray-200 min-h-[100px]"
+                    />
                   )}
                 </div>
+
+                {/* Action Buttons */}
+                {isEditing && (
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+                    <Button
+                      type="submit"
+                      className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30"
+                    >
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Changes
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCancel}
+                      className="border-2"
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      Cancel
+                    </Button>
+                  </div>
+                )}
               </form>
             </CardContent>
           </Card>
+
+          {/* Side Info Card
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-green-50 to-emerald-50/50">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold">Account Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 bg-white/80 rounded-xl border border-green-200">
+                <p className="text-xs text-muted-foreground mb-1">Account Type</p>
+                <p className="text-lg font-bold text-gray-900 capitalize">{user.role}</p>
+              </div>
+              
+              {user.rewardPoints !== undefined && (
+                <div className="p-4 bg-white/80 rounded-xl border border-green-200">
+                  <p className="text-xs text-muted-foreground mb-1">Reward Points</p>
+                  <p className="text-2xl font-bold text-green-600">{user.rewardPoints || 0}</p>
+                </div>
+              )}
+
+              <div className="p-4 bg-white/80 rounded-xl border border-green-200">
+                <p className="text-xs text-muted-foreground mb-1">User ID</p>
+                <p className="text-sm font-mono text-gray-700">{user.id}</p>
+              </div>
+
+              {isBuyer && (
+                <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                  <p className="text-xs text-blue-800 mb-1">Editable Fields</p>
+                  <ul className="text-xs text-blue-700 space-y-1">
+                    <li>• Email Address</li>
+                    <li>• Phone Number</li>
+                    <li>• Address</li>
+                    <li>• District</li>
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card> */}
         </div>
       </div>
     </div>

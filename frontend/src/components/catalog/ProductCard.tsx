@@ -1,3 +1,13 @@
+import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useAppSelector } from "@/store/hooks";
+import type { RootState } from "@/store";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { MapPin, Package, ShoppingCart, LogIn, MessageSquare } from "lucide-react";
+import { Product } from "@/store/catalogSlice";
+import { getProductNameTranslationKey } from "@/utils/translations";
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/store/hooks';
@@ -5,7 +15,7 @@ import type { RootState } from '@/store';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Package, ShoppingCart, LogIn } from 'lucide-react';
+import { MapPin, Package, ShoppingCart, LogIn, Sparkles } from 'lucide-react';
 import { Product } from '@/store/catalogSlice';
 import { getProductNameTranslationKey } from '@/utils/translations';
 
@@ -19,66 +29,184 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   const user = useAppSelector((state: RootState) => state.auth.user);
   const productNameKey = getProductNameTranslationKey(product.name);
   const displayName = productNameKey ? t(productNameKey) : product.name;
+
+  return (
+    <Card className="group overflow-hidden border border-gray-200 bg-white transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-green-200 h-full flex flex-col">
+      <Link to={`/product/${product.id}`} className="block flex-shrink-0">
+        <div className="aspect-square overflow-hidden relative">
+  
+  // Check if product is expiring soon
+  const expiresDate = new Date(product.expiresOn);
+  const isExpiringSoon = (expiresDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24) < 3;
   
   return (
-    <Card className="group overflow-hidden border-2 border-gray-100 bg-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-green-200">
-      <Link to={`/product/${product.id}`}>
-        <div className="aspect-square overflow-hidden relative">
+    <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-white/90 backdrop-blur-sm hover:-translate-y-1 flex flex-col h-full">
+      {/* Product Image - Smaller and more compact */}
+      <Link to={`/product/${product.id}`} className="block relative">
+        <div className="relative h-48 sm:h-52 lg:h-56 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
           <img
             src={product.image}
             alt={product.name}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          {/* Gradient overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          {/* Expiring Soon Badge - Only on image */}
+          {isExpiringSoon && (
+            <div className="absolute top-3 right-3 z-10">
+              <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-2.5 py-1 border-0 shadow-lg shadow-red-500/50">
+                Expiring Soon
+              </Badge>
+            </div>
+          )}
         </div>
       </Link>
-      <CardContent className="p-4">
-        <Link to={`/product/${product.id}`}>
+      <CardContent className="p-4 flex-grow flex flex-col">
+        <Link to={`/product/${product.id}`} className="block">
           <h3 className="font-bold text-base mb-2 group-hover:text-green-600 transition-colors duration-300 line-clamp-2">
             {displayName}
           </h3>
         </Link>
         <div className="flex items-center gap-2 mb-2">
-          <Badge className={`${product.supplyType === 'wholesale' ? 'bg-green-600 hover:bg-green-700' : 'bg-amber-500 hover:bg-amber-600'} text-white text-xs font-semibold`}>
-            {product.supplyType === 'wholesale' ? t('seller.wholesale') : t('seller.smallScale')}
+          <Badge
+            className={`${
+              product.supplyType === "wholesale"
+                ? "bg-green-600 hover:bg-green-700"
+                : "bg-amber-500 hover:bg-amber-600"
+            } text-white text-xs font-semibold whitespace-nowrap`}
+          >
+            {product.supplyType === "wholesale"
+              ? t("seller.wholesale")
+              : t("seller.smallScale")}
           </Badge>
         </div>
         <div className="space-y-1.5 text-xs text-gray-600 mb-3">
           <div className="flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5 text-green-600" />
-            <span className="font-medium">{product.locationDistrict}</span>
+            <MapPin className="h-3.5 w-3.5 text-green-600 flex-shrink-0" />
+            <span className="font-medium truncate">{product.locationDistrict}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Package className="h-3.5 w-3.5 text-green-600" />
+            <Package className="h-3.5 w-3.5 text-green-600 flex-shrink-0" />
             <span className="font-medium">{product.stockQty} kg available</span>
           </div>
         </div>
-        <div className="mt-3 pb-2 border-t border-gray-100 pt-3">
+        <div className="mt-auto pt-3 border-t border-gray-100">
           <p className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
             Rs. {product.pricePerKg}
             <span className="text-sm font-normal text-gray-500">/kg</span>
           </p>
         </div>
       </CardContent>
-      <CardFooter className="p-4 pt-0">
+      <CardFooter className="p-4 pt-0 mt-auto">
+        <div className="w-full flex flex-col xs:flex-row gap-2">
+          {/* Add to Cart Button - Full width on mobile, flex on larger screens */}
+          <Button
+            className={`h-11 rounded-xl font-semibold transition-all duration-300 flex-1 w-full xs:w-auto ${
+              !user
+                ? "border-2 hover:bg-green-50 hover:border-green-400"
+                : "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl hover:scale-105"
+            }`}
+            variant={!user ? "outline" : "default"}
+            onClick={() => onAddToCart?.(product)}
+          >
+            <ShoppingCart className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span className="truncate">{t("catalog.addToCart")}</span>
+          </Button>
+
+          {/* NEGOTIATE BUTTON — only for wholesale products */}
+          {product.supplyType === "wholesale" && (
+            <Button
+              variant="outline"
+              className="h-11 rounded-xl border-green-600 text-green-700 hover:bg-green-50 hover:border-green-700 flex-1 w-full xs:w-auto"
+              asChild
+            >
+              <Link to={`/product/${product.id}?negotiate=true`}>
+                <MessageSquare className="h-4 w-4 mr-2 flex-shrink-0" />
+                <span className="truncate">{t("catalog.negotiate")}</span>
+              </Link>
+            </Button>
+
+      {/* Card Content */}
+      <CardContent className="p-4 sm:p-5 flex-1 flex flex-col">
+        {/* Product Name */}
+        <Link to={`/product/${product.id}`} className="block mb-2">
+          <h3 className="font-bold text-base sm:text-lg mb-2 group-hover:text-green-600 transition-colors duration-300 line-clamp-2 text-gray-900">
+            {displayName}
+          </h3>
+        </Link>
+
+        {/* Supply Type Badge - Moved to details section */}
+        <div className="mb-3">
+          <Badge 
+            className={`${
+              product.supplyType === 'wholesale' 
+                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-md shadow-green-500/30' 
+                : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-500/30'
+            } text-xs font-bold px-3 py-1 border-0`}
+          >
+            {product.supplyType === 'wholesale' ? t('seller.wholesale') : t('seller.smallScale')}
+          </Badge>
+        </div>
+
+        {/* Location and Stock Info */}
+        <div className="space-y-2 mb-3 flex-1">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center justify-center w-5 h-5 rounded-full bg-green-100 text-green-600 flex-shrink-0">
+              <MapPin className="h-3 w-3" />
+            </div>
+            <span className="font-medium truncate">{product.locationDistrict}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 flex-shrink-0">
+              <Package className="h-3 w-3" />
+            </div>
+            <span className="font-medium">{product.stockQty} kg available</span>
+          </div>
+        </div>
+
+        {/* Price Section */}
+        <div className="mt-auto pt-3 border-t border-gray-200">
+          <div className="flex items-baseline justify-between gap-2">
+            <div>
+              <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                Rs. {product.pricePerKg}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">per kilogram</p>
+            </div>
+            {product.stockQty > 0 && (
+              <div className="flex items-center gap-1 text-green-600">
+                <Sparkles className="h-4 w-4" />
+                <span className="text-xs font-semibold">In Stock</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+
+      {/* Card Footer - Add to Cart Button */}
+      <CardFooter className="p-4 sm:p-5 pt-0">
         <Button
-          className={`w-full h-11 rounded-xl font-semibold transition-all duration-300 ${!user ? 'border-2 hover:bg-green-50 hover:border-green-400' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl hover:scale-105'}`}
+          className={`w-full min-h-[44px] sm:min-h-[48px] rounded-xl font-semibold transition-all duration-300 text-sm sm:text-base ${
+            !user 
+              ? 'border-2 border-green-300 hover:bg-green-50 hover:border-green-400 text-green-700 hover:text-green-800' 
+              : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 hover:scale-[1.02] active:scale-[0.98]'
+          }`}
           variant={!user ? "outline" : "default"}
           onClick={() => onAddToCart?.(product)}
         >
           {!user ? (
             <>
-              <LogIn className="mr-2 h-4 w-4" />
-              Login to Buy
+              <LogIn className="mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+              <span className="truncate">{t('catalog.loginToBuy')}</span>
             </>
           ) : (
             <>
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              {t('catalog.addToCart')}
+              <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+              <span className="truncate">{t('catalog.addToCart')}</span>
             </>
           )}
-        </Button>
+        </div>
       </CardFooter>
     </Card>
   );

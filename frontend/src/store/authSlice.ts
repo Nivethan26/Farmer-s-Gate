@@ -7,6 +7,9 @@ interface User {
   id: string;
   email: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
+  nic?: string;
   role: UserRole;
   phone?: string;
   district?: string;
@@ -22,6 +25,7 @@ interface User {
   regions?: string[];
   officeContact?: string;
   permissions?: string[];
+  rewardPoints?: number;
 }
 
 interface AuthState {
@@ -83,7 +87,7 @@ const authSlice = createSlice({
 
         if (userData) {
           state.isAuthenticated = true;
-          state.user = { ...userData, role: credentials.role };
+          state.user = { ...userData, role: credentials.role, rewardPoints: (userData as any).rewardPoints || 0 };
           localStorage.setItem('agrilink_auth', JSON.stringify(state));
         }
       }
@@ -100,8 +104,20 @@ const authSlice = createSlice({
         localStorage.setItem('agrilink_auth', JSON.stringify(state));
       }
     },
+    addRewardPoints: (state, action: PayloadAction<number>) => {
+      if (state.user) {
+        state.user.rewardPoints = (state.user.rewardPoints || 0) + action.payload;
+        localStorage.setItem('agrilink_auth', JSON.stringify(state));
+      }
+    },
+    redeemRewardPoints: (state, action: PayloadAction<number>) => {
+      if (state.user && state.user.rewardPoints) {
+        state.user.rewardPoints = Math.max(0, state.user.rewardPoints - action.payload);
+        localStorage.setItem('agrilink_auth', JSON.stringify(state));
+      }
+    },
   },
 });
 
-export const { login, logout, updateProfile } = authSlice.actions;
+export const { login, logout, updateProfile, addRewardPoints, redeemRewardPoints } = authSlice.actions;
 export default authSlice.reducer;

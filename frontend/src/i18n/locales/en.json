@@ -62,6 +62,7 @@
     "cartItems": "Cart Items",
     "totalOrders": "Total Orders",
     "pendingOrders": "Pending Orders",
+    "rewardPoints": "Reward Points",
     "quickActions": "Quick Actions",
     "browseProducts": "Browse Products",
     "viewCart": "View Cart",
@@ -133,7 +134,9 @@
     "sortBy": "Sort By",
     "addToCart": "Add to Cart",
     "viewDetails": "View Details",
-    "negotiate": "Negotiate Price",
+    "negotiate": "Negotiate",
+    "negotiatePrice": "Negotiate Price",
+    "loginToBuy": "Login to Buy",
     "perKg": "per kg",
     "inStock": "In Stock",
     "outOfStock": "Out of Stock"
@@ -151,7 +154,13 @@
     "quantity": "Quantity",
     "pleaseSignIn": "Please sign in as a buyer to checkout",
     "uploadReceipt": "Please upload a payment receipt",
-    "orderPlaced": "Order placed successfully! Awaiting admin verification."
+    "orderPlaced": "Order placed successfully! Awaiting admin verification.",
+    "availablePoints": "Available Points",
+    "pointsToRedeem": "Points to Redeem",
+    "pointsDiscount": "Points Discount",
+    "redeemPoints": "Redeem Points",
+    "clearPoints": "Clear",
+    "pointsEarned": "Points Earned"
   },
   "orders": {
     "title": "My Orders",
@@ -160,6 +169,7 @@
     "date": "Date",
     "items": "Items",
     "pending": "Pending",
+    "processing": "Under Processing",
     "paid": "Paid",
     "shipped": "Shipped",
     "delivered": "Delivered",
