@@ -85,14 +85,14 @@ const Cart = () => {
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto px-4 py-12">
-          <Card className="max-w-md mx-auto text-center">
+          <Card className="group max-w-md mx-auto text-center transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-primary/20 cursor-pointer">
             <CardContent className="pt-12 pb-12">
-              <ShoppingBag className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+              <ShoppingBag className="h-16 w-16 mx-auto mb-4 text-muted-foreground transition-transform duration-300 group-hover:scale-110 group-hover:text-primary" />
               <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
               <p className="text-muted-foreground mb-6">
                 Start adding products to your cart from our catalog
               </p>
-              <Button onClick={() => navigate('/catalog')}>Browse Products</Button>
+              <Button onClick={() => navigate('/catalog')} className="transition-all duration-300 hover:scale-105 hover:shadow-lg">Browse Products</Button>
             </CardContent>
           </Card>
         </div>
@@ -208,7 +208,7 @@ const Cart = () => {
 
       {/* Checkout Dialog */}
       <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-        <DialogContent>
+        <DialogContent className="hover:border-2 hover:border-black transition-all">
           <DialogHeader>
             <DialogTitle>Upload Payment Receipt</DialogTitle>
             <DialogDescription>

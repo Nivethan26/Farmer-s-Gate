@@ -177,4 +177,18 @@ All colors MUST be HSL.
   .bg-gradient-fresh {
     background: var(--gradient-fresh);
   }
+
+  /* Blinking border animation */
+  @keyframes blink-border {
+    0%, 100% {
+      border-color: transparent;
+    }
+    50% {
+      border-color: black;
+    }
+  }
+
+  .animate-blink-border {
+    animation: blink-border 1s ease-in-out infinite;
+  }
 }
