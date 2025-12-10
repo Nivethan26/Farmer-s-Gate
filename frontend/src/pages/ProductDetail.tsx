@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import type { RootState } from '@/store';
@@ -19,9 +19,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { MapPin, Package, Calendar, User, ShoppingCart, MessageSquare, LogIn, Phone, MessageCircle, ArrowLeft, Sparkles, Plus, Minus, CheckCircle2 } from 'lucide-react';
+import { MapPin, Package, Calendar, User, ShoppingCart, MessageSquare, LogIn, Phone, MessageCircle, ArrowLeft, ArrowRight, Sparkles, Plus, Minus, CheckCircle2, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { ProductCard } from '@/components/catalog/ProductCard';
+import { Product } from '@/store/catalogSlice';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +38,12 @@ const ProductDetail = () => {
     state.catalog.categories.find((c) => c.id === product?.category)
   );
   const agents = useAppSelector((state: RootState) => state.users.agents);
+  const allProducts = useAppSelector((state: RootState) => state.catalog.products);
+  
+  // Get related products (same category, exclude current product)
+  const relatedProducts = product 
+    ? allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4)
+    : [];
 
   // Find agent for seller's district
   const sellerAgent = product ? agents.find((agent) =>
@@ -47,6 +55,12 @@ const ProductDetail = () => {
   const [agentDetailsOpen, setAgentDetailsOpen] = useState(false);
   const [targetPrice, setTargetPrice] = useState('');
   const [negotiateNotes, setNegotiateNotes] = useState('');
+
+  // Scroll to top when product changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setQty(1); // Reset quantity when product changes
+  }, [id]);
 
   const handleWhatsAppClick = () => {
     if (!sellerAgent || !product) return;
@@ -86,7 +100,30 @@ const ProductDetail = () => {
         sellerName: product.sellerName,
       })
     );
-    toast.success(`${qty}kg of ${product.name} added to cart!`);
+    
+    // Custom toast with loading animation
+    toast.custom(
+      () => (
+        <div className="bg-white rounded-lg shadow-xl border-2 border-green-200 p-3 min-w-[300px] relative overflow-hidden animate-[slideInRight_0.3s_ease-out]">
+          {/* Loading line animation */}
+          <div className="absolute top-0 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 animate-[loading_2s_ease-in-out_forwards]"></div>
+          
+          {/* Content */}
+          <div className="flex items-center gap-2.5">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
+              <CheckCircle2 className="h-4 w-4 text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-sm text-gray-900">{qty}kg of {product.name}</p>
+              <p className="text-xs text-green-600 font-medium">{t('catalog.addToCart')}!</p>
+            </div>
+          </div>
+        </div>
+      ),
+      {
+        duration: 2500,
+      }
+    );
   };
 
   const handleNegotiate = () => {
@@ -124,6 +161,50 @@ const ProductDetail = () => {
     setNegotiateNotes('');
   };
 
+  const handleRelatedProductAddToCart = (relatedProduct: Product) => {
+    if (!user) {
+      toast.info('Please login to add items to cart');
+      navigate('/login', { state: { from: `/product/${product?.id}` } });
+      return;
+    }
+
+    dispatch(
+      addToCart({
+        productId: relatedProduct.id,
+        productName: relatedProduct.name,
+        pricePerKg: relatedProduct.pricePerKg,
+        qty: 1,
+        image: relatedProduct.image,
+        sellerId: relatedProduct.sellerId,
+        sellerName: relatedProduct.sellerName,
+      })
+    );
+    
+    // Custom toast with loading animation
+    toast.custom(
+      () => (
+        <div className="bg-white rounded-lg shadow-xl border-2 border-green-200 p-3 min-w-[300px] relative overflow-hidden animate-[slideInRight_0.3s_ease-out]">
+          {/* Loading line animation */}
+          <div className="absolute top-0 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 animate-[loading_2s_ease-in-out_forwards]"></div>
+          
+          {/* Content */}
+          <div className="flex items-center gap-2.5">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
+              <CheckCircle2 className="h-4 w-4 text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-sm text-gray-900">{relatedProduct.name}</p>
+              <p className="text-xs text-green-600 font-medium">{t('catalog.addToCart')}!</p>
+            </div>
+          </div>
+        </div>
+      ),
+      {
+        duration: 2500,
+      }
+    );
+  };
+
   const expiresDate = new Date(product.expiresOn);
   const isExpiringSoon = (expiresDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24) < 3;
 
@@ -143,34 +224,32 @@ const ProductDetail = () => {
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-          {/* Product Image - Smaller and more compact */}
+          {/* Product Image - Compact height to match description */}
           <div className="lg:col-span-5">
-            <div className="sticky top-24">
-              <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50 border-2 border-gray-200 shadow-xl group">
-                <div className="aspect-[4/3] sm:aspect-square lg:aspect-[4/3]">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-                {/* Expiring Soon Badge */}
-                {isExpiringSoon && (
-                  <div className="absolute top-4 right-4 z-10">
-                    <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-3 py-1.5 border-0 shadow-lg shadow-red-500/50">
-                      Expiring Soon
-                    </Badge>
-                  </div>
-                )}
+            <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50 border-2 border-gray-200 shadow-xl group">
+              <div className="h-[400px] sm:h-[450px] lg:h-[500px]">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
               </div>
+              {/* Expiring Soon Badge */}
+              {isExpiringSoon && (
+                <div className="absolute top-4 right-4 z-10">
+                  <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-3 py-1.5 border-0 shadow-lg shadow-red-500/50">
+                    Expiring Soon
+                  </Badge>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Product Info */}
-          <div className="lg:col-span-7 space-y-6">
-            {/* Header Section */}
+          <div className="lg:col-span-7 space-y-4">
+            {/* Header Section - More compact */}
             <div>
-              <div className="flex flex-wrap items-center gap-2 mb-4">
+              <div className="flex flex-wrap items-center gap-2 mb-3">
                 <Badge variant="outline" className="text-sm px-3 py-1">
                   {category?.icon} {category?.name}
                 </Badge>
@@ -191,32 +270,32 @@ const ProductDetail = () => {
                 )}
               </div>
 
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-poppins mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl font-bold font-poppins mb-2 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                 {product.name}
               </h1>
-              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+              <p className="text-sm sm:text-base text-muted-foreground line-clamp-3">
                 {product.description}
               </p>
             </div>
 
-            {/* Product Details Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Product Details Cards - More compact */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
-                <CardContent className="p-4">
+                <CardContent className="p-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-green-100 text-green-600">
-                      <User className="h-5 w-5" />
+                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-orange-100 text-orange-600">
+                      <Calendar className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">Farmer</p>
-                      <p className="font-semibold text-gray-900">{product.sellerName}</p>
+                      <p className="text-xs text-muted-foreground mb-1">Expires On</p>
+                      <p className="font-semibold text-gray-900">{expiresDate.toLocaleDateString()}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
-                <CardContent className="p-4">
+                <CardContent className="p-3">
                   <div className="flex items-center gap-3">
                     <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-100 text-blue-600">
                       <MapPin className="h-5 w-5" />
@@ -230,7 +309,7 @@ const ProductDetail = () => {
               </Card>
 
               <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
-                <CardContent className="p-4">
+                <CardContent className="p-3">
                   <div className="flex items-center gap-3">
                     <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-purple-100 text-purple-600">
                       <Package className="h-5 w-5" />
@@ -244,14 +323,14 @@ const ProductDetail = () => {
               </Card>
 
               <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
-                <CardContent className="p-4">
+                <CardContent className="p-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-orange-100 text-orange-600">
-                      <Calendar className="h-5 w-5" />
+                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-green-100 text-green-600">
+                      <User className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">Expires On</p>
-                      <p className="font-semibold text-gray-900">{expiresDate.toLocaleDateString()}</p>
+                      <p className="text-xs text-muted-foreground mb-1">Farmer</p>
+                      <p className="font-semibold text-gray-900">{user?.role === 'buyer' ? product.sellerId : product.sellerName}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -260,9 +339,9 @@ const ProductDetail = () => {
 
             {/* Price and Purchase Card */}
             <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-green-50/50">
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-4 sm:p-5">
                 {/* Price Section */}
-                <div className="mb-6 pb-6 border-b border-gray-200">
+                <div className="mb-4 pb-4 border-b border-gray-200">
                   <div className="flex items-baseline gap-2 mb-2">
                     <p className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                       Rs. {product.pricePerKg}
@@ -273,8 +352,8 @@ const ProductDetail = () => {
                 </div>
 
                 {/* Quantity Section */}
-                <div className="mb-6">
-                  <Label htmlFor="qty" className="text-base font-semibold mb-3 block">
+                <div className="mb-4">
+                  <Label htmlFor="qty" className="text-sm font-semibold mb-2 block">
                     Quantity (kg)
                   </Label>
                   <div className="flex items-center gap-3">
@@ -330,22 +409,29 @@ const ProductDetail = () => {
                     )}
                   </Button>
 
-                  {/* Negotiate Button — only for WHOLESALE */}
-                  {product.supplyType === 'wholesale' && (
+                  {/* Checkout Button */}
+                  {user && (
                     <Button
-                      variant="outline"
-                      className="w-full h-12 border-2 border-green-300 hover:bg-green-50 hover:border-green-400 text-green-700 hover:text-green-800 text-base font-semibold"
+                      className="w-full h-12 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 text-base font-semibold"
                       onClick={() => {
-                        if (!user) {
-                          toast.info('Please login to negotiate prices');
-                          navigate('/login', { state: { from: `/product/${product.id}` } });
-                          return;
-                        }
-                        setAgentDetailsOpen(true);
+                        // Add to cart first, then navigate to checkout
+                        dispatch(
+                          addToCart({
+                            productId: product.id,
+                            productName: product.name,
+                            pricePerKg: product.pricePerKg,
+                            qty,
+                            image: product.image,
+                            sellerId: product.sellerId,
+                            sellerName: product.sellerName,
+                          })
+                        );
+                        navigate('/buyer/cart');
                       }}
                     >
-                      <MessageSquare className="mr-2 h-5 w-5" />
-                      {t('catalog.negotiate')}
+                      <CreditCard className="mr-2 h-5 w-5" />
+                      Checkout
+                      <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                   )}
                 </div>
@@ -353,6 +439,29 @@ const ProductDetail = () => {
             </Card>
           </div>
         </div>
+
+        {/* Related Products Section */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-12 sm:mt-16 lg:mt-20">
+            <div className="mb-6 sm:mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold font-poppins bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">
+                Related Products
+              </h2>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                More {category?.name || 'products'} you might like
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {relatedProducts.map((relatedProduct) => (
+                <ProductCard
+                  key={relatedProduct.id}
+                  product={relatedProduct}
+                  onAddToCart={handleRelatedProductAddToCart}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* NEGOTIATION UI ONLY FOR WHOLESALE */}

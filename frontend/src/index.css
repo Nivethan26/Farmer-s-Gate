@@ -191,4 +191,48 @@ All colors MUST be HSL.
   .animate-blink-border {
     animation: blink-border 1s ease-in-out infinite;
   }
+
+  /* Loading line animation for toast */
+  @keyframes loading {
+    0% {
+      width: 0%;
+    }
+    100% {
+      width: 100%;
+    }
+  }
+
+  /* Slide in from right top animation */
+  @keyframes slideInRight {
+    0% {
+      transform: translateX(100%) translateY(-20px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0) translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Remove gap from Sonner toast container */
+  [data-sonner-toaster] {
+    right: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  [data-sonner-toaster] > li {
+    margin-right: 0 !important;
+    right: 0 !important;
+  }
+
+  /* Smooth scrolling */
+  .smooth-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Smooth scrolling for all scrollable elements */
+  * {
+    scroll-behavior: smooth;
+  }
 }
