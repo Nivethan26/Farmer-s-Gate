@@ -25,9 +25,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { toast } from 'sonner';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area } from 'recharts';
 
-// ============================================================================
 // TYPE DEFINITIONS
-// ============================================================================
 
 interface Seller {
   id: string;
@@ -89,9 +87,7 @@ interface Notification {
   createdAt: string;
 }
 
-// ============================================================================
 // MOCK DATA - Replace with Redux selectors in production
-// ============================================================================
 
 const now = new Date();
 const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -150,9 +146,7 @@ const mockNotifications: Notification[] = [
   { id: 'N004', title: 'New Order Received', message: 'New order ORD006 worth LKR 8,000', type: 'order', relatedId: 'ORD006', read: false, createdAt: new Date(now.getTime() - 10 * 60 * 60 * 1000).toISOString() },
 ];
 
-// ============================================================================
 // HELPER FUNCTIONS
-// ============================================================================
 
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', minimumFractionDigits: 0 }).format(amount);
@@ -199,9 +193,7 @@ const getStatusColor = (status: string): string => {
   return colors[status] || 'bg-slate-100 text-slate-600';
 };
 
-// ============================================================================
 // SUB-COMPONENTS
-// ============================================================================
 
 // Stats Card Component
 const StatsCard = ({ 
@@ -256,9 +248,7 @@ const TableSkeleton = () => (
   </div>
 );
 
-// ============================================================================
 // MAIN COMPONENT
-// ============================================================================
 
 const AdminDashboard = () => {
   // State Management
@@ -507,7 +497,7 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <Navbar />
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="mt-5 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
@@ -899,9 +889,7 @@ const AdminDashboard = () => {
             </Card>
           </TabsContent>
 
-          {/* ================================================================ */}
           {/* PRODUCTS TAB */}
-          {/* ================================================================ */}
           <TabsContent value="products" className="space-y-6">
             <Card className="dashboard-card">
               <CardContent className="pt-6">
@@ -915,20 +903,13 @@ const AdminDashboard = () => {
                       <SelectContent>
                         <SelectItem value="all">All Categories</SelectItem>
                         {categories.map(cat => (
-                          <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                          <SelectItem key={cat.id} value={cat.name}>
+                            {cat.name}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  {selectedProducts.length > 0 && (
-                    <Button 
-                      variant="outline"
-                      onClick={handleExportSelectedProducts}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Export Selected ({selectedProducts.length})
-                    </Button>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -952,42 +933,23 @@ const AdminDashboard = () => {
                 </Card>
               ) : (
                 filteredProducts.map(product => (
-                  <Card key={product.id} className={`dashboard-card transition-all ${!product.visible ? 'opacity-60' : ''}`}>
+                  <Card key={product.id} className={`dashboard-card transition-all`}>
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between mb-4">
-                        <Checkbox
-                          checked={selectedProducts.includes(product.id)}
-                          onCheckedChange={(checked) => handleSelectProduct(product.id, checked as boolean)}
-                          aria-label={`Select ${product.name}`}
-                        />
                         <Badge variant="secondary">{product.category}</Badge>
                       </div>
+
                       <h3 className="font-semibold mb-1">{product.name}</h3>
-                      <p className="text-lg font-bold text-primary mb-2">{formatCurrency(product.price)}</p>
+                      <p className="text-lg font-bold text-primary mb-2">
+                        {formatCurrency(product.price)}
+                      </p>
+
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
                         <span>Stock: {product.stock}</span>
                         <span>Sold: {product.soldCount}</span>
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" className="flex-1">
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleToggleProductVisibility(product.id)}
-                        >
-                          <Eye className={`h-4 w-4 ${!product.visible ? 'text-muted-foreground' : ''}`} />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setDeleteProduct(product)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
+
+                      {/* No action buttons → pure view only */}
                     </CardContent>
                   </Card>
                 ))
@@ -995,9 +957,7 @@ const AdminDashboard = () => {
             </div>
           </TabsContent>
 
-          {/* ================================================================ */}
           {/* ORDERS TAB */}
-          {/* ================================================================ */}
           <TabsContent value="orders" className="space-y-6" data-testid="orders-filter">
             <Card className="dashboard-card">
               <CardContent className="pt-6">
@@ -1134,9 +1094,7 @@ const AdminDashboard = () => {
         </Tabs>
       </main>
 
-      {/* ================================================================ */}
       {/* SELLER DETAILS SHEET */}
-      {/* ================================================================ */}
       <Sheet open={!!selectedSeller} onOpenChange={() => setSelectedSeller(null)}>
         <SheetContent className="sm:max-w-lg" data-testid="seller-details-modal">
           {selectedSeller && (
@@ -1245,9 +1203,7 @@ const AdminDashboard = () => {
         </SheetContent>
       </Sheet>
 
-      {/* ================================================================ */}
       {/* DELETE PRODUCT CONFIRMATION */}
-      {/* ================================================================ */}
       <AlertDialog open={!!deleteProduct} onOpenChange={() => setDeleteProduct(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
