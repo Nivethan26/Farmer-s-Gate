@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Trash2, ShoppingBag, Upload, ChevronLeft, Gift, Plus, Minus, ArrowRight, Sparkles, Shield, Truck } from 'lucide-react';
+import { Trash2, ShoppingBag, Upload, ChevronLeft, Gift, Plus, Minus, ArrowRight, Sparkles, Shield, Truck, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Cart = () => {
@@ -42,7 +42,28 @@ const Cart = () => {
 
   const handleCheckout = () => {
     if (!user || user.role !== 'buyer') {
-      toast.error(t('cart.pleaseSignIn'));
+      toast.custom(
+        () => (
+          <div className="bg-white rounded-lg shadow-xl border-2 border-green-200 p-3 min-w-[300px] relative overflow-hidden animate-[slideInRight_0.3s_ease-out]">
+            {/* Loading line animation */}
+            <div className="absolute top-0 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 animate-[loading_2s_ease-in-out_forwards]"></div>
+            
+            {/* Content */}
+            <div className="flex items-center gap-2.5">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
+                <CheckCircle2 className="h-4 w-4 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-sm text-gray-900">{t('cart.pleaseSignIn')}</p>
+                <p className="text-xs text-green-600 font-medium">Please sign in to continue</p>
+              </div>
+            </div>
+          </div>
+        ),
+        {
+          duration: 2500,
+        }
+      );
       navigate('/login');
       return;
     }
@@ -51,7 +72,28 @@ const Cart = () => {
 
   const handleSubmitOrder = () => {
     if (!receiptFile) {
-      toast.error(t('cart.uploadReceipt'));
+      toast.custom(
+        () => (
+          <div className="bg-white rounded-lg shadow-xl border-2 border-green-200 p-3 min-w-[300px] relative overflow-hidden animate-[slideInRight_0.3s_ease-out]">
+            {/* Loading line animation */}
+            <div className="absolute top-0 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 animate-[loading_2s_ease-in-out_forwards]"></div>
+            
+            {/* Content */}
+            <div className="flex items-center gap-2.5">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
+                <CheckCircle2 className="h-4 w-4 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-sm text-gray-900">{t('cart.uploadReceipt')}</p>
+                <p className="text-xs text-green-600 font-medium">Please upload receipt</p>
+              </div>
+            </div>
+          </div>
+        ),
+        {
+          duration: 2500,
+        }
+      );
       return;
     }
 
@@ -89,17 +131,77 @@ const Cart = () => {
     dispatch(createOrder(order));
     
     // Show notification for order status
-    toast.info('Order Under Processing', {
-      description: `Order #${order.id} has been placed and is now being processed.`,
-      duration: 5000,
-    });
+    toast.custom(
+      () => (
+        <div className="bg-white rounded-lg shadow-xl border-2 border-green-200 p-3 min-w-[300px] relative overflow-hidden animate-[slideInRight_0.3s_ease-out]">
+          {/* Loading line animation */}
+          <div className="absolute top-0 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 animate-[loading_2s_ease-in-out_forwards]"></div>
+          
+          {/* Content */}
+          <div className="flex items-center gap-2.5">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
+              <CheckCircle2 className="h-4 w-4 text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-sm text-gray-900">Order Under Processing</p>
+              <p className="text-xs text-green-600 font-medium">Order #{order.id} is being processed</p>
+            </div>
+          </div>
+        </div>
+      ),
+      {
+        duration: 2500,
+      }
+    );
     
     // Add reward points to user account
     if (pointsEarned > 0 && user) {
       dispatch(addRewardPoints(pointsEarned));
-      toast.success(`Order placed! You earned ${pointsEarned} reward points!`);
+      toast.custom(
+        () => (
+          <div className="bg-white rounded-lg shadow-xl border-2 border-green-200 p-3 min-w-[300px] relative overflow-hidden animate-[slideInRight_0.3s_ease-out]">
+            {/* Loading line animation */}
+            <div className="absolute top-0 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 animate-[loading_2s_ease-in-out_forwards]"></div>
+            
+            {/* Content */}
+            <div className="flex items-center gap-2.5">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
+                <CheckCircle2 className="h-4 w-4 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-sm text-gray-900">Order placed!</p>
+                <p className="text-xs text-green-600 font-medium">You earned {pointsEarned} reward points!</p>
+              </div>
+            </div>
+          </div>
+        ),
+        {
+          duration: 2500,
+        }
+      );
     } else {
-      toast.success(t('cart.orderPlaced'));
+      toast.custom(
+        () => (
+          <div className="bg-white rounded-lg shadow-xl border-2 border-green-200 p-3 min-w-[300px] relative overflow-hidden animate-[slideInRight_0.3s_ease-out]">
+            {/* Loading line animation */}
+            <div className="absolute top-0 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 animate-[loading_2s_ease-in-out_forwards]"></div>
+            
+            {/* Content */}
+            <div className="flex items-center gap-2.5">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
+                <CheckCircle2 className="h-4 w-4 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-sm text-gray-900">{t('cart.orderPlaced')}</p>
+                <p className="text-xs text-green-600 font-medium">Order successfully placed!</p>
+              </div>
+            </div>
+          </div>
+        ),
+        {
+          duration: 2500,
+        }
+      );
     }
     
     dispatch(clearCart());
@@ -114,7 +216,7 @@ const Cart = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50/30">
         <Navbar />
         <div className="container mx-auto px-4 py-12 sm:py-16 lg:py-20">
-          <Card className="max-w-md mx-auto text-center shadow-2xl rounded-3xl border-0 overflow-hidden bg-white/80 backdrop-blur-sm transition-all duration-300 hover:shadow-[0_25px_70px_rgba(16,185,129,0.25)] hover:-translate-y-1">
+          <Card className="max-w-md mx-auto text-center shadow-2xl rounded-3xl border-0 overflow-hidden bg-white/80 backdrop-blur-sm">
             <CardContent className="pt-16 pb-16 px-8">
               <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 mb-6">
                 <ShoppingBag className="h-12 w-12 text-green-600" />
@@ -136,7 +238,7 @@ const Cart = () => {
                 <Button 
                   variant="outline" 
                   onClick={() => navigate('/buyer')}
-                  className="border-2 text-green-700 hover:text-green-800 hover:border-green-300 hover:bg-green-50"
+                  className="border-2"
                 >
                   <ChevronLeft className="mr-2 h-4 w-4" />
                   Dashboard
@@ -176,7 +278,29 @@ const Cart = () => {
               variant="outline"
               onClick={() => {
                 dispatch(clearCart());
-                toast.success('Cart cleared');
+                // Custom toast with loading animation
+                toast.custom(
+                  () => (
+                    <div className="bg-white rounded-lg shadow-xl border-2 border-green-200 p-3 min-w-[300px] relative overflow-hidden animate-[slideInRight_0.3s_ease-out]">
+                      {/* Loading line animation */}
+                      <div className="absolute top-0 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 animate-[loading_2s_ease-in-out_forwards]"></div>
+                      
+                      {/* Content */}
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
+                          <CheckCircle2 className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-sm text-gray-900">Cart cleared</p>
+                          <p className="text-xs text-green-600 font-medium">All items removed!</p>
+                        </div>
+                      </div>
+                    </div>
+                  ),
+                  {
+                    duration: 2500,
+                  }
+                );
               }}
               className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
             >
