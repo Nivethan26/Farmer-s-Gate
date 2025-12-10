@@ -25,6 +25,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { toast } from 'sonner';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area } from 'recharts';
 
+
 // TYPE DEFINITIONS
 
 interface Seller {
@@ -252,8 +253,8 @@ const TableSkeleton = () => (
 
 const AdminDashboard = () => {
   // State Management
-  const [sellers] = useState<Seller[]>(mockSellers);
-  const [agents] = useState<Agent[]>(mockAgents);
+  const [sellers, setSellers] = useState<Seller[]>(mockSellers);
+  const [agents, setAgents] = useState<Agent[]>(mockAgents);
   const [products, setProducts] = useState<Product[]>(mockProducts);
   const [orders, setOrders] = useState<Order[]>(mockOrders);
   const [categories] = useState<Category[]>(mockCategories);
@@ -491,6 +492,45 @@ const AdminDashboard = () => {
     exportToCSV(categoryChartData, 'category_analytics');
   }, [categoryChartData]);
 
+  const handleDeleteSeller = (sellerId: string) => {
+    if (!confirm("Are you sure you want to delete this seller?")) return;
+
+    // Frontend-only state update
+    setSellers(prev => prev.filter(seller => seller.id !== sellerId));
+  };
+
+  // For edit modal
+const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
+const [newStatus, setNewStatus] = useState<Agent["status"]>("active");
+
+// Open edit modal with current status
+const openEditModal = (agent: Agent) => {
+  setEditingAgent(agent);
+  setNewStatus(agent.status);
+};
+
+// Close modal
+const closeModal = () => {
+  setEditingAgent(null);
+};
+
+// Delete (frontend only)
+const handleDeleteAgent = (id: string) => {
+  if (!confirm("Are you sure you want to delete this agent?")) return;
+
+  setAgents(prev => prev.filter(a => a.id !== id));
+};
+
+// Save updated status
+const saveStatusChange = () => {
+  if (!editingAgent) return;
+  setAgents(prev =>
+    prev.map(agent =>
+      agent.id === editingAgent.id ? { ...agent, status: newStatus } : agent
+    )
+  );
+  closeModal();
+};
   // RENDER
 
   return (
@@ -717,73 +757,122 @@ const AdminDashboard = () => {
                 {isLoading ? (
                   <div className="p-6"><TableSkeleton /></div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>ID</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Farm</TableHead>
-                          <TableHead>District</TableHead>
-                          <TableHead>Rating</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredSellers.length === 0 ? (
+                  <>
+                    {/* Desktop Table */}
+                    <div className="hidden sm:block overflow-x-auto">
+                      <Table>
+                        <TableHeader>
                           <TableRow>
-                            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                              No sellers found
-                            </TableCell>
+                            <TableHead>ID</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Farm</TableHead>
+                            <TableHead>District</TableHead>
+                            <TableHead>Rating</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                        ) : (
-                          filteredSellers.map(seller => (
-                            <TableRow 
-                              key={seller.id}
-                              ref={el => sellerRowRefs.current[seller.id] = el}
-                              className="transition-all duration-300"
-                            >
-                              <TableCell className="font-mono text-sm">{seller.id}</TableCell>
-                              <TableCell className="font-medium">{seller.name}</TableCell>
-                              <TableCell>{seller.farmName}</TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-1">
-                                  <MapPin className="h-3 w-3 text-muted-foreground" />
-                                  {seller.district}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                {seller.rating > 0 ? (
-                                  <div className="flex items-center gap-1">
-                                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                                    <span>{seller.rating.toFixed(1)}</span>
-                                  </div>
-                                ) : (
-                                  <span className="text-muted-foreground">N/A</span>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="outline" className={getStatusColor(seller.status)}>
-                                  {seller.status}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => setSelectedSeller(seller)}
-                                >
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  View
-                                </Button>
+                        </TableHeader>
+
+                        <TableBody>
+                          {filteredSellers.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                                No sellers found
                               </TableCell>
                             </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
+                          ) : (
+                            filteredSellers.map(seller => (
+                              <TableRow key={seller.id}>
+                                <TableCell className="font-mono text-sm">{seller.id}</TableCell>
+                                <TableCell className="font-medium">{seller.name}</TableCell>
+                                <TableCell>{seller.farmName}</TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="h-3 w-3 text-muted-foreground" />
+                                    {seller.district}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  {seller.rating > 0 ? (
+                                    <div className="flex items-center gap-1">
+                                      <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                                      <span>{seller.rating.toFixed(1)}</span>
+                                    </div>
+                                  ) : (
+                                    <span className="text-muted-foreground">N/A</span>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="outline" className={getStatusColor(seller.status)}>
+                                    {seller.status}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <Button 
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => handleDeleteSeller(seller.id)}
+                                  >
+                                    Delete
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="sm:hidden space-y-4 p-4">
+                      {filteredSellers.length === 0 ? (
+                        <p className="text-center text-muted-foreground">No sellers found</p>
+                      ) : (
+                        filteredSellers.map(seller => (
+                          <div 
+                            key={seller.id} 
+                            className="border rounded-lg p-4 space-y-2 bg-white shadow-sm"
+                          >
+                            <div className="flex justify-between">
+                              <span className="font-mono text-sm font-bold">#{seller.id}</span>
+                              <Badge variant="outline" className={getStatusColor(seller.status)}>
+                                {seller.status}
+                              </Badge>
+                            </div>
+
+                            <div>
+                              <p className="font-medium text-lg">{seller.name}</p>
+                              <p className="text-sm text-muted-foreground">{seller.farmName}</p>
+                            </div>
+
+                            <div className="flex items-center gap-1 text-sm">
+                              <MapPin className="h-3 w-3 text-muted-foreground" />
+                              {seller.district}
+                            </div>
+
+                            <div className="flex items-center gap-1 text-sm">
+                              {seller.rating > 0 ? (
+                                <>
+                                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                                  <span>{seller.rating.toFixed(1)}</span>
+                                </>
+                              ) : (
+                                <span className="text-muted-foreground">No Rating</span>
+                              )}
+                            </div>
+
+                            <Button 
+                              className="w-full mt-2"
+                              variant="destructive"
+                              onClick={() => handleDeleteSeller(seller.id)}
+                            >
+                              Delete Seller
+                            </Button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -791,6 +880,7 @@ const AdminDashboard = () => {
 
           {/* AGENTS TAB */}
           <TabsContent value="agents" className="space-y-6">
+            {/* Filter Card */}
             <Card className="dashboard-card">
               <CardContent className="pt-6">
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -808,10 +898,8 @@ const AdminDashboard = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => exportToCSV(filteredAgents, 'agents')}
-                  >
+
+                  <Button variant="outline" onClick={() => exportToCSV(filteredAgents, "agents")}>
                     <Download className="h-4 w-4 mr-2" />
                     Export
                   </Button>
@@ -823,70 +911,188 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
+            {/* Agents Table */}
             <Card className="dashboard-card">
               <CardContent className="p-0">
                 {isLoading ? (
                   <div className="p-6"><TableSkeleton /></div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Phone</TableHead>
-                          <TableHead>Regions</TableHead>
-                          <TableHead>District</TableHead>
-                          <TableHead>Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredAgents.length === 0 ? (
+                  <>
+                    {/* Desktop Table */}
+                    <div className="hidden sm:block overflow-x-auto">
+                      <Table>
+                        <TableHeader>
                           <TableRow>
-                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                              No agents found
-                            </TableCell>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Phone</TableHead>
+                            <TableHead>Regions</TableHead>
+                            <TableHead>District</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                        ) : (
-                          filteredAgents.map(agent => (
-                            <TableRow key={agent.id}>
-                              <TableCell className="font-medium">{agent.name}</TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-1">
-                                  <Mail className="h-3 w-3 text-muted-foreground" />
-                                  {agent.email}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-1">
-                                  <Phone className="h-3 w-3 text-muted-foreground" />
-                                  {agent.phone}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-1 flex-wrap">
-                                  {agent.regions.map(region => (
-                                    <Badge key={region} variant="secondary" className="text-xs">
-                                      {region}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </TableCell>
-                              <TableCell>{agent.district}</TableCell>
-                              <TableCell>
-                                <Badge variant="outline" className={getStatusColor(agent.status)}>
-                                  {agent.status}
-                                </Badge>
+                        </TableHeader>
+
+                        <TableBody>
+                          {filteredAgents.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                                No agents found
                               </TableCell>
                             </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
+                          ) : (
+                            filteredAgents.map(agent => (
+                              <TableRow key={agent.id}>
+                                <TableCell className="font-medium">{agent.name}</TableCell>
+
+                                <TableCell>
+                                  <div className="flex items-center gap-1">
+                                    <Mail className="h-3 w-3 text-muted-foreground" />
+                                    {agent.email}
+                                  </div>
+                                </TableCell>
+
+                                <TableCell>
+                                  <div className="flex items-center gap-1">
+                                    <Phone className="h-3 w-3 text-muted-foreground" />
+                                    {agent.phone}
+                                  </div>
+                                </TableCell>
+
+                                <TableCell>
+                                  <div className="flex gap-1 flex-wrap">
+                                    {agent.regions.map(region => (
+                                      <Badge key={region} variant="secondary" className="text-xs">
+                                        {region}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </TableCell>
+
+                                <TableCell>{agent.district}</TableCell>
+
+                                <TableCell>
+                                  <Badge variant="outline" className={getStatusColor(agent.status)}>
+                                    {agent.status}
+                                  </Badge>
+                                </TableCell>
+
+                                {/* ACTIONS COLUMN */}
+                                <TableCell className="text-right flex gap-2 justify-end">
+                                  {/* Edit */}
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    onClick={() => openEditModal(agent)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+
+                                  {/* Delete */}
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    onClick={() => handleDeleteAgent(agent.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="sm:hidden space-y-4 p-4">
+                      {filteredAgents.length === 0 ? (
+                        <p className="text-center text-muted-foreground">No agents found</p>
+                      ) : (
+                        filteredAgents.map(agent => (
+                          <div 
+                            key={agent.id} 
+                            className="border rounded-lg p-4 space-y-3 bg-white shadow-sm"
+                          >
+                            <div className="text-lg font-semibold">{agent.name}</div>
+
+                            <div className="flex items-center gap-2 text-sm">
+                              <Mail className="h-4 w-4 text-muted-foreground" />
+                              {agent.email}
+                            </div>
+
+                            <div className="flex items-center gap-2 text-sm">
+                              <Phone className="h-4 w-4 text-muted-foreground" />
+                              {agent.phone}
+                            </div>
+
+                            <div className="flex flex-wrap gap-1">
+                              {agent.regions.map(region => (
+                                <Badge key={region} variant="secondary" className="text-xs px-2 py-0.5">
+                                  {region}
+                                </Badge>
+                              ))}
+                            </div>
+
+                            <div className="text-sm">
+                              <span className="font-medium">District: </span>
+                              {agent.district}
+                            </div>
+
+                            <Badge variant="outline" className={getStatusColor(agent.status)}>
+                              {agent.status}
+                            </Badge>
+
+                            {/* Mobile Action Buttons */}
+                            <div className="flex gap-3 pt-2">
+                              <Button 
+                                className="flex-1"
+                                variant="outline"
+                                onClick={() => openEditModal(agent)}
+                              >
+                                <Edit className="h-4 w-4 mr-1" /> Edit
+                              </Button>
+
+                              <Button 
+                                className="flex-1"
+                                variant="destructive"
+                                onClick={() => handleDeleteAgent(agent.id)}
+                              >
+                                <Trash2 className="h-4 w-4 mr-1" /> Delete
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
+
+            {/* EDIT MODAL */}
+            {editingAgent && (
+              <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                <div className="bg-white p-6 rounded-lg w-80 space-y-4 shadow-lg">
+                  <h2 className="text-lg font-semibold">Edit Status</h2>
+
+                  <Select value={newStatus} onValueChange={value => setNewStatus(value as Agent["status"])}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <div className="flex justify-end gap-3">
+                    <Button variant="outline" onClick={closeModal}>Cancel</Button>
+                    <Button onClick={saveStatusChange}>Save</Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           {/* PRODUCTS TAB */}
@@ -1026,68 +1232,141 @@ const AdminDashboard = () => {
                 {isLoading ? (
                   <div className="p-6"><TableSkeleton /></div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Order ID</TableHead>
-                          <TableHead>Buyer</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredOrders.length === 0 ? (
+                  <>
+                    {/* ---------------- DESKTOP TABLE VIEW ---------------- */}
+                    <div className="hidden sm:block overflow-x-auto">
+                      <Table>
+                        <TableHeader>
                           <TableRow>
-                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                              No orders found
-                            </TableCell>
+                            <TableHead>Order ID</TableHead>
+                            <TableHead>Buyer</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                        ) : (
-                          filteredOrders.map(order => (
-                            <TableRow key={order.id}>
-                              <TableCell className="font-mono text-sm">{order.id}</TableCell>
-                              <TableCell>
-                                <div>
-                                  <p className="font-medium">{order.buyerName}</p>
-                                  <p className="text-xs text-muted-foreground">{order.buyerEmail}</p>
-                                </div>
-                              </TableCell>
-                              <TableCell className="font-semibold">{formatCurrency(order.amount)}</TableCell>
-                              <TableCell>
-                                <Badge variant="outline" className={getStatusColor(order.status)}>
-                                  {order.status}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-sm text-muted-foreground">
-                                {formatDate(order.createdAt)}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex justify-end gap-2">
-                                  <Button variant="ghost" size="sm">
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                  {order.status === 'pending' && (
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm"
-                                      onClick={() => handleMarkOrderPaid(order.id)}
-                                    >
-                                      <Check className="h-4 w-4 mr-1" />
-                                      Mark Paid
-                                    </Button>
-                                  )}
-                                </div>
+                        </TableHeader>
+
+                        <TableBody>
+                          {filteredOrders.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                No orders found
                               </TableCell>
                             </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
+                          ) : (
+                            filteredOrders.map(order => (
+                              <TableRow key={order.id}>
+                                <TableCell className="font-mono text-sm">{order.id}</TableCell>
+
+                                <TableCell>
+                                  <div>
+                                    <p className="font-medium">{order.buyerName}</p>
+                                    <p className="text-xs text-muted-foreground">{order.buyerEmail}</p>
+                                  </div>
+                                </TableCell>
+
+                                <TableCell className="font-semibold">
+                                  {formatCurrency(order.amount)}
+                                </TableCell>
+
+                                <TableCell>
+                                  <Badge variant="outline" className={getStatusColor(order.status)}>
+                                    {order.status}
+                                  </Badge>
+                                </TableCell>
+
+                                <TableCell className="text-sm text-muted-foreground">
+                                  {formatDate(order.createdAt)}
+                                </TableCell>
+
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-2">
+                                    <Button variant="ghost" size="sm">
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+
+                                    {order.status === "pending" && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleMarkOrderPaid(order.id)}
+                                      >
+                                        <Check className="h-4 w-4 mr-1" />
+                                        Mark Paid
+                                      </Button>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* ---------------- MOBILE CARD VIEW ---------------- */}
+                    <div className="sm:hidden space-y-4 p-4">
+                      {filteredOrders.length === 0 ? (
+                        <p className="text-center text-muted-foreground">No orders found</p>
+                      ) : (
+                        filteredOrders.map(order => (
+                          <div
+                            key={order.id}
+                            className="border rounded-lg p-4 bg-white shadow-sm space-y-3"
+                          >
+                            {/* Order ID */}
+                            <div className="font-mono text-sm text-muted-foreground">
+                              #{order.id}
+                            </div>
+
+                            {/* Buyer */}
+                            <div>
+                              <p className="font-semibold">{order.buyerName}</p>
+                              <p className="text-xs text-muted-foreground">{order.buyerEmail}</p>
+                            </div>
+
+                            {/* Amount */}
+                            <div className="text-lg font-bold">
+                              {formatCurrency(order.amount)}
+                            </div>
+
+                            {/* Status */}
+                            <div>
+                              <Badge variant="outline" className={getStatusColor(order.status)}>
+                                {order.status}
+                              </Badge>
+                            </div>
+
+                            {/* Date */}
+                            <div className="text-sm text-muted-foreground">
+                              {formatDate(order.createdAt)}
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex gap-2 pt-2">
+                              <Button variant="ghost" size="sm" className="flex-1">
+                                <Eye className="h-4 w-4 mr-1" /> View
+                              </Button>
+
+                              {order.status === "pending" && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1"
+                                  onClick={() => handleMarkOrderPaid(order.id)}
+                                >
+                                  <Check className="h-4 w-4 mr-1" /> Mark Paid
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </>
                 )}
+
               </CardContent>
             </Card>
           </TabsContent>
@@ -1095,134 +1374,7 @@ const AdminDashboard = () => {
       </main>
 
       {/* SELLER DETAILS SHEET */}
-      <Sheet open={!!selectedSeller} onOpenChange={() => setSelectedSeller(null)}>
-        <SheetContent className="sm:max-w-lg" data-testid="seller-details-modal">
-          {selectedSeller && (
-            <>
-              <SheetHeader>
-                <SheetTitle className="flex items-center gap-2">
-                  {selectedSeller.name}
-                  <Badge variant="outline" className={getStatusColor(selectedSeller.status)}>
-                    {selectedSeller.status}
-                  </Badge>
-                </SheetTitle>
-                <SheetDescription>
-                  Seller ID: {selectedSeller.id}
-                </SheetDescription>
-              </SheetHeader>
-              
-              <div className="mt-6 space-y-6">
-                {/* Seller Info */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Details</h4>
-                  <div className="grid gap-3">
-                    <div className="flex items-center gap-3">
-                      <Building className="h-4 w-4 text-muted-foreground" />
-                      <span>{selectedSeller.farmName}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span>{selectedSeller.email}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span>{selectedSeller.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span>{selectedSeller.district}</span>
-                    </div>
-                    {selectedSeller.rating > 0 && (
-                      <div className="flex items-center gap-3">
-                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                        <span>{selectedSeller.rating.toFixed(1)} rating</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Performance Metrics */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Performance</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-lg bg-muted/50">
-                      <p className="text-2xl font-bold">{formatCurrency(getSellerMetrics(selectedSeller.id).totalSales)}</p>
-                      <p className="text-sm text-muted-foreground">Total Sales</p>
-                    </div>
-                    <div className="p-4 rounded-lg bg-muted/50">
-                      <p className="text-2xl font-bold">{getSellerMetrics(selectedSeller.id).totalOrders}</p>
-                      <p className="text-sm text-muted-foreground">Total Orders</p>
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Products */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Products ({getSellerProducts(selectedSeller.id).length})</h4>
-                  <ScrollArea className="h-48">
-                    <div className="space-y-2">
-                      {getSellerProducts(selectedSeller.id).map(product => (
-                        <div key={product.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                          <div>
-                            <p className="font-medium">{product.name}</p>
-                            <p className="text-sm text-muted-foreground">{product.category}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold">{formatCurrency(product.price)}</p>
-                            <p className="text-sm text-muted-foreground">{product.soldCount} sold</p>
-                          </div>
-                        </div>
-                      ))}
-                      {getSellerProducts(selectedSeller.id).length === 0 && (
-                        <p className="text-center text-muted-foreground py-4">No products listed</p>
-                      )}
-                    </div>
-                  </ScrollArea>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    className="flex-1"
-                    onClick={() => {
-                      exportToCSV([selectedSeller], `seller_${selectedSeller.id}`);
-                    }}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Export Details
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
-
-      {/* DELETE PRODUCT CONFIRMATION */}
-      <AlertDialog open={!!deleteProduct} onOpenChange={() => setDeleteProduct(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Product</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{deleteProduct?.name}"? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => deleteProduct && handleDeleteProduct(deleteProduct)}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      
     </div>
   );
 };
