@@ -41,8 +41,13 @@ const ProductDetail = () => {
   const allProducts = useAppSelector((state: RootState) => state.catalog.products);
   
   // Get related products (same category, exclude current product)
-  const relatedProducts = product 
+  const relatedProducts = product
     ? allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4)
+    : [];
+
+  // Get other products (different categories, exclude current product)
+  const otherProducts = product
+    ? allProducts.filter((p) => p.category !== product.category && p.id !== product.id).slice(0, 4)
     : [];
 
   // Find agent for seller's district
@@ -456,6 +461,29 @@ const ProductDetail = () => {
                 <ProductCard
                   key={relatedProduct.id}
                   product={relatedProduct}
+                  onAddToCart={handleRelatedProductAddToCart}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Other Products Section */}
+        {otherProducts.length > 0 && (
+          <div className="mt-12 sm:mt-16 lg:mt-20">
+            <div className="mb-6 sm:mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold font-poppins bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">
+                Other Products
+              </h2>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Explore products from other categories
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {otherProducts.map((otherProduct) => (
+                <ProductCard
+                  key={otherProduct.id}
+                  product={otherProduct}
                   onAddToCart={handleRelatedProductAddToCart}
                 />
               ))}
