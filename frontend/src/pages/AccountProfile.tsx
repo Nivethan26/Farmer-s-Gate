@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { User, Mail, Phone, MapPin, IdCard, Edit2, Save, X, Lock, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -25,6 +26,34 @@ const profileSchema = z.object({
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
+
+const sriLankaDistricts = [
+  'Colombo',
+  'Gampaha',
+  'Kalutara',
+  'Kandy',
+  'Matale',
+  'Nuwara Eliya',
+  'Galle',
+  'Matara',
+  'Hambantota',
+  'Jaffna',
+  'Kilinochchi',
+  'Mannar',
+  'Mullaitivu',
+  'Vavuniya',
+  'Puttalam',
+  'Kurunegala',
+  'Anuradhapura',
+  'Polonnaruwa',
+  'Badulla',
+  'Monaragala',
+  'Ratnapura',
+  'Kegalle',
+  'Trincomalee',
+  'Batticaloa',
+  'Ampara',
+];
 
 const AccountProfile = () => {
   const { t } = useTranslation();
@@ -57,6 +86,8 @@ const AccountProfile = () => {
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
+    watch,
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -98,6 +129,7 @@ const AccountProfile = () => {
   // For buyers, only these fields are editable
   const isBuyer = user.role === 'buyer';
   const editableFields = isBuyer ? ['email', 'phone', 'address', 'district'] : [];
+  const selectedDistrict = watch('district') || '';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50/30">
@@ -283,13 +315,23 @@ const AccountProfile = () => {
                     District
                     {isBuyer && <span className="text-green-600">*</span>}
                   </Label>
+                  <input type="hidden" {...register('district')} />
                   {isEditing && editableFields.includes('district') ? (
-                    <Input
-                      id="district"
-                      {...register('district')}
-                      className="border-2 focus:border-green-400"
-                      placeholder="Enter your district"
-                    />
+                    <Select
+                      value={selectedDistrict}
+                      onValueChange={(value) => setValue('district', value, { shouldDirty: true })}
+                    >
+                      <SelectTrigger className="border-2 focus:border-green-400">
+                        <SelectValue placeholder="Select your district" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sriLankaDistricts.map((district) => (
+                          <SelectItem key={district} value={district}>
+                            {district}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   ) : (
                     <Input
                       id="district"

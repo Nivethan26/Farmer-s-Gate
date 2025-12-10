@@ -8,6 +8,13 @@ export interface OrderItem {
   pricePerKg: number;
 }
 
+export interface BankDetail {
+  bankName: string;
+  accountHolder: string;
+  branch: string;
+  accountNumber: string;
+}
+
 export interface Order {
   id: string;
   buyerId: string;
@@ -23,6 +30,7 @@ export interface Order {
   deliveredAt: string | null;
   redeemedPoints?: number;
   pointsEarned?: number;
+  bankDetails?: BankDetail[];
 }
 
 interface OrdersState {

@@ -34,12 +34,22 @@ export const LanguageSwitcher = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 h-12 px-4 rounded-xl border-green-200 bg-white/80 hover:bg-green-50 transition-all duration-300 hover:shadow-lg hover:shadow-green-100/50 hover:border-green-300 group">
-          <Languages className="h-6 w-6 text-green-700 group-hover:text-green-800 transition-colors" />
-          <span className="font-semibold text-lg text-green-800">{currentLang.native.split(' ')[0]}</span>
+        <Button
+          variant="outline"
+          size="sm"
+          className="group gap-2 h-9 px-3 rounded-lg border-green-200 bg-white/80 hover:bg-green-50 transition-all duration-300 hover:shadow-md hover:shadow-green-100/50 hover:border-green-300 md:h-11 md:px-4"
+          aria-label="Change language"
+        >
+          <Languages className="h-4 w-4 text-green-700 group-hover:text-green-800 transition-colors md:h-5 md:w-5" />
+          <span className="font-semibold text-sm text-green-800 whitespace-nowrap md:text-base">
+            {currentLang.native.split(' ')[0]}
+          </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 border-green-200/50 shadow-2xl backdrop-blur-xl bg-white/95 rounded-2xl overflow-hidden">
+      <DropdownMenuContent
+        align="end"
+        className="w-48 border-green-200/50 shadow-2xl backdrop-blur-xl bg-white/95 rounded-2xl overflow-hidden md:w-56"
+      >
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
