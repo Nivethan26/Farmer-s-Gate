@@ -27,7 +27,8 @@
     "sellerName": "Kamal Silva",
     "description": "Premium quality red onions, bulk orders available",
     "createdAt": "2025-10-08T08:30:00Z",
-    "expiresOn": "2026-11-08T23:59:59Z"
+    "expiresOn": "2026-11-08T23:59:59Z",
+    "negotiationEnabled": false
   },
   {
     "id": "prod-3",
@@ -42,7 +43,8 @@
     "sellerName": "Nimal Perera",
     "description": "Fresh hot green chilies",
     "createdAt": "2025-10-12T14:00:00Z",
-    "expiresOn": "2025-12-20T23:59:59Z"
+    "expiresOn": "2025-12-20T23:59:59Z",
+    "negotiationEnabled": true
   },
   {
     "id": "prod-4",
@@ -72,7 +74,8 @@
     "sellerName": "Kamal Silva",
     "description": "Premium Samba rice, freshly harvested",
     "createdAt": "2025-10-05T07:00:00Z",
-    "expiresOn": "2025-12-05T23:59:59Z"
+    "expiresOn": "2025-12-05T23:59:59Z",
+    "negotiationEnabled": false
   },
   {
     "id": "prod-6",

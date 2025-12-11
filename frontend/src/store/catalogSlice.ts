@@ -17,6 +17,7 @@ export interface Product {
   description: string;
   createdAt: string;
   expiresOn: string;
+  negotiationEnabled: boolean;
 }
 
 export interface Category {
