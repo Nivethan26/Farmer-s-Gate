@@ -383,7 +383,7 @@ const ProductDetail = () => {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Farmer</p>
-                      <p className="font-semibold text-gray-900">{product.sellerName || product.sellerId}</p>
+                      <p className="font-semibold text-gray-900">{product.sellerId}</p>
                     </div>
                   </div>
                 </CardContent>
