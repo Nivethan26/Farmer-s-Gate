@@ -19,7 +19,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { MapPin, Package, Calendar, User, ShoppingCart, MessageSquare, LogIn, Phone, MessageCircle, ArrowLeft, ArrowRight, Sparkles, Plus, Minus, CheckCircle2, CreditCard } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { MapPin, Package, Calendar, User, ShoppingCart, MessageSquare, LogIn, Phone, MessageCircle, ArrowLeft, ArrowRight, Sparkles, Plus, Minus, CheckCircle2, CreditCard, Scale } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { ProductCard } from '@/components/catalog/ProductCard';
@@ -41,8 +48,13 @@ const ProductDetail = () => {
   const allProducts = useAppSelector((state: RootState) => state.catalog.products);
   
   // Get related products (same category, exclude current product)
-  const relatedProducts = product 
+  const relatedProducts = product
     ? allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4)
+    : [];
+
+  // Get other products (different categories, exclude current product)
+  const otherProducts = product
+    ? allProducts.filter((p) => p.category !== product.category && p.id !== product.id).slice(0, 4)
     : [];
 
   // Find agent for seller's district
@@ -53,14 +65,33 @@ const ProductDetail = () => {
   const [qty, setQty] = useState(1);
   const [negotiateOpen, setNegotiateOpen] = useState(false);
   const [agentDetailsOpen, setAgentDetailsOpen] = useState(false);
-  const [targetPrice, setTargetPrice] = useState('');
-  const [negotiateNotes, setNegotiateNotes] = useState('');
+  
+  // Negotiation states
+  const [negotiationQty, setNegotiationQty] = useState(10); // Minimum 10 kg
+  const [negotiationPrice, setNegotiationPrice] = useState('');
+  const [negotiationNotes, setNegotiationNotes] = useState('');
+  const [deliveryDate, setDeliveryDate] = useState('');
 
   // Scroll to top when product changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setQty(1); // Reset quantity when product changes
+    // Reset negotiation states when product changes
+    setNegotiationQty(10);
+    setNegotiationPrice('');
+    setNegotiationNotes('');
+    setDeliveryDate('');
   }, [id]);
+
+  // Calculate delivery dates (tomorrow to next 7 days)
+  const deliveryDates = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() + i + 1);
+    return {
+      value: date.toISOString().split('T')[0],
+      label: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+    };
+  });
 
   const handleWhatsAppClick = () => {
     if (!sellerAgent || !product) return;
@@ -133,8 +164,18 @@ const ProductDetail = () => {
       return;
     }
 
-    if (!targetPrice || Number(targetPrice) <= 0) {
-      toast.error('Please enter a valid target price');
+    if (!negotiationPrice || Number(negotiationPrice) <= 0) {
+      toast.error('Please enter a valid negotiation price');
+      return;
+    }
+
+    if (negotiationQty < 10) {
+      toast.error('Minimum purchase quantity for negotiation is 10kg');
+      return;
+    }
+
+    if (!deliveryDate) {
+      toast.error('Please select a preferred delivery date');
       return;
     }
 
@@ -147,18 +188,21 @@ const ProductDetail = () => {
       sellerId: product.sellerId,
       sellerName: product.sellerName,
       currentPrice: product.pricePerKg,
-      requestedPrice: Number(targetPrice),
-      notes: negotiateNotes,
+      requestedPrice: Number(negotiationPrice),
+      requestedQty: negotiationQty,
+      deliveryDate: deliveryDate,
+      notes: negotiationNotes,
       status: 'open' as const,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    console.log(negotiation);
+    
     dispatch(createNegotiation(negotiation));
-    toast.success('Negotiation request sent!');
+    toast.success('Negotiation request sent successfully!');
     setNegotiateOpen(false);
-    setTargetPrice('');
-    setNegotiateNotes('');
+    setNegotiationPrice('');
+    setNegotiationNotes('');
+    setDeliveryDate('');
   };
 
   const handleRelatedProductAddToCart = (relatedProduct: Product) => {
@@ -224,7 +268,7 @@ const ProductDetail = () => {
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-          {/* Product Image - Compact height to match description */}
+          {/* Product Image */}
           <div className="lg:col-span-5">
             <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50 border-2 border-gray-200 shadow-xl group">
               <div className="h-[400px] sm:h-[450px] lg:h-[500px]">
@@ -242,12 +286,21 @@ const ProductDetail = () => {
                   </Badge>
                 </div>
               )}
+              {/* Allow Negotiation Badge */}
+              {product.negotiationEnabled && (
+                <div className="absolute top-4 left-4 z-10">
+                  <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-3 py-1.5 border-0 shadow-lg shadow-purple-500/50">
+                    <Scale className="h-3 w-3 mr-1" />
+                    Negotiation Enabled
+                  </Badge>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Product Info */}
           <div className="lg:col-span-7 space-y-4">
-            {/* Header Section - More compact */}
+            {/* Header Section */}
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <Badge variant="outline" className="text-sm px-3 py-1">
@@ -278,7 +331,7 @@ const ProductDetail = () => {
               </p>
             </div>
 
-            {/* Product Details Cards - More compact */}
+            {/* Product Details Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
                 <CardContent className="p-3">
@@ -330,7 +383,7 @@ const ProductDetail = () => {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Farmer</p>
-                      <p className="font-semibold text-gray-900">{user?.role === 'buyer' ? product.sellerId : product.sellerName}</p>
+                      <p className="font-semibold text-gray-900">{product.sellerId}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -409,6 +462,29 @@ const ProductDetail = () => {
                     )}
                   </Button>
 
+                  {/* Negotiation Button - Only show if seller enabled negotiation */}
+                  {product.negotiationEnabled && (
+                    <Button
+                      variant="outline"
+                      className="w-full h-12 border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 text-purple-700 hover:text-purple-800 hover:border-purple-300 text-base font-semibold"
+                      onClick={() => {
+                        if (!user) {
+                          toast.info('Please login to negotiate');
+                          navigate('/login', { state: { from: `/product/${product.id}` } });
+                          return;
+                        }
+                        if (user.role !== 'buyer') {
+                          toast.error('Only buyers can negotiate prices');
+                          return;
+                        }
+                        setNegotiateOpen(true);
+                      }}
+                    >
+                      <Scale className="mr-2 h-5 w-5" />
+                      Negotiate Price
+                    </Button>
+                  )}
+
                   {/* Checkout Button */}
                   {user && (
                     <Button
@@ -462,148 +538,269 @@ const ProductDetail = () => {
             </div>
           </div>
         )}
+
+        {/* Other Products Section */}
+        {otherProducts.length > 0 && (
+          <div className="mt-12 sm:mt-16 lg:mt-20">
+            <div className="mb-6 sm:mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold font-poppins bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">
+                Other Products
+              </h2>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Explore products from other categories
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {otherProducts.map((otherProduct) => (
+                <ProductCard
+                  key={otherProduct.id}
+                  product={otherProduct}
+                  onAddToCart={handleRelatedProductAddToCart}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* NEGOTIATION UI ONLY FOR WHOLESALE */}
-      {product.supplyType === 'wholesale' && (
-        <>
-          {/* Agent Dialog */}
-          <Dialog open={agentDetailsOpen} onOpenChange={setAgentDetailsOpen}>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle className="text-xl font-bold">Contact Agent for Negotiation</DialogTitle>
-                <DialogDescription>
-                  {sellerAgent
-                    ? `Contact the regional agent for ${product.locationDistrict}.`
-                    : `No agent found for this district. You can submit a negotiation request.`}
-                </DialogDescription>
-              </DialogHeader>
+      {/* NEGOTIATION DIALOG - ONLY SHOW IF NEGOTIATION ENABLED IS TRUE */}
+       {product.negotiationEnabled && (
+  <Dialog open={negotiateOpen} onOpenChange={setNegotiateOpen}>
+    <DialogContent className="max-w-[95vw] sm:max-w-lg mx-auto">
+      <DialogHeader>
+        <DialogTitle className="text-lg sm:text-xl font-bold flex items-center gap-2">
+          <Scale className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+          Negotiate Price
+        </DialogTitle>
+        <DialogDescription className="text-sm sm:text-base">
+          Minimum purchase quantity: <span className="font-semibold text-purple-600">10 kg</span>
+        </DialogDescription>
+      </DialogHeader>
 
-              <div className="space-y-4">
-                {sellerAgent ? (
-                  <>
-                    <Card className="border-2 border-green-200 bg-green-50/50">
-                      <CardContent className="p-5 space-y-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-green-100 text-green-600">
-                            <User className="h-6 w-6" />
-                          </div>
-                          <div>
-                            <p className="font-bold text-gray-900">{sellerAgent.name}</p>
-                            <p className="text-sm text-muted-foreground">Regional Agent</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 text-blue-600">
-                            <Phone className="h-5 w-5" />
-                          </div>
-                          <span className="font-medium text-gray-900">{sellerAgent.phone}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-purple-100 text-purple-600">
-                            <MapPin className="h-5 w-5" />
-                          </div>
-                          <span className="text-sm text-gray-700">Regions: {sellerAgent.regions.join(', ')}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
+      <div className="space-y-4 sm:space-y-5 overflow-y-auto max-h-[calc(100vh-200px)]">
+        {/* Product Information */}
+        <Card className="border border-gray-200 sm:border-2 sm:border-gray-100">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-3">
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-cover flex-shrink-0"
+              />
+              <div className="min-w-0">
+                <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{product.name}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{category?.name}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <Button 
-                        className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white" 
-                        onClick={handleWhatsAppClick}
-                      >
-                        <MessageCircle className="mr-2 h-4 w-4" />
-                        Open WhatsApp Chat
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="border-2"
-                        onClick={() => {
-                          setAgentDetailsOpen(false);
-                          setNegotiateOpen(true);
-                        }}
-                      >
-                        Submit Request
-                      </Button>
+        {/* Minimum Quantity Section */}
+        <div>
+          <Label className="text-sm sm:text-base font-semibold mb-2 block">Quantity (kg) *</Label>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="flex items-center gap-1 bg-gray-50 rounded-lg sm:rounded-xl border border-gray-200 sm:border-2 sm:border-gray-200 p-1 w-fit sm:w-auto">
+              <button
+                onClick={() => setNegotiationQty(Math.max(10, negotiationQty - 1))}
+                className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-200 transition-colors text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Decrease quantity"
+                disabled={negotiationQty <= 10}
+              >
+                <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
+              </button>
+              <Input
+                type="number"
+                min="10"
+                max={product.stockQty}
+                value={negotiationQty}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  setNegotiationQty(Math.max(10, Math.min(product.stockQty, value)));
+                }}
+                className="w-20 sm:w-24 text-center bg-transparent border-0 focus:ring-0 font-semibold text-gray-900 text-sm sm:text-base px-2"
+              />
+              <button
+                onClick={() => setNegotiationQty(Math.min(product.stockQty, negotiationQty + 1))}
+                className="p-1.5 sm:p-2 rounded-lg hover:bg-purple-100 transition-colors text-purple-600 hover:text-purple-700"
+                aria-label="Increase quantity"
+              >
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+              </button>
+            </div>
+            <div className="text-xs sm:text-sm text-muted-foreground">
+              Minimum 10 kg required for negotiation
+            </div>
+          </div>
+        </div>
+
+        {/* Current Price (Readonly) */}
+        <div>
+          <Label className="text-sm sm:text-base font-semibold mb-2 block">Current Price (per kg)</Label>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="relative flex-1">
+              <Input
+                type="text"
+                value={`Rs. ${product.pricePerKg}`}
+                readOnly
+                className="bg-gray-50 border-gray-200 text-gray-700 text-sm sm:text-base pr-24"
+              />
+              <Badge 
+                variant="outline" 
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 whitespace-nowrap text-xs sm:text-sm"
+              >
+                Original Price
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        {/* Negotiation Price (Editable) */}
+        <div>
+          <Label className="text-sm sm:text-base font-semibold mb-2 block">
+            Your Offer Price (per kg) *
+          </Label>
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm sm:text-base">
+              Rs.
+            </div>
+            <Input
+              type="number"
+              value={negotiationPrice}
+              onChange={(e) => setNegotiationPrice(e.target.value)}
+              className="pl-10 sm:pl-12 text-sm sm:text-base"
+              placeholder="Enter your offer price"
+              min="0"
+              step="0.01"
+            />
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+            Total for {negotiationQty} kg: 
+            <span className="font-semibold text-gray-900 ml-2">
+              Rs. {(Number(negotiationPrice || 0) * negotiationQty).toFixed(2)}
+            </span>
+          </p>
+        </div>
+
+        {/* Delivery Date */}
+        <div>
+          <Label className="text-sm sm:text-base font-semibold mb-2 block">Preferred Delivery Date *</Label>
+          <Select value={deliveryDate} onValueChange={setDeliveryDate}>
+            <SelectTrigger className="w-full text-sm sm:text-base">
+              <SelectValue placeholder="Select delivery date" />
+            </SelectTrigger>
+            <SelectContent className="text-sm sm:text-base max-h-[200px]">
+              {deliveryDates.map((date) => (
+                <SelectItem key={date.value} value={date.value} className="text-sm sm:text-base">
+                  {date.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Product Description/Notes */}
+        <div>
+          <Label className="text-sm sm:text-base font-semibold mb-2 block">Additional Notes</Label>
+          <Textarea
+            value={negotiationNotes}
+            onChange={(e) => setNegotiationNotes(e.target.value)}
+            className="min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
+            placeholder="Add any special requirements, quality specifications, or additional notes..."
+          />
+          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+            This will be sent to the seller along with your offer.
+          </p>
+        </div>
+
+        {/* Seller Information (Readonly) */}
+        <div>
+          <Label className="text-sm sm:text-base font-semibold mb-2 block">Seller Information</Label>
+          <Input
+            type="text"
+            value={product.sellerId}
+            readOnly
+            className="bg-gray-50 border-gray-200 text-gray-700 text-sm sm:text-base"
+          />
+          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+            Your negotiation request will be sent to this seller.
+          </p>
+        </div>
+      </div>
+
+      <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 mt-4">
+        <Button 
+          variant="outline" 
+          onClick={() => setNegotiateOpen(false)} 
+          className="w-full sm:w-auto border sm:border-2 text-sm sm:text-base"
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleNegotiate}
+          className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm sm:text-base"
+          disabled={!negotiationPrice || !deliveryDate}
+        >
+          <CheckCircle2 className="mr-2 h-4 w-4" />
+          Submit Negotiation Request
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+)}
+      {/* Agent Dialog - Only show for wholesale with agents */}
+      {product.supplyType === 'wholesale' && sellerAgent && (
+        <Dialog open={agentDetailsOpen} onOpenChange={setAgentDetailsOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold">Contact Agent for Assistance</DialogTitle>
+              <DialogDescription>
+                Contact the regional agent for {product.locationDistrict}.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <Card className="border-2 border-green-200 bg-green-50/50">
+                <CardContent className="p-5 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-green-100 text-green-600">
+                      <User className="h-6 w-6" />
                     </div>
-                  </>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="bg-yellow-50 p-4 rounded-xl border-2 border-yellow-200">
-                      <p className="text-sm text-yellow-800">
-                        No regional agent available. You can submit negotiation directly.
-                      </p>
+                    <div>
+                      <p className="font-bold text-gray-900">{sellerAgent.name}</p>
+                      <p className="text-sm text-muted-foreground">Regional Agent</p>
                     </div>
-                    <Button
-                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
-                      onClick={() => {
-                        setAgentDetailsOpen(false);
-                        setNegotiateOpen(true);
-                      }}
-                    >
-                      Submit Negotiation Request
-                    </Button>
                   </div>
-                )}
-              </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 text-blue-600">
+                      <Phone className="h-5 w-5" />
+                    </div>
+                    <span className="font-medium text-gray-900">{sellerAgent.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-purple-100 text-purple-600">
+                      <MapPin className="h-5 w-5" />
+                    </div>
+                    <span className="text-sm text-gray-700">Regions: {sellerAgent.regions.join(', ')}</span>
+                  </div>
+                </CardContent>
+              </Card>
 
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setAgentDetailsOpen(false)} className="border-2">
-                  Close
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              <Button 
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white" 
+                onClick={handleWhatsAppClick}
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Contact Agent on WhatsApp
+              </Button>
+            </div>
 
-          {/* Negotiation Form */}
-          <Dialog open={negotiateOpen} onOpenChange={setNegotiateOpen}>
-            <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle className="text-xl font-bold">Negotiate Price</DialogTitle>
-                <DialogDescription className="text-base">
-                  Current price: <span className="font-semibold text-green-600">Rs. {product.pricePerKg}/kg</span>
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-5">
-                <div>
-                  <Label className="text-base font-semibold mb-2 block">Your Target Price (Rs.)</Label>
-                  <Input
-                    type="number"
-                    value={targetPrice}
-                    onChange={(e) => setTargetPrice(e.target.value)}
-                    className="text-lg"
-                    placeholder="Enter your offer"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-base font-semibold mb-2 block">Notes (optional)</Label>
-                  <Textarea
-                    value={negotiateNotes}
-                    onChange={(e) => setNegotiateNotes(e.target.value)}
-                    className="min-h-[100px]"
-                    placeholder="Add any additional notes or requirements..."
-                  />
-                </div>
-              </div>
-
-              <DialogFooter className="gap-3">
-                <Button variant="outline" onClick={() => setNegotiateOpen(false)} className="border-2">
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={handleNegotiate}
-                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
-                >
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Submit Request
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAgentDetailsOpen(false)} className="border-2">
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

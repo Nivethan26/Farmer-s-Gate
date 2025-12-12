@@ -79,16 +79,16 @@ export const Navbar = () => {
       }`}
     >
       {/* Main Navbar Container */}
-      <div className="w-full px-4 sm:px-6 md:px-8">
-        <div className="flex h-16 sm:h-20 items-center justify-between">
+      <div className="w-full px-4 sm:px-6 md:px-8 max-w-screen-2xl mx-auto">
+        <div className="flex items-center justify-between gap-3 py-3 md:py-4">
           {/* Left Section - Logo & Brand */}
           <Link
             to={user ? `/${user.role}` : "/"}
-            className="flex items-center gap-2 sm:gap-3 font-poppins shrink-0"
+            className="flex items-center gap-2 sm:gap-3 font-poppins min-w-0"
           >
             {/* Simplified Logo */}
             <div className="relative">
-              <div className="relative rounded-xl bg-gradient-to-br from-green-700 to-emerald-800 p-2.5 sm:p-3 shadow-sm">
+              <div className="relative rounded-xl bg-gradient-to-br from-green-700 to-emerald-800 p-2 sm:p-2.5 shadow-sm">
                 <div className="relative w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
                   <Sprout className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   <div className="absolute -left-0.5 top-0.5">
@@ -106,7 +106,7 @@ export const Navbar = () => {
             
             {/* Brand name */}
             <div className="flex flex-col">
-              <span className="text-lg sm:text-xl md:text-2xl font-bold text-green-700 tracking-tight">
+              <span className="text-base sm:text-xl md:text-2xl font-bold text-green-700 tracking-tight leading-tight">
                 AgriLink Lanka
               </span>
               <span className="text-[10px] sm:text-xs text-green-600/70 font-medium uppercase tracking-wider">

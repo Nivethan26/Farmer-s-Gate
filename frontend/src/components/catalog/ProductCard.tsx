@@ -103,7 +103,7 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
       </CardContent>
 
       {/* Card Footer - Add to Cart Button */}
-      <CardFooter className="p-4 sm:p-5 pt-0">
+      {/* <CardFooter className="p-4 sm:p-5 pt-0">
         <Button
           className={`w-full min-h-[44px] sm:min-h-[48px] rounded-xl font-semibold transition-all duration-300 text-sm sm:text-base ${
             !user 
@@ -125,7 +125,7 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
             </>
           )}
         </Button>
-      </CardFooter>
+      </CardFooter> */}
     </Card>
   );
 };

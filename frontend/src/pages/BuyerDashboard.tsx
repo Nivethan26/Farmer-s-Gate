@@ -1,6 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useEffect } from 'react';
 import { useAppSelector } from '@/store/hooks';
 import { selectUserOrders, selectUserNegotiations } from '@/store/selectors';
 import { useOrderNotifications } from '@/hooks/useOrderNotifications';
@@ -9,8 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShoppingCart, Package, Clock, MessageSquare, Store, TrendingUp, Gift, ArrowRight, CheckCircle2, Truck, AlertCircle } from 'lucide-react';
+import { ShoppingCart, Package, Clock, MessageSquare, Store, TrendingUp, Gift, ArrowRight, CheckCircle2, Truck, AlertCircle, User, Home } from 'lucide-react';
 import type { RootState } from '@/store';
+import { formatDate } from '@/lib/utils';
 
 const BuyerDashboard = () => {
   const { t } = useTranslation();
@@ -88,16 +88,7 @@ const BuyerDashboard = () => {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <Button 
-                asChild 
-                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 w-full sm:w-auto text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5 hover:shadow-xl hover:scale-105 transition-all duration-300"
-              >
-                <Link to="/" className="flex items-center justify-center gap-2">
-                  <span className="hidden sm:inline">Home</span>
-                  <span className="sm:hidden">Home</span>
-                  <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                </Link>
-              </Button>
+               
               <Button 
                 asChild 
                 className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 w-full sm:w-auto text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5 hover:shadow-xl hover:scale-105 transition-all duration-300"
@@ -114,27 +105,52 @@ const BuyerDashboard = () => {
         </div>
 
         <Tabs defaultValue="home" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm h-auto py-1 sm:py-1.5">
-            <TabsTrigger 
-              value="home" 
-              className="data-[state=active]:bg-green-600 data-[state=active]:text-white text-xs sm:text-sm font-semibold py-2 sm:py-2.5 px-2 sm:px-4"
-            >
-              {t('nav.home')}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="orders" 
-              className="data-[state=active]:bg-green-600 data-[state=active]:text-white text-xs sm:text-sm font-semibold py-2 sm:py-2.5 px-2 sm:px-4"
-            >
-              {t('nav.orders')}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="negotiations" 
-              className="data-[state=active]:bg-green-600 data-[state=active]:text-white text-xs sm:text-sm font-semibold py-2 sm:py-2.5 px-2 sm:px-4"
-            >
-              <span className="hidden sm:inline">{t('buyer.negotiations')}</span>
-              <span className="sm:hidden">Negotiate</span>
-            </TabsTrigger>
-          </TabsList>
+  <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm h-auto py-1 sm:py-1.5">
+    <TabsTrigger 
+      value="home" 
+      className="text-xs sm:text-sm font-semibold py-2 sm:py-2.5 px-2 sm:px-4
+                text-gray-600 hover:text-green-700 hover:bg-green-50 
+                data-[state=active]:bg-green-600 data-[state=active]:text-white 
+                data-[state=active]:shadow-sm transition-all duration-300
+                border-r border-gray-200 last:border-r-0"
+    >
+      <span className="hidden sm:inline">{t('nav.home')}</span>
+      <span className="sm:hidden">Home</span>
+    </TabsTrigger>
+    <TabsTrigger 
+      value="orders" 
+      className="text-xs sm:text-sm font-semibold py-2 sm:py-2.5 px-2 sm:px-4
+                text-gray-600 hover:text-green-700 hover:bg-green-50 
+                data-[state=active]:bg-green-600 data-[state=active]:text-white 
+                data-[state=active]:shadow-sm transition-all duration-300
+                border-r border-gray-200 last:border-r-0"
+    >
+      <span className="hidden sm:inline">{t('nav.orders')}</span>
+      <span className="sm:hidden">Orders</span>
+    </TabsTrigger>
+    <TabsTrigger 
+      value="negotiations" 
+      className="text-xs sm:text-sm font-semibold py-2 sm:py-2.5 px-2 sm:px-4
+                text-gray-600 hover:text-green-700 hover:bg-green-50 
+                data-[state=active]:bg-green-600 data-[state=active]:text-white 
+                data-[state=active]:shadow-sm transition-all duration-300
+                border-r border-gray-200 last:border-r-0"
+    >
+      <span className="hidden sm:inline">{t('buyer.negotiations')}</span>
+      <span className="sm:hidden">Negotiate</span>
+    </TabsTrigger>
+    <TabsTrigger 
+      value="profile" 
+      className="text-xs sm:text-sm font-semibold py-2 sm:py-2.5 px-2 sm:px-4
+                text-gray-600 hover:text-green-700 hover:bg-green-50 
+                data-[state=active]:bg-green-600 data-[state=active]:text-white 
+                data-[state=active]:shadow-sm transition-all duration-300
+                border-r border-gray-200 last:border-r-0"
+    >
+      <span className="hidden sm:inline">Profile</span>
+      <span className="sm:hidden">Profile</span>
+    </TabsTrigger>
+  </TabsList>
 
           {/* Home Tab */}
           <TabsContent value="home" className="space-y-4 sm:space-y-6">
@@ -255,7 +271,7 @@ const BuyerDashboard = () => {
                       variant="outline" 
                       className="w-full h-auto py-3 sm:py-4 px-4 sm:px-6 border-2 border-blue-300 text-blue-600 hover:border-sky-400 hover:bg-sky-50 transition-all duration-300 group text-sm sm:text-base"
                     >
-                      <TrendingUp className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-blue-600 group-hover:scale-110 transition-transform" />
+                      <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-blue-600 group-hover:scale-110 transition-transform" />
                       <span className="font-semibold text-blue-600">{t('buyer.myProfile')}</span>
                     </Button>
                   </Link>
@@ -325,6 +341,36 @@ const BuyerDashboard = () => {
 
           {/* Orders Tab */}
           <TabsContent value="orders" className="space-y-3 sm:space-y-4">
+            {/* Order Summary */}
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6 pt-4 sm:pt-6">
+                <CardTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+                  <div className="h-1 w-1 rounded-full bg-green-600"></div>
+                  Order Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                  <div className="p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-1">Total Orders</p>
+                    <p className="text-xl sm:text-2xl font-bold text-blue-700">{orders.length}</p>
+                  </div>
+                  <div className="p-3 sm:p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-1">Delivered</p>
+                    <p className="text-xl sm:text-2xl font-bold text-green-700">{deliveredOrders}</p>
+                  </div>
+                  <div className="p-3 sm:p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border border-orange-200">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-1">Pending</p>
+                    <p className="text-xl sm:text-2xl font-bold text-orange-700">{pendingOrders}</p>
+                  </div>
+                  <div className="p-3 sm:p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-1">Reward Points</p>
+                    <p className="text-xl sm:text-2xl font-bold text-purple-700">{user?.rewardPoints || 0}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {orders.length === 0 ? (
               <Card className="border-0 shadow-lg">
                 <CardContent className="py-12 sm:py-16 text-center px-4">
@@ -351,11 +397,7 @@ const BuyerDashboard = () => {
                           <div className="min-w-0 flex-1">
                             <p className="font-semibold text-base sm:text-lg text-gray-900 mb-1">Order #{order.id.slice(-8)}</p>
                             <p className="text-xs sm:text-sm text-muted-foreground">
-                              {new Date(order.createdAt).toLocaleDateString('en-US', { 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                              })}
+                              {formatDate(order.createdAt)}
                             </p>
                           </div>
                         </div>
@@ -490,6 +532,68 @@ const BuyerDashboard = () => {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* Profile Tab */}
+          <TabsContent value="profile" className="space-y-3 sm:space-y-4">
+            {/* Profile Section */}
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6 pt-4 sm:pt-6">
+                <CardTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+                  <div className="h-1 w-1 rounded-full bg-green-600"></div>
+                  My Profile
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
+                <div className="space-y-4 sm:space-y-6">
+                  {/* Profile Info */}
+                  <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-bold text-xl">
+                        {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 text-base sm:text-lg">{user?.name}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{user?.email}</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm" asChild className="md:ml-auto md:self-start text-xs sm:text-sm">
+                      <Link to="/profile">Edit Profile</Link>
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="space-y-3 sm:space-y-4">
+                      <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Contact Information</h4>
+                      <div className="grid grid-cols-1 gap-3 sm:gap-4 text-xs sm:text-sm">
+                        <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
+                          <p className="text-muted-foreground text-[10px] sm:text-xs">Phone</p>
+                          <p className="font-medium mt-1">{user?.phone || 'Not provided'}</p>
+                        </div>
+                        <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
+                          <p className="text-muted-foreground text-[10px] sm:text-xs">District</p>
+                          <p className="font-medium mt-1">{user?.district || 'Not provided'}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 sm:space-y-4">
+                      <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Account Details</h4>
+                      <div className="grid grid-cols-1 gap-3 sm:gap-4 text-xs sm:text-sm">
+                        <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
+                          <p className="text-muted-foreground text-[10px] sm:text-xs">Reward Points</p>
+                          <p className="font-medium text-purple-700 mt-1">{user?.rewardPoints || 0} points</p>
+                        </div>
+                        <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
+                          <p className="text-muted-foreground text-[10px] sm:text-xs">NIC</p>
+                          <p className="font-medium mt-1">{user?.nic || 'Not provided'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

@@ -17,6 +17,7 @@ export interface Product {
   description: string;
   createdAt: string;
   expiresOn: string;
+  negotiationEnabled: boolean;
 }
 
 export interface Category {
@@ -52,7 +53,7 @@ export interface Filters {
   minPrice: number;
   maxPrice: number;
   search: string;
-  sortBy: 'price_asc' | 'price_desc' | 'newest' | 'name';
+  sortBy: 'price_asc' | 'price_desc' | 'newest' | 'oldest';
 }
 
 interface CatalogState {
