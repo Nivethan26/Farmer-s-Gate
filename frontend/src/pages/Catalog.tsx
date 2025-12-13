@@ -136,7 +136,7 @@ const Catalog = () => {
 
         <div className="flex gap-8">
           <aside className="hidden lg:block w-64 flex-shrink-0">
-            <div className="sticky top-20 border border-gray-200 rounded-2xl p-5 bg-white/80 backdrop-blur-sm shadow-lg">
+            <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto border border-gray-200 rounded-2xl p-5 bg-white/80 backdrop-blur-sm shadow-lg">
               <Filters />
             </div>
           </aside>

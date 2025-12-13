@@ -1,17 +1,15 @@
 import { Link } from 'react-router-dom';
-import { TFunction } from 'i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { User } from '@/store/authSlice';
 
 interface ProfileSectionProps {
-  t: TFunction;
   user: User | null;
 }
 
-export const ProfileSection = ({ t, user }: ProfileSectionProps) => {
+export const ProfileSection = ({ user }: ProfileSectionProps) => {
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-4">
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6 pt-4 sm:pt-6">
           <CardTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2">
@@ -72,4 +70,3 @@ export const ProfileSection = ({ t, user }: ProfileSectionProps) => {
     </div>
   );
 };
-
