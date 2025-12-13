@@ -19,7 +19,10 @@ interface SellerStatsCardsProps {
   onAddProduct: () => void;
 }
 
-const SellerStatsCards = ({ products, onAddProduct }: SellerStatsCardsProps) => {
+const SellerStatsCards = ({
+  products,
+  onAddProduct,
+}: SellerStatsCardsProps) => {
   const { t } = useTranslation();
 
   // Get today at start of day for consistent comparison
@@ -31,7 +34,7 @@ const SellerStatsCards = ({ products, onAddProduct }: SellerStatsCardsProps) => 
     (acc, product) => {
       const expiryDate = new Date(product.expiresOn);
       expiryDate.setHours(0, 0, 0, 0);
-      
+
       const diffTime = expiryDate.getTime() - today.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -125,7 +128,11 @@ const SellerStatsCards = ({ products, onAddProduct }: SellerStatsCardsProps) => 
               </div>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              {stats.expiringSoonCount > 0 ? `${stats.expiringSoonCount} expiring soon` : "All good"}
+              {stats.expiringSoonCount > 0
+                ? t("seller.expiringSoonCount", {
+                    count: stats.expiringSoonCount,
+                  })
+                : t("seller.allGood")}
             </p>
           </CardContent>
         </Card>
@@ -146,7 +153,7 @@ const SellerStatsCards = ({ products, onAddProduct }: SellerStatsCardsProps) => 
               </div>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              Within 3 days
+              {t("seller.willExpireWithin3Days")}
             </p>
           </CardContent>
         </Card>
@@ -167,7 +174,9 @@ const SellerStatsCards = ({ products, onAddProduct }: SellerStatsCardsProps) => 
               </div>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              {stats.expiredTodayCount > 0 ? `${stats.expiredTodayCount} today` : "Past expiry"}
+              {stats.expiredTodayCount > 0
+                ? `${stats.expiredTodayCount} ${t("seller.expiredToday")}`
+                : t("seller.pastExpiries")}
             </p>
           </CardContent>
         </Card>
@@ -178,7 +187,7 @@ const SellerStatsCards = ({ products, onAddProduct }: SellerStatsCardsProps) => 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            Expiry Timeline
+            {t("seller.expiryTimeline")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -190,11 +199,12 @@ const SellerStatsCards = ({ products, onAddProduct }: SellerStatsCardsProps) => 
                   <div className="flex items-center gap-2">
                     <AlertCircle className="h-5 w-5 text-orange-600" />
                     <h3 className="font-semibold text-orange-900">
-                      Products Expiring Soon (1-3 days)
+                      {t("seller.productsExpiringSoon")} (1-3 days)
                     </h3>
                   </div>
                   <Badge className="bg-orange-100 text-orange-800">
-                    {stats.expiringSoonCount} item{stats.expiringSoonCount !== 1 ? "s" : ""}
+                    {stats.expiringSoonCount} {t("seller.item")}
+                    {stats.expiringSoonCount !== 1 ? "s" : ""}
                   </Badge>
                 </div>
                 <div className="space-y-2">
@@ -214,16 +224,18 @@ const SellerStatsCards = ({ products, onAddProduct }: SellerStatsCardsProps) => 
                         <div>
                           <p className="font-medium">{product.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            Expires: {formatDate(product.expiresOn)}
+                            {t("seller.expires")}:{" "}
+                            {formatDate(product.expiresOn)}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-orange-600">
-                          {product.daysLeft} day{product.daysLeft !== 1 ? "s" : ""} left
+                          {product.daysLeft} day
+                          {product.daysLeft !== 1 ? "s" : ""} left
                         </p>
                         <p className="text-xs text-orange-500">
-                          Action needed
+                          {t("seller.hurryUp")}
                         </p>
                       </div>
                     </div>
@@ -239,11 +251,12 @@ const SellerStatsCards = ({ products, onAddProduct }: SellerStatsCardsProps) => 
                   <div className="flex items-center gap-2">
                     <Clock className="h-5 w-5 text-blue-600" />
                     <h3 className="font-semibold text-blue-900">
-                      Expiring This Week (4-7 days)
+                      {t("seller.expirythisweek")} (4-7 days)
                     </h3>
                   </div>
                   <Badge className="bg-blue-100 text-blue-800">
-                    {stats.expiringThisWeekCount} item{stats.expiringThisWeekCount !== 1 ? "s" : ""}
+                    {stats.expiringThisWeekCount} {t("seller.item")}
+                    {stats.expiringThisWeekCount !== 1 ? "s" : ""}
                   </Badge>
                 </div>
                 <div className="space-y-2">
@@ -263,13 +276,15 @@ const SellerStatsCards = ({ products, onAddProduct }: SellerStatsCardsProps) => 
                         <div>
                           <p className="font-medium">{product.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            Expires: {formatDate(product.expiresOn)}
+                            {t("seller.expires")}:{" "}
+                            {formatDate(product.expiresOn)}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-blue-600">
-                          {product.daysLeft} day{product.daysLeft !== 1 ? "s" : ""} left
+                          {product.daysLeft} day
+                          {product.daysLeft !== 1 ? "s" : ""} left
                         </p>
                       </div>
                     </div>
@@ -285,11 +300,14 @@ const SellerStatsCards = ({ products, onAddProduct }: SellerStatsCardsProps) => 
                   <div className="flex items-center gap-2">
                     <Calendar className="h-5 w-5 text-green-600" />
                     <h3 className="font-semibold text-green-900">
-                      Expiring This Month (8-30 days)
+                      {t("seller.expirythismonth")} (8-30 {t("seller.days")})
                     </h3>
                   </div>
                   <Badge className="bg-green-100 text-green-800">
-                    {stats.expiringThisMonthCount} item{stats.expiringThisMonthCount !== 1 ? "s" : ""}
+                    {stats.expiringThisMonthCount} {""}
+                    {stats.expiringThisMonthCount !== 1
+                      ? t("seller.items")
+                      : t("seller.item")}
                   </Badge>
                 </div>
                 <div className="space-y-2">
@@ -309,20 +327,25 @@ const SellerStatsCards = ({ products, onAddProduct }: SellerStatsCardsProps) => 
                         <div>
                           <p className="font-medium">{product.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            Expires: {formatDate(product.expiresOn)}
+                            {t("seller.expires")} :{" "}
+                            {formatDate(product.expiresOn)}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-green-600">
-                          {product.daysLeft} day{product.daysLeft !== 1 ? "s" : ""} left
+                          {product.daysLeft} {t("seller.day")}{" "}
+                          {t("seller.left")}
                         </p>
                       </div>
                     </div>
                   ))}
                   {stats.expiringThisMonthCount > 3 && (
                     <p className="text-sm text-green-600 text-center">
-                      +{stats.expiringThisMonthCount - 3} more product{stats.expiringThisMonthCount - 3 !== 1 ? "s" : ""} expiring this month
+                      +{stats.expiringThisMonthCount - 3} {t("seller.more")}{" "}
+                      {t("seller.product")}
+                      {stats.expiringThisMonthCount - 3 !== 1 ? "s" : ""}{" "}
+                      {t("seller.expiringThisMonth")}
                     </p>
                   )}
                 </div>
@@ -336,11 +359,12 @@ const SellerStatsCards = ({ products, onAddProduct }: SellerStatsCardsProps) => 
                   <div className="flex items-center gap-2">
                     <XCircle className="h-5 w-5 text-red-600" />
                     <h3 className="font-semibold text-red-900">
-                      Expired Products
+                      {t("seller.expiredProducts")}
                     </h3>
                   </div>
                   <Badge variant="destructive">
-                    {stats.expired} item{stats.expired !== 1 ? "s" : ""}
+                    {stats.expired}{" "}
+                    {stats.expired === 1 ? t("seller.item") : t("seller.items")}
                   </Badge>
                 </div>
                 <div className="space-y-2">
@@ -358,14 +382,20 @@ const SellerStatsCards = ({ products, onAddProduct }: SellerStatsCardsProps) => 
                           />
                         </div>
                         <div>
-                          <p className="font-medium text-red-700">{product.name}</p>
+                          <p className="font-medium text-red-700">
+                            {product.name}
+                          </p>
                           <p className="text-sm text-red-600">
-                            Expired today: {formatDate(product.expiresOn)}
+                            {t("seller.expiredToday")}:{" "}
+                            {formatDate(product.expiresOn)}
                           </p>
                         </div>
                       </div>
-                      <Badge variant="destructive" className="whitespace-nowrap">
-                        Expired
+                      <Badge
+                        variant="destructive"
+                        className="whitespace-nowrap"
+                      >
+                        {t("seller.expired")}
                       </Badge>
                     </div>
                   ))}
@@ -383,20 +413,28 @@ const SellerStatsCards = ({ products, onAddProduct }: SellerStatsCardsProps) => 
                           />
                         </div>
                         <div>
-                          <p className="font-medium text-red-700 line-through">{product.name}</p>
+                          <p className="font-medium text-red-700 line-through">
+                            {product.name}
+                          </p>
                           <p className="text-sm text-red-600">
-                            Expired: {formatDate(product.expiresOn)}
+                            {t("seller.expired")}:{" "}
+                            {formatDate(product.expiresOn)}
                           </p>
                         </div>
                       </div>
-                      <Badge variant="destructive" className="whitespace-nowrap bg-red-100 text-red-800">
-                        Remove
+                      <Badge
+                        variant="destructive"
+                        className="whitespace-nowrap bg-red-100 text-red-800"
+                      >
+                        {t("seller.remove")}
                       </Badge>
                     </div>
                   ))}
                   {stats.expired > 3 && (
                     <p className="text-sm text-red-600 text-center">
-                      +{stats.expired - 3} more expired product{stats.expired - 3 !== 1 ? "s" : ""}
+                      +{stats.expired - 3} {t("seller.more")}{" "}
+                      {t("seller.expired")} {t("seller.product")}
+                      {stats.expired - 3 !== 1 ? "s" : ""}
                     </p>
                   )}
                 </div>
@@ -404,91 +442,122 @@ const SellerStatsCards = ({ products, onAddProduct }: SellerStatsCardsProps) => 
             )}
 
             {/* No Expiring Products Message */}
-            {stats.expiringSoonCount === 0 && 
-             stats.expiringThisWeekCount === 0 && 
-             stats.expiringThisMonthCount === 0 && (
-              <div className="text-center py-8">
-                <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-4" />
-                <h3 className="text-lg font-semibold text-green-700 mb-2">
-                  No Products Expiring Soon
-                </h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  All your active products have expiry dates beyond the next month.
-                  Great job managing your inventory!
-                </p>
-              </div>
-            )}
+            {stats.expiringSoonCount === 0 &&
+              stats.expiringThisWeekCount === 0 &&
+              stats.expiringThisMonthCount === 0 && (
+                <div className="text-center py-8">
+                  <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-4" />
+                  <h3 className="text-lg font-semibold text-green-700 mb-2">
+                    {t("seller.noProductsExpiringSoon")}
+                  </h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    {t("seller.allProductsHealthy")}
+                  </p>
+                </div>
+              )}
           </div>
         </CardContent>
       </Card>
 
       {/* Summary and Actions */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("seller.quickActions")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button onClick={onAddProduct} className="w-full">
-              <Plus className="mr-2 h-4 w-4" />
-              {t("seller.addNewProduct")}
-            </Button>
-            
-            {stats.expired > 0 && (
-              <Button variant="outline" className="w-full text-red-600 border-red-200 hover:bg-red-50">
-                <XCircle className="mr-2 h-4 w-4" />
-                Remove Expired Products ({stats.expired})
-              </Button>
-            )}
-            
-            {stats.expiringSoonCount > 0 && (
-              <Button variant="outline" className="w-full text-orange-600 border-orange-200 hover:bg-orange-50">
-                <Calendar className="mr-2 h-4 w-4" />
-                Extend Expiry Dates ({stats.expiringSoonCount})
-              </Button>
-            )}
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+  {/* Quick Actions */}
+  <Card>
+    <CardHeader>
+      <CardTitle>{t("seller.quickActions")}</CardTitle>
+    </CardHeader>
+    <CardContent className="space-y-3">
+      <Button onClick={onAddProduct} className="w-full text-xs">
+        <Plus className="mr-2 h-4 w-4" />
+        {t("seller.addNewProduct")}
+      </Button>
 
-        {/* Summary Stats */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Inventory Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Total Active Products</span>
-                <span className="font-medium">{stats.active}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Nearest Expiry</span>
-                <span className="font-medium">
-                  {stats.expiringSoonCount > 0 
-                    ? `${Math.min(...stats.expiringSoon.map(p => p.daysLeft))} days` 
-                    : stats.expiringThisWeekCount > 0
-                    ? `${Math.min(...stats.expiringThisWeek.map(p => p.daysLeft))} days`
-                    : stats.expiringThisMonthCount > 0
-                    ? `${Math.min(...stats.expiringThisMonth.map(p => p.daysLeft))} days`
-                    : "30+ days"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Expiry Health</span>
-                <Badge variant={stats.expiringSoonCount > 0 ? "destructive" : stats.expired > 0 ? "outline" : "default"}>
-                  {stats.expiringSoonCount > 0 ? "Needs Attention" : stats.expired > 0 ? "Good" : "Excellent"}
-                </Badge>
-              </div>
-              <div className="pt-3 border-t">
-                <p className="text-xs text-muted-foreground">
-                  Today: {today.toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {stats.expired > 0 && (
+        <Button
+          variant="outline"
+          className="w-full text-red-600 border-red-200 hover:bg-red-50 text-xs"
+        >
+          <XCircle className="mr-2 h-4 w-4 " />
+          {t("seller.remove")} {t("seller.expired")}{" "}
+          {t("seller.products")} ({stats.expired})
+        </Button>
+      )}
+
+      {stats.expiringSoonCount > 0 && (
+        <Button
+          variant="outline"
+          className="w-full text-orange-600 border-orange-200 hover:bg-orange-50"
+        >
+          <Calendar className="mr-2 h-4 w-4" />
+          {t("seller.extendexpirydates")} ({stats.expiringSoonCount})
+        </Button>
+      )}
+    </CardContent>
+  </Card>
+
+  {/* Summary Stats */}
+  <Card>
+    <CardHeader>
+      <CardTitle>{t("seller.inventorySummery")}</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            {t("seller.total")} {t("seller.active")}{" "}
+            {t("seller.products")}{" "}
+          </span>
+          <span className="font-medium">{stats.active}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            {t("seller.nearestexpiry")}
+          </span>
+          <span className="font-medium">
+            {stats.expiringSoonCount > 0
+              ? `${Math.min(
+                  ...stats.expiringSoon.map((p) => p.daysLeft)
+                )} ${t("seller.days")}`
+              : stats.expiringThisWeekCount > 0
+              ? `${Math.min(
+                  ...stats.expiringThisWeek.map((p) => p.daysLeft)
+                )} ${t("seller.days")}`
+              : stats.expiringThisMonthCount > 0
+              ? `${Math.min(
+                  ...stats.expiringThisMonth.map((p) => p.daysLeft)
+                )} ${t("seller.days")}`
+              : t("seller.moreThan30Days")}
+          </span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            {t("seller.expiryhealth")}
+          </span>
+          <Badge
+            variant={
+              stats.expiringSoonCount > 0
+                ? "destructive"
+                : stats.expired > 0
+                ? "outline"
+                : "default"
+            }
+          >
+            {stats.expiringSoonCount > 0
+              ? t("seller.needsAttention")
+              : stats.expired > 0
+              ? t("seller.good")
+              : t("seller.excellent")}
+          </Badge>
+        </div>
+        <div className="pt-3 border-t">
+          <p className="text-xs text-muted-foreground">
+            {t("seller.today")}: {today.toLocaleDateString()}
+          </p>
+        </div>
       </div>
+    </CardContent>
+  </Card>
+</div>
     </div>
   );
 };

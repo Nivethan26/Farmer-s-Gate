@@ -48,14 +48,21 @@ const SellerDashboard = () => {
         </div>
 
         <Tabs defaultValue="home" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="home">{t("seller.home")}</TabsTrigger>
-            <TabsTrigger value="listings">{t("seller.myListings")}</TabsTrigger>
-            <TabsTrigger value="analytics">{t("seller.analytics")}</TabsTrigger>
-            <TabsTrigger value="negotiations">Negotiations</TabsTrigger>
+          <TabsList className="flex flex-wrap gap-2 md:gap-0 border-b mb-14">
+            <TabsTrigger value="home" className="flex-1 text-center">
+              {t("seller.home")}
+            </TabsTrigger>
+            <TabsTrigger value="listings" className="flex-1 text-center">
+              {t("seller.myListings")}
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex-1 text-center">
+              {t("seller.analytics")}
+            </TabsTrigger>
+            <TabsTrigger value="negotiations" className="flex-1 text-center">
+              {t("seller.negotiations")}
+            </TabsTrigger>
           </TabsList>
 
-          {/* Home Tab */}
           <TabsContent value="home" className="space-y-6">
             <SellerStatsCards
               products={products}
@@ -63,7 +70,6 @@ const SellerDashboard = () => {
             />
           </TabsContent>
 
-          {/* Listings Tab */}
           <TabsContent value="listings" className="space-y-6">
             <SellerProductList
               products={products}
@@ -73,12 +79,10 @@ const SellerDashboard = () => {
             />
           </TabsContent>
 
-          {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
             <SellerAnalytics products={products} />
           </TabsContent>
 
-          {/* Negotiations Tab */}
           <TabsContent value="negotiations" className="space-y-6">
             <SellerNegotiationsTab />
           </TabsContent>
