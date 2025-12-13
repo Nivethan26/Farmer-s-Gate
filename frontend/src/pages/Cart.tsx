@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import type { RootState } from '@/store';
 import { removeFromCart, updateQty, clearCart, setRedeemedPoints } from '@/store/cartSlice';
-import { createOrder, type BankDetail } from '@/store/ordersSlice';
+import { createOrder } from '@/store/ordersSlice';
 import { redeemRewardPoints, addRewardPoints } from '@/store/authSlice';
 import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Trash2, ShoppingBag, Upload, ChevronLeft, Gift, Plus, Minus, ArrowRight, Sparkles, Shield, Truck } from 'lucide-react';
+import { Trash2, ShoppingBag, Upload, ChevronLeft, Gift, Plus, Minus, ArrowRight, Sparkles, Shield, Truck, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Cart = () => {
@@ -31,34 +31,6 @@ const Cart = () => {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [pointsToRedeem, setPointsToRedeem] = useState(0);
-  const [bankDetails, setBankDetails] = useState<BankDetail[]>([
-    { bankName: '', accountHolder: '', branch: '', accountNumber: '' },
-    { bankName: '', accountHolder: '', branch: '', accountNumber: '' },
-    { bankName: '', accountHolder: '', branch: '', accountNumber: '' },
-  ]);
-
-  const adminBankDetails: BankDetail[] = [
-    {
-      bankName: 'People’s Bank',
-      accountHolder: 'AgriLink Lanka (Admin)',
-      branch: 'Colombo Main',
-      accountNumber: '1234567890',
-    },
-    {
-      bankName: 'Bank of Ceylon',
-      accountHolder: 'AgriLink Lanka (Admin)',
-      branch: 'Kandy City',
-      accountNumber: '9876543210',
-    },
-  ];
-
-  const handleBankDetailChange = (index: number, field: keyof BankDetail, value: string) => {
-    setBankDetails((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], [field]: value };
-      return next;
-    });
-  };
 
   const handleUpdateQty = (productId: string, newQty: number) => {
     if (newQty <= 0) {
@@ -92,21 +64,6 @@ const Cart = () => {
       dispatch(redeemRewardPoints(redeemedPoints));
     }
 
-    const cleanedBankDetails = bankDetails
-      .filter(
-        (b) =>
-          b.bankName.trim() ||
-          b.accountHolder.trim() ||
-          b.branch.trim() ||
-          b.accountNumber.trim()
-      )
-      .map((b) => ({
-        bankName: b.bankName.trim(),
-        accountHolder: b.accountHolder.trim(),
-        branch: b.branch.trim(),
-        accountNumber: b.accountNumber.trim(),
-      }));
-
     const order = {
       id: `order-${Date.now()}`,
       buyerId: user!.id,
@@ -127,7 +84,6 @@ const Cart = () => {
       deliveredAt: null,
       redeemedPoints: redeemedPoints > 0 ? redeemedPoints : undefined,
       pointsEarned: pointsEarned > 0 ? pointsEarned : undefined,
-      bankDetails: cleanedBankDetails.length > 0 ? cleanedBankDetails : undefined,
     };
 
     dispatch(createOrder(order));
@@ -158,7 +114,7 @@ const Cart = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50/30">
         <Navbar />
         <div className="container mx-auto px-4 py-12 sm:py-16 lg:py-20">
-          <Card className="max-w-md mx-auto text-center shadow-2xl rounded-3xl border-0 overflow-hidden bg-white/80 backdrop-blur-sm transition-all duration-300 hover:shadow-[0_25px_70px_rgba(16,185,129,0.25)] hover:-translate-y-1">
+          <Card className="max-w-md mx-auto text-center shadow-2xl rounded-3xl border-0 overflow-hidden bg-white/80 backdrop-blur-sm">
             <CardContent className="pt-16 pb-16 px-8">
               <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 mb-6">
                 <ShoppingBag className="h-12 w-12 text-green-600" />
@@ -220,7 +176,29 @@ const Cart = () => {
               variant="outline"
               onClick={() => {
                 dispatch(clearCart());
-                toast.success('Cart cleared');
+                // Custom toast with green styling
+                toast.custom(
+                  () => (
+                    <div className="bg-white rounded-lg shadow-xl border-2 border-green-200 p-3 min-w-[300px] relative overflow-hidden animate-[slideInRight_0.3s_ease-out]">
+                      {/* Loading line animation */}
+                      <div className="absolute top-0 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 animate-[loading_2s_ease-in-out_forwards]"></div>
+                      
+                      {/* Content */}
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
+                          <CheckCircle2 className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-sm text-gray-900">Cart cleared</p>
+                          <p className="text-xs text-green-600 font-medium">All items have been removed from your cart.</p>
+                        </div>
+                      </div>
+                    </div>
+                  ),
+                  {
+                    duration: 2500,
+                  }
+                );
               }}
               className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
             >
@@ -450,7 +428,7 @@ const Cart = () => {
 
       {/* Checkout Dialog */}
       <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-        <DialogContent className="w-full max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <DialogContent className="max-w-xl sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
               Upload Payment Receipt
@@ -461,7 +439,7 @@ const Cart = () => {
           </DialogHeader>
 
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
               <Label className="text-base font-semibold text-gray-900">Total Amount</Label>
               <div className="text-2xl font-bold text-green-700">Rs. {cart.total.toFixed(2)}</div>
             </div>
@@ -484,38 +462,6 @@ const Cart = () => {
               </div>
             )}
 
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <Label className="text-base font-semibold text-gray-900">Admin Bank Details</Label>
-                <p className="text-xs text-muted-foreground">Use any of these accounts to transfer your payment</p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {adminBankDetails.map((bank, idx) => (
-                  <div
-                    key={`${bank.bankName}-${idx}`}
-                    className="p-4 rounded-xl border-2 border-green-100 bg-white/80 shadow-sm flex flex-col gap-2"
-                  >
-                    <div className="text-xs font-semibold text-green-700 uppercase tracking-wide">Admin Account {idx + 1}</div>
-                    <div className="text-sm font-bold text-gray-900">{bank.bankName}</div>
-                    <div className="text-sm text-gray-700">
-                      <span className="font-medium">Account Holder: </span>
-                      {bank.accountHolder}
-                    </div>
-                    <div className="text-sm text-gray-700">
-                      <span className="font-medium">Branch: </span>
-                      {bank.branch}
-                    </div>
-                    <div className="text-sm text-gray-700">
-                      <span className="font-medium">Account No: </span>
-                      {bank.accountNumber}
-                    </div>
-
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            
             <div>
               <Label htmlFor="receipt" className="block mb-3 text-base font-semibold">
                 Payment Receipt
@@ -589,4 +535,3 @@ const Cart = () => {
 };
 
 export default Cart;
-
