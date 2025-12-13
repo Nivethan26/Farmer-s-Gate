@@ -25,10 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Image as ImageIcon, Upload, X } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Image as ImageIcon, Upload, X, Handshake } from "lucide-react";
 import { toast } from "sonner";
 
-// Extend the schema to include image
+// Extend the schema to include image and negotiationEnabled
 const productSchema = z.object({
   name: z.string().min(2, "Product name is required"),
   category: z.string().min(1, "Category is required"),
@@ -38,7 +39,12 @@ const productSchema = z.object({
   stockQty: z.number().min(1, "Stock quantity is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   expiresOn: z.string().min(1, "Expiry date is required"),
-  imageUrl: z.string().url("Please enter a valid URL").optional().or(z.literal('')),
+  imageUrl: z
+    .string()
+    .url("Please enter a valid URL")
+    .optional()
+    .or(z.literal("")),
+  negotiationEnabled: z.boolean().default(true),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -90,12 +96,14 @@ const SellerProductForms = ({
       description: "",
       expiresOn: "",
       imageUrl: "",
+      negotiationEnabled: true,
     },
   });
 
   const supplyType = watch("supplyType");
   const category = watch("category");
   const imageUrl = watch("imageUrl");
+  const negotiationEnabled = watch("negotiationEnabled");
 
   // Reset form when dialogs close
   useEffect(() => {
@@ -117,24 +125,40 @@ const SellerProductForms = ({
       setValue("description", selectedProduct.description);
       setValue("expiresOn", selectedProduct.expiresOn.substring(0, 10));
       setValue("imageUrl", selectedProduct.image);
+      setValue("negotiationEnabled", selectedProduct.negotiationEnabled);
       setImagePreview(selectedProduct.image);
     }
   }, [selectedProduct, editDialogOpen, setValue]);
 
   // Update image preview when URL changes
   useEffect(() => {
-    if (imageUrl && imageUrl.startsWith('http')) {
+    if (imageUrl && imageUrl.startsWith("http")) {
       setImagePreview(imageUrl);
     }
   }, [imageUrl]);
 
   // Sample images for quick selection
   const sampleImages = [
-    { name: "Vegetables", url: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400" },
-    { name: "Fruits", url: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?w-400" },
-    { name: "Grains", url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400" },
-    { name: "Spices", url: "https://images.unsplash.com/photo-1604586376807-f73185cf5867?w=400" },
-    { name: "Default", url: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400" },
+    {
+      name: "Vegetables",
+      url: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400",
+    },
+    {
+      name: "Fruits",
+      url: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?w-400",
+    },
+    {
+      name: "Grains",
+      url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400",
+    },
+    {
+      name: "Spices",
+      url: "https://images.unsplash.com/photo-1604586376807-f73185cf5867?w=400",
+    },
+    {
+      name: "Default",
+      url: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400",
+    },
   ];
 
   const handleAddProduct = (data: ProductFormData) => {
@@ -150,8 +174,11 @@ const SellerProductForms = ({
       expiresOn: data.expiresOn,
       sellerId: user!.id,
       sellerName: user!.name,
-      image: data.imageUrl || "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400",
+      image:
+        data.imageUrl ||
+        "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400",
       createdAt: new Date().toISOString(),
+      negotiationEnabled: data.negotiationEnabled,
     };
 
     dispatch(addProduct(newProduct));
@@ -177,12 +204,14 @@ const SellerProductForms = ({
     setImagePreview("");
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     // Check file type
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file");
       return;
     }
@@ -233,9 +262,9 @@ const SellerProductForms = ({
       {/* Image Section */}
       <div className="space-y-3">
         <Label htmlFor="image">
-          Product Image {t("seller.required")}
+          {t("seller.productimage")} {t("seller.required")}
         </Label>
-        
+
         {/* Image Preview */}
         {imagePreview && (
           <div className="relative group">
@@ -296,7 +325,7 @@ const SellerProductForms = ({
                 ) : (
                   <>
                     <Upload className="h-5 w-5" />
-                    <span>Upload Image</span>
+                    <span>{t("seller.uploadImage")}</span>
                   </>
                 )}
               </div>
@@ -305,7 +334,9 @@ const SellerProductForms = ({
 
           {/* Sample Images */}
           <div>
-            <p className="text-sm font-medium mb-2">Or select a sample image:</p>
+            <p className="text-sm font-medium mb-2">
+              Or select a sample image:
+            </p>
             <div className="grid grid-cols-3 gap-2">
               {sampleImages.map((img, index) => (
                 <button
@@ -335,15 +366,9 @@ const SellerProductForms = ({
         <Label htmlFor="name">
           {t("seller.productName")} {t("seller.required")}
         </Label>
-        <Input
-          id="name"
-          {...register("name")}
-          placeholder="Fresh Tomatoes"
-        />
+        <Input id="name" {...register("name")} placeholder="Fresh Tomatoes" />
         {errors.name && (
-          <p className="text-sm text-destructive mt-1">
-            {errors.name.message}
-          </p>
+          <p className="text-sm text-destructive mt-1">{errors.name.message}</p>
         )}
       </div>
 
@@ -409,26 +434,47 @@ const SellerProductForms = ({
         </div>
       </div>
 
-      <div>
-        <Label htmlFor="supplyType">
-          {t("seller.supplyType")} {t("seller.required")}
-        </Label>
-        <Select
-          value={supplyType}
-          onValueChange={(value: any) => setValue("supplyType", value)}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="small_scale">
-              {t("seller.smallScale")}
-            </SelectItem>
-            <SelectItem value="wholesale">
-              {t("seller.wholesale")}
-            </SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="supplyType">
+            {t("seller.supplyType")} {t("seller.required")}
+          </Label>
+          <Select
+            value={supplyType}
+            onValueChange={(value: any) => setValue("supplyType", value)}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="small_scale">
+                {t("seller.smallScale")}
+              </SelectItem>
+              <SelectItem value="wholesale">{t("seller.wholesale")}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center gap-3">
+            <Handshake className="h-5 w-5 text-gray-500" />
+            <div>
+              <Label htmlFor="negotiationEnabled" className="font-medium">
+                {t("seller.enableNegotiation")}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t("seller.enableNegotiationInfo")}
+              </p>
+            </div>
+          </div>
+          <Switch
+            id="negotiationEnabled"
+            checked={negotiationEnabled}
+            onCheckedChange={(checked) =>
+              setValue("negotiationEnabled", checked)
+            }
+          />
+        </div>
       </div>
 
       <div>
@@ -480,7 +526,9 @@ const SellerProductForms = ({
         <Button
           type="button"
           variant="outline"
-          onClick={() => isEdit ? onEditDialogChange(false) : onAddDialogChange(false)}
+          onClick={() =>
+            isEdit ? onEditDialogChange(false) : onAddDialogChange(false)
+          }
         >
           {t("common.cancel")}
         </Button>

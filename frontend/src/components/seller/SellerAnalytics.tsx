@@ -52,9 +52,9 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
 
   // Data for status distribution
   const statusData = [
-    { name: 'Active', value: activeProducts, color: '#10b981' },
-    { name: 'Expired', value: expiredProducts, color: '#ef4444' },
-    { name: 'Expiring Soon', value: products.filter(p => {
+    { name: t("seller.active"), value: activeProducts, color: '#10b981' },
+    { name: t("seller.expired"), value: expiredProducts, color: '#ef4444' },
+    { name: t("seller.expiringSoon"), value: products.filter(p => {
       const daysUntilExpiry = (new Date(p.expiresOn).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
       return daysUntilExpiry > 0 && daysUntilExpiry <= 3;
     }).length, color: '#f59e0b' },
@@ -99,11 +99,11 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
             <div className="mt-4 flex items-center text-sm">
               <span className="text-green-600 flex items-center">
                 <TrendingUp className="h-4 w-4 mr-1" />
-                {activeProducts} active
+                {activeProducts} {t("seller.active")}
               </span>
               <span className="ml-4 text-red-600 flex items-center">
                 <TrendingDown className="h-4 w-4 mr-1" />
-                {expiredProducts} expired
+                {expiredProducts} {t("seller.expired")}
               </span>
             </div>
           </CardContent>
@@ -116,14 +116,14 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
                 <p className="text-sm text-muted-foreground mb-1">
                   {t("seller.totalStock")}
                 </p>
-                <p className="text-3xl font-bold">{totalStock} kg</p>
+                <p className="text-3xl font-bold">{totalStock} {t("seller.kg")}</p>
               </div>
               <div className="p-3 bg-green-50 rounded-full">
                 <Package className="h-6 w-6 text-green-600" />
               </div>
             </div>
             <p className="text-sm text-muted-foreground mt-2">
-              Average: {products.length > 0 ? (totalStock / products.length).toFixed(1) : 0} kg/product
+              {t("seller.average")}: {products.length > 0 ? (totalStock / products.length).toFixed(1) : 0} {t("seller.kg")}/{t("seller.product")}
             </p>
           </CardContent>
         </Card>
@@ -133,7 +133,7 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">
-                  Total Inventory Value
+                 {t("seller.totalinventoryValue")}
                 </p>
                 <p className="text-3xl font-bold">Rs. {totalValue.toLocaleString()}</p>
               </div>
@@ -142,7 +142,7 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
               </div>
             </div>
             <p className="text-sm text-muted-foreground mt-2">
-              Average: Rs. {products.length > 0 ? (totalValue / products.length).toLocaleString() : 0}/product
+              {t("seller.average")}: Rs. {products.length > 0 ? (totalValue / products.length).toLocaleString() : 0}/{t("seller.product")}
             </p>
           </CardContent>
         </Card>
@@ -152,7 +152,7 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">
-                  Status Overview
+                  {t("seller.statusoverview")}
                 </p>
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center">
@@ -170,7 +170,7 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
               </div>
             </div>
             <p className="text-sm text-muted-foreground mt-2">
-              {((activeProducts / totalProducts) * 100).toFixed(1)}% active rate
+              {((activeProducts / totalProducts) * 100).toFixed(1)}% {t("seller.activerate")}
             </p>
           </CardContent>
         </Card>
@@ -181,7 +181,7 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
         {/* Product Status Pie Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Product Status Distribution</CardTitle>
+            <CardTitle>{t("seller.productStatusDistribution")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-80">
@@ -212,7 +212,7 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
         {/* Stock by Product Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Top Products by Stock</CardTitle>
+            <CardTitle>{t("seller.topProductsByStock")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-80">
@@ -226,8 +226,8 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="stock" name="Stock (kg)" fill="#8884d8" />
-                  <Bar dataKey="value" name="Value (Rs.)" fill="#82ca9d" />
+                  <Bar dataKey="stock" name={t("seller.stockKg")} fill="#8884d8" />
+                  <Bar dataKey="value" name={t("seller.valueRs")} fill="#82ca9d" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -237,7 +237,7 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
         {/* Price Distribution Bar Chart */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Price Distribution</CardTitle>
+            <CardTitle>{t("seller.priceDistribution")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-80">
@@ -251,7 +251,7 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="count" name="Number of Products" fill="#8884d8" />
+                  <Bar dataKey="count" name={t("seller.numberOfProducts")} fill="#8884d8" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -262,7 +262,7 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
         {categoryData.length > 0 && (
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Category Distribution</CardTitle>
+              <CardTitle>{t("seller.categoryDistribution")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-80">
@@ -294,7 +294,7 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
         {/* Expiry Timeline */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Product Expiry Timeline</CardTitle>
+            <CardTitle>{t("seller.productExpiryTimeline")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-80">
@@ -326,19 +326,19 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
       {/* Summary Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Product Summary</CardTitle>
+          <CardTitle>{t("seller.productSummary")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-3 px-4 font-medium">Product</th>
-                  <th className="text-left py-3 px-4 font-medium">Category</th>
-                  <th className="text-left py-3 px-4 font-medium">Stock (kg)</th>
-                  <th className="text-left py-3 px-4 font-medium">Price/kg</th>
-                  <th className="text-left py-3 px-4 font-medium">Total Value</th>
-                  <th className="text-left py-3 px-4 font-medium">Status</th>
+                  <th className="text-left py-3 px-4 font-medium">{t("seller.productName")}</th>
+                  <th className="text-left py-3 px-4 font-medium">{t("seller.category")}</th>
+                  <th className="text-left py-3 px-4 font-medium">{t("seller.stock")}</th>
+                  <th className="text-left py-3 px-4 font-medium">{t("seller.priceKg")}</th>
+                  <th className="text-left py-3 px-4 font-medium">{t("seller.totalValue")}</th>
+                  <th className="text-left py-3 px-4 font-medium">{t("seller.status")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -358,15 +358,15 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
                       <td className="py-3 px-4">
                         {isExpired ? (
                           <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
-                            Expired
+                             {t("seller.expired")}
                           </span>
                         ) : daysUntilExpiry <= 3 ? (
                           <span className="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded-full">
-                            Expiring in {daysUntilExpiry} days
+                              {t("seller.expiringInDays", { days: daysUntilExpiry })}
                           </span>
                         ) : (
                           <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
-                            Active ({daysUntilExpiry} days)
+                            {t("seller.active")} ({daysUntilExpiry} {t("seller.days")})
                           </span>
                         )}
                       </td>
@@ -378,7 +378,7 @@ const SellerAnalytics = ({ products }: SellerAnalyticsProps) => {
           </div>
           {products.length > 10 && (
             <p className="text-sm text-muted-foreground mt-4 text-center">
-              Showing 10 of {products.length} products
+              {t("seller.showingProducts", { count: 10, total: products.length })}
             </p>
           )}
         </CardContent>
