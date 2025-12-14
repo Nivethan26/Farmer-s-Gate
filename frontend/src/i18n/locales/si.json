@@ -21,7 +21,11 @@
     "sort": "වර්ග කරන්න",
     "viewAll": "සියල්ල බලන්න",
     "loading": "පූරණය වෙමින්...",
-    "noData": "දත්ත නොමැත"
+    "noData": "දත්ත නොමැත",
+    "name": "නම",
+    "phone": "දුරකථන අංකය",
+    "address": "ලිපිනය",
+    "saveChanges": "වෙනස්කම් සුරකින්න"
   },
   "nav": {
     "home": "මුල් පිටුව",
@@ -64,6 +68,25 @@
   },
   "seller": {
     "dashboard": "විකුණුම්කරු උපකරණ පුවරුව",
+    "profile": {
+      "title": "විකුණුම්කරු පැතිකඩ",
+      "subtitle": "ඔබගේ ගිණුම් තොරතුරු කළමනාකරණය කරන්න",
+      "subtitlePremium": "සම්පූර්ණ පැතිකඩ කළමනාකරණය",
+      "personalInfo": "පෞද්ගලික තොරතුරු",
+      "farmName": "ගොවිපළ නාමය",
+      "bankDetails": "බැංකු විස්තර",
+      "bankName": "බැංකු නාමය",
+      "branch": "ශාඛාව",
+      "accountName": "ගිණුම් නාමය",
+      "accountNumber": "ගිණුම් අංකය",
+      "editProfile": "පැතිකඩ සංස්කරණය කරන්න",
+      "profileNotFound": "පැතිකඩ සොයාගත නොහැක",
+      "profileNotFoundDesc": "විකුණුම්කරු පැතිකඩ තොරතුරු පූරණය කළ නොහැක"
+    },
+    "pending": "අනුමැතිය අපේක්ෂාවෙන්",
+    "suspended": "තාවකාලිකව අත්හිටුවා ඇත",
+    "approved": "අනුමතයි",
+    "inactive": "නिष්ක්‍රියයි",
     "welcomeBack": "නැවත සාදරයෙන් පිළිගනිමු",
     "myProducts": "මගේ නිෂ්පාදන",
     "myListings": "මගේ ලැයිස්තු",
@@ -172,7 +195,7 @@
     "uploadImage": "රූපය උඩුගත කරන්න",
     "changeImage": "රූපය වෙනස් කරන්න",
     "removeImage": "රූපය ඉවත් කරන්න",
-    "CounterOffer": "ප්‍රතිපෝෂණය",    
+    "CounterOffer": "ප්‍රතිපෝෂණය",
     "valueRs": "අගය (රු.)",
     "activeRate": "ක්‍රියාකාරී අනුපාතය",
     "perProduct": "නිෂ්පාදනයකට",
@@ -366,22 +389,22 @@
     "pineapples": "අන්නාසි"
   },
   "notifications": {
-  "title": "නිවේදන",
-  "noNotifications": "කිසිදු නිවේදන නැත",
-  "noNotificationsDesc": "ඔබ සියල්ල කියවා අවසන් කර ඇත! යාවත්කාලීන කිරීම් සඳහා පසුව නැවත පරීක්ෂා කරන්න.",
-  "markAllRead": "සියල්ල කියවූ ලෙස සලකන්න",
-  "clearAll": "සියල්ල මකන්න",
-  "viewAll": "සියල්ල බලන්න",
-  "viewDetails": "විස්තර බලන්න",
-  "justNow": "මෙම මොහොතේ",
-  "unreadCount": "{{count}} කියව නැති",
-  "allRead": "සියල්ල කියවා ඇත",
-  "categories": {
-    "all": "සියල්ල",
-    "order": "ඇණවුම්",
-    "message": "පණිවිඩ",
-    "system": "සැකසුම්",
-    "promotion": "ප්‍රවර්ධන"
-  }
+    "title": "නිවේදන",
+    "noNotifications": "කිසිදු නිවේදන නැත",
+    "noNotificationsDesc": "ඔබ සියල්ල කියවා අවසන් කර ඇත! යාවත්කාලීන කිරීම් සඳහා පසුව නැවත පරීක්ෂා කරන්න.",
+    "markAllRead": "සියල්ල කියවූ ලෙස සලකන්න",
+    "clearAll": "සියල්ල මකන්න",
+    "viewAll": "සියල්ල බලන්න",
+    "viewDetails": "විස්තර බලන්න",
+    "justNow": "මෙම මොහොතේ",
+    "unreadCount": "{{count}} කියව නැති",
+    "allRead": "සියල්ල කියවා ඇත",
+    "categories": {
+      "all": "සියල්ල",
+      "order": "ඇණවුම්",
+      "message": "පණිවිඩ",
+      "system": "සැකසුම්",
+      "promotion": "ප්‍රවර්ධන"
+    }
   }
 }
