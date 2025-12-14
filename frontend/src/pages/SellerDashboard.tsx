@@ -12,12 +12,12 @@ import SellerProductForms from "@/components/seller/SellerProductForms";
 import SellerDeleteDialog from "@/components/seller/SellerDeleteDialog";
 import SellerNegotiationsTab from "@/components/seller/SellerNegotiationsTab";
 import SellerAnalytics from "@/components/seller/SellerAnalytics";
+import { SellerProfile } from "@/components/seller/SellerProfile";
 
 const SellerDashboard = () => {
   const { t } = useTranslation();
   const user = useAppSelector((state: RootState) => state.auth.user);
   const products = useAppSelector(selectSellerProducts);
-
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -48,7 +48,7 @@ const SellerDashboard = () => {
         </div>
 
         <Tabs defaultValue="home" className="space-y-6">
-          <TabsList className="flex flex-wrap gap-2 md:gap-0 border-b mb-14">
+          <TabsList className="flex flex-wrap gap-2 md:gap-0 border-b mb-20">
             <TabsTrigger value="home" className="flex-1 text-center">
               {t("seller.home")}
             </TabsTrigger>
@@ -60,6 +60,9 @@ const SellerDashboard = () => {
             </TabsTrigger>
             <TabsTrigger value="negotiations" className="flex-1 text-center">
               {t("seller.negotiations")}
+            </TabsTrigger>
+            <TabsTrigger value="profile" className="flex-1 text-center">
+              {t("seller.profile.title")}
             </TabsTrigger>
           </TabsList>
 
@@ -85,6 +88,9 @@ const SellerDashboard = () => {
 
           <TabsContent value="negotiations" className="space-y-6">
             <SellerNegotiationsTab />
+          </TabsContent>
+          <TabsContent value="profile" className="space-y-6">
+            <SellerProfile />
           </TabsContent>
         </Tabs>
       </div>

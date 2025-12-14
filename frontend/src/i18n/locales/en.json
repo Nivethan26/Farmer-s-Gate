@@ -21,7 +21,14 @@
     "sort": "Sort",
     "viewAll": "View All",
     "loading": "Loading...",
-    "noData": "No data available"
+    "noData": "No data available",
+    "name": "Name",
+    "phone": "Phone",
+    "address": "Address",
+    "district": "District",
+    "role": "Role",
+    "saveChanges": "Save Changes",
+    "status": "Status"
   },
   "nav": {
     "home": "Home",
@@ -77,6 +84,26 @@
 
   "seller": {
     "dashboard": "Seller Dashboard",
+    "profile": {
+      "title": "Profile",
+      "subtitle": "Manage your account information",
+      "subtitlePremium": "Complete profile management",
+      "personalInfo": "Personal Information",
+      "farmName": "Farm Name",
+      "bankDetails": "Bank Details",
+      "bankName": "Bank Name",
+      "branch": "Branch",
+      "accountName": "Account Name",
+      "accountNumber": "Account Number",
+      "editProfile": "Edit Profile",
+      "profileNotFound": "Profile not found",
+      "profileNotFoundDesc": "Unable to load seller profile information"
+    },
+    "pending": "Pending Approval",
+    "suspended": "Suspended",
+    "approved": "Approved",
+    "inactive": "Inactive",
+    "status": "Status",
     "welcomeBack": "Welcome back",
     "myProducts": "My Products",
     "myListings": "My Listings",
@@ -178,7 +205,6 @@
     "viewAllProducts": "View All Products",
     "expiriedSoon": "Expiring Soon",
     "productListings": "Product Listings",
-    "status": "Status",
     "active": "Active",
     "expired": "Expired",
     "totalStock": "Total Stock",
