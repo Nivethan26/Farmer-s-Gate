@@ -1,6 +1,33 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-export type Language = 'en' | 'si' | 'ta';
+const loadLanguage = (): Language => {
+  const saved = localStorage.getItem("agrilink_language");
+  return (saved as Language) || "en";
+};
+
+const saveLanguage = (lang: Language) => {
+  localStorage.setItem("agrilink_language", lang);
+};
+
+export type Language = "en" | "si" | "ta";
+export type UserRole = "admin" | "seller" | "buyer" | "agent" | "all";
+
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: "info" | "success" | "warning" | "error";
+  category?: "order" | "system" | "message" | "promotion";
+  role?: UserRole;
+  link?: string;
+  sender?: {
+    id: string;
+    name: string;
+    role: UserRole;
+  };
+  read: boolean;
+  createdAt: string;
+}
 
 interface UIState {
   language: Language;
@@ -8,73 +35,82 @@ interface UIState {
   notifications: Notification[];
 }
 
-interface Notification {
-  id: string;
-  message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  read: boolean;
-  createdAt: string;
-}
-
-// Load language from localStorage
-const loadLanguage = (): Language => {
+const loadNotifications = (): Notification[] => {
   try {
-    const storedLang = localStorage.getItem('agrilink_language');
-    if (storedLang && ['en', 'si', 'ta'].includes(storedLang)) {
-      return storedLang as Language;
-    }
-  } catch (error) {
-    console.error('Error loading language:', error);
+    const raw = localStorage.getItem("agrilink_notifications");
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
   }
-  return 'en';
+};
+
+const saveNotifications = (data: Notification[]) => {
+  localStorage.setItem("agrilink_notifications", JSON.stringify(data));
 };
 
 const initialState: UIState = {
   language: loadLanguage(),
   sidebarOpen: false,
-  notifications: [],
+  notifications: loadNotifications(),
 };
 
+
 const uiSlice = createSlice({
-  name: 'ui',
+  name: "ui",
   initialState,
   reducers: {
     setLanguage: (state, action: PayloadAction<Language>) => {
       state.language = action.payload;
-      localStorage.setItem('agrilink_language', action.payload);
+      saveLanguage(action.payload);
     },
-    toggleSidebar: (state) => {
-      state.sidebarOpen = !state.sidebarOpen;
-    },
-    setSidebarOpen: (state, action: PayloadAction<boolean>) => {
-      state.sidebarOpen = action.payload;
-    },
-    addNotification: (state, action: PayloadAction<Omit<Notification, 'id' | 'read' | 'createdAt'>>) => {
+
+    addNotification: (
+      state,
+      action: PayloadAction<Omit<Notification, "id" | "read" | "createdAt">>
+    ) => {
       state.notifications.unshift({
         ...action.payload,
-        id: `notif-${Date.now()}`,
+        id: crypto.randomUUID(),
         read: false,
         createdAt: new Date().toISOString(),
       });
+
+      state.notifications = state.notifications.slice(0, 100);
+      saveNotifications(state.notifications);
     },
+
     markNotificationRead: (state, action: PayloadAction<string>) => {
-      const notification = state.notifications.find((n) => n.id === action.payload);
-      if (notification) {
-        notification.read = true;
-      }
+      const n = state.notifications.find((n) => n.id === action.payload);
+      if (n) n.read = true;
+      saveNotifications(state.notifications);
     },
+
+    markAllNotificationsRead: (state) => {
+      state.notifications.forEach((n) => (n.read = true));
+      saveNotifications(state.notifications);
+    },
+
+    removeNotification: (state, action: PayloadAction<string>) => {
+      state.notifications = state.notifications.filter(
+        (n) => n.id !== action.payload
+      );
+      saveNotifications(state.notifications);
+    },
+
     clearNotifications: (state) => {
       state.notifications = [];
+      saveNotifications([]);
     },
   },
 });
 
+
 export const {
   setLanguage,
-  toggleSidebar,
-  setSidebarOpen,
   addNotification,
   markNotificationRead,
+  markAllNotificationsRead,
+  removeNotification,
   clearNotifications,
 } = uiSlice.actions;
 

@@ -364,5 +364,24 @@
     "mangoes": "අඹ",
     "papayas": "පැපොල්",
     "pineapples": "අන්නාසි"
+  },
+  "notifications": {
+  "title": "නිවේදන",
+  "noNotifications": "කිසිදු නිවේදන නැත",
+  "noNotificationsDesc": "ඔබ සියල්ල කියවා අවසන් කර ඇත! යාවත්කාලීන කිරීම් සඳහා පසුව නැවත පරීක්ෂා කරන්න.",
+  "markAllRead": "සියල්ල කියවූ ලෙස සලකන්න",
+  "clearAll": "සියල්ල මකන්න",
+  "viewAll": "සියල්ල බලන්න",
+  "viewDetails": "විස්තර බලන්න",
+  "justNow": "මෙම මොහොතේ",
+  "unreadCount": "{{count}} කියව නැති",
+  "allRead": "සියල්ල කියවා ඇත",
+  "categories": {
+    "all": "සියල්ල",
+    "order": "ඇණවුම්",
+    "message": "පණිවිඩ",
+    "system": "සැකසුම්",
+    "promotion": "ප්‍රවර්ධන"
+  }
   }
 }
