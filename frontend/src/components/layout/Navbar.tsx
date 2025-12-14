@@ -4,7 +4,6 @@ import {
   Sprout,
   User,
   LogOut,
-  Bell,
   ShoppingCart,
   Menu,
   X,
@@ -12,8 +11,6 @@ import {
   Info,
   Phone,
   Grid,
-  Search,
-  Sparkles,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
@@ -30,6 +27,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
+import { NotificationBell } from "@/components/common/NotificationBell";
+import { NotificationCenter } from "../common/NotificationCenter";
+
 
 export const Navbar = () => {
   const { t } = useTranslation();
@@ -41,11 +41,6 @@ export const Navbar = () => {
 
   const user = useAppSelector((state: RootState) => state.auth.user);
   const cartItems = useAppSelector((state: RootState) => state.cart.items);
-  const notifications = useAppSelector(
-    (state: RootState) => state.ui.notifications
-  );
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
 
   // Handle scroll effect
   useEffect(() => {
@@ -161,18 +156,7 @@ export const Navbar = () => {
 
             {user && (
               <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative h-10 w-10 rounded-lg hover:bg-amber-50 hover:text-amber-600 transition-all"
-                >
-                  <Bell className="h-5 w-5" />
-                  {unreadCount > 0 && (
-                    <Badge className="absolute -right-1 -top-1 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-amber-500 text-white font-bold">
-                      {unreadCount}
-                    </Badge>
-                  )}
-                </Button>
+                 <NotificationCenter />
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -206,7 +190,7 @@ export const Navbar = () => {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={() => navigate("/buyer")}
+                      onClick={() => navigate(`/${user.role}`)}
                       className="cursor-pointer text-green-700 hover:text-green-600 hover:bg-green-50"
                     >
                       <User className="mr-3 h-4 w-4" />
@@ -260,6 +244,12 @@ export const Navbar = () => {
                   </Badge>
                 )}
               </Button>
+            )}
+            
+            {user && (
+              <div className="flex-shrink-0">
+                <NotificationCenter/>
+              </div>
             )}
             
             <div className="flex-shrink-0">
@@ -336,7 +326,7 @@ export const Navbar = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    navigate("/buyer");
+                    navigate(`/${user.role}`);
                     setMenuOpen(false);
                   }}
                   className="w-full justify-start text-green-700 hover:text-green-600 hover:bg-green-50 rounded-lg font-medium"

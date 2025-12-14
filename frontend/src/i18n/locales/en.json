@@ -400,5 +400,24 @@
     "mangoes": "Mangoes",
     "papayas": "Papayas",
     "pineapples": "Pineapples"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "noNotifications": "No notifications",
+    "noNotificationsDesc": "You're all caught up! Check back later for updates.",
+    "markAllRead": "Mark all as read",
+    "clearAll": "Clear all",
+    "viewAll": "View All",
+    "viewDetails": "View Details",
+    "justNow": "Just now",
+    "unreadCount": "{{count}} unread",
+    "allRead": "All caught up",
+    "categories": {
+      "all": "All",
+      "order": "Orders",
+      "message": "Messages",
+      "system": "System",
+      "promotion": "Promotions"
+    }
   }
 }
