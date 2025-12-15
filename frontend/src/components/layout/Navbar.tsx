@@ -67,11 +67,10 @@ export const Navbar = () => {
 
   return (
     <nav
-      className={`sticky top-0 z-50 w-full border-b transition-all duration-300 ${
-        scrolled
-          ? "bg-white/90 backdrop-blur-md shadow-md border-gray-100"
-          : "bg-white border-gray-100"
-      }`}
+      className={`sticky top-0 z-50 w-full border-b transition-all duration-300 ${scrolled
+        ? "bg-white/90 backdrop-blur-md shadow-md border-gray-100"
+        : "bg-white border-gray-100"
+        }`}
     >
       {/* Main Navbar Container */}
       <div className="w-full px-4 sm:px-6 md:px-8 max-w-screen-2xl mx-auto">
@@ -98,7 +97,7 @@ export const Navbar = () => {
                 <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gradient-to-br from-amber-300 to-amber-500 rounded-full shadow-sm" />
               </div>
             </div>
-            
+
             {/* Brand name */}
             <div className="flex flex-col">
               <span className="text-base sm:text-xl md:text-2xl font-bold text-green-700 tracking-tight leading-tight">
@@ -120,11 +119,10 @@ export const Navbar = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className={`relative px-4 py-2 h-10 font-medium rounded-lg transition-all ${
-                        isActive
-                          ? "text-white bg-gradient-to-r from-green-600 to-emerald-600"
-                          : "text-green-800 hover:text-green-600 hover:bg-green-50"
-                      }`}
+                      className={`relative px-4 py-2 h-10 font-medium rounded-lg transition-all ${isActive
+                        ? "text-white bg-gradient-to-r from-green-600 to-emerald-600"
+                        : "text-green-800 hover:text-green-600 hover:bg-green-50"
+                        }`}
                     >
                       <span className="flex items-center gap-1.5">
                         <item.icon className="h-4 w-4" />
@@ -156,7 +154,7 @@ export const Navbar = () => {
 
             {user && (
               <>
-                 <NotificationCenter />
+                <NotificationCenter />
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -245,17 +243,19 @@ export const Navbar = () => {
                 )}
               </Button>
             )}
-            
+
             {user && (
               <div className="flex-shrink-0">
-                <NotificationCenter/>
+                <NotificationCenter />
               </div>
             )}
-            
+
             <div className="flex-shrink-0">
               <LanguageSwitcher />
             </div>
-            
+
+
+
             <button
               className="p-2 rounded-lg bg-green-50 hover:bg-green-100 text-green-700 transition-all border border-green-200"
               onClick={() => setMenuOpen(!menuOpen)}
@@ -273,11 +273,10 @@ export const Navbar = () => {
 
       {/* Mobile Dropdown Menu */}
       <div
-        className={`md:hidden border-t bg-white shadow-lg transition-all duration-300 overflow-hidden ${
-          menuOpen
-            ? "max-h-[24rem] opacity-100 border-gray-100"
-            : "max-h-0 opacity-0 border-transparent"
-        }`}
+        className={`md:hidden border-t bg-white shadow-lg transition-all duration-300 overflow-hidden ${menuOpen
+          ? "max-h-[24rem] opacity-100 border-gray-100"
+          : "max-h-0 opacity-0 border-transparent"
+          }`}
       >
         <div className="flex flex-col p-4 space-y-1">
           {!user &&
@@ -293,11 +292,10 @@ export const Navbar = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className={`w-full justify-start rounded-lg ${
-                      isActive
-                        ? "text-white bg-gradient-to-r from-green-600 to-emerald-600"
-                        : "text-green-800 hover:text-green-600 hover:bg-green-50"
-                    }`}
+                    className={`w-full justify-start rounded-lg ${isActive
+                      ? "text-white bg-gradient-to-r from-green-600 to-emerald-600"
+                      : "text-green-800 hover:text-green-600 hover:bg-green-50"
+                      }`}
                   >
                     <item.icon className="mr-3 h-4 w-4" />
                     <span>{item.label}</span>
