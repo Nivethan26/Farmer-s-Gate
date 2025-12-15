@@ -243,6 +243,7 @@ const Cart = () => {
         role: "buyer",
         buyerId: user!.id,
         link: `/buyer/orders/`,
+        metadata: order,
       })
     );
 

@@ -43,7 +43,7 @@ export const NegotiationsSection = ({ t, negotiations, getNegotiationStatusColor
                     </p>
                   </div>
                   <Badge className={`${getNegotiationStatusColor(negotiation.status)} border font-medium px-4 py-1.5 h-auto whitespace-normal text-center`}>
-                    {negotiation.status.charAt(0).toUpperCase() + negotiation.status.slice(1)}
+                    {negotiation.status === 'open' ? 'Pending' : negotiation.status.charAt(0).toUpperCase() + negotiation.status.slice(1)}
                   </Badge>
                 </div>
 

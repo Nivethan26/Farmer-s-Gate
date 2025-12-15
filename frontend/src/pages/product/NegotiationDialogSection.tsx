@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/store/hooks';
 import { createNegotiation } from '@/store/catalogSlice';
+import { addNotification } from '@/store/uiSlice';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -102,6 +103,23 @@ export const NegotiationDialogSection = ({
     };
 
     dispatch(createNegotiation(negotiation));
+
+    // Add notification to header
+    dispatch(addNotification({
+      title: 'Negotiation Requested',
+      message: `Your offer of Rs. ${negotiationPrice}/kg for ${product.name} has been sent to ${product.sellerName}. Status: Pending`,
+      type: 'neutral', // Neutral/Info for Pending
+      category: 'message',
+      role: 'buyer',
+      link: '/buyer?tab=negotiations',
+      metadata: negotiation,
+      sender: {
+        id: 'system',
+        name: 'System',
+        role: 'admin'
+      }
+    }));
+
     toast.success('Negotiation request sent successfully!');
     onOpenChange(false);
     setNegotiationPrice('');
