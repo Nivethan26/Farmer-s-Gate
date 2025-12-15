@@ -25,7 +25,8 @@
     "name": "பெயர்",
     "phone": "தொலைபேசி",
     "address": "முகவரி",
-    "saveChanges": "மாற்றங்களை சேமி"
+    "saveChanges": "மாற்றங்களை சேமி",
+    "currencyFormat": "ரூ. {{amount}}"
   },
   "nav": {
     "home": "முகப்பு",
@@ -300,6 +301,57 @@
     "delivered": "வழங்கப்பட்டது",
     "cancelled": "ரத்து செய்யப்பட்டது"
   },
+  "orders": {
+    "pageTitle": "ஆர்டர் மேலாண்மை",
+    "pageSubtitle": "உங்கள் தயாரிப்புகளுக்கான அனைத்து ஆர்டர்களையும் நிர்வகித்து கண்காணிக்கவும்",
+    "noOrders": {
+      "title": "இன்னும் ஆர்டர்கள் இல்லை",
+      "description": "வாங்குபவர்கள் உங்கள் தயாரிப்புகளை வாங்கும் போது, அவர்களின் ஆர்டர்கள் உங்கள் நிர்வாகத்திற்காக இங்கே தோன்றும்."
+    },
+    "summary": {
+      "totalOrders": "{{count}} மொத்த ஆர்டர்கள்",
+      "processingOrders": "{{count}} செயலாக்கப்படுகிறது"
+    },
+    "orderNumber": "ஆர்டர் #{{number}}",
+    "buyer": "வாங்குபவர்",
+    "items": "பொருட்கள்",
+    "productCount": "{{count}} தயாரிப்புகள்",
+    "totalQuantity": "மொத்த அளவு",
+    "quantityKg": "{{qty}} கிலோ",
+    "subtotal": "துணை மொத்தம்",
+    "actions": {
+      "viewDetails": "விவரங்களைக் காண்க",
+      "viewProducts": "தயாரிப்புகளைக் காண்க",
+      "exploreMarketplace": "சந்தையை ஆராயுங்கள்",
+      "close": "மூடு",
+      "markAsPaid": "செலுத்தப்பட்டதாகக் குறிக்கவும்",
+      "updateShipping": "கப்பல் புதுப்பிக்கவும்",
+      "markAsDelivered": "வழங்கப்பட்டதாகக் குறிக்கவும்"
+    },
+    "status": {
+      "label": "நிலை",
+      "processing": "செயலாக்கப்படுகிறது",
+      "paid": "செலுத்தப்பட்டது",
+      "shipped": "அனுப்பப்பட்டது",
+      "delivered": "வழங்கப்பட்டது",
+      "cancelled": "ரத்து செய்யப்பட்டது",
+      "unknown": "அறியப்படாத"
+    },
+    "buyerInformation": "வாங்குபவர் தகவல்",
+    "buyerName": "வாங்குபவர் பெயர்",
+    "email": "மின்னஞ்சல்",
+    "notProvided": "வழங்கப்படவில்லை",
+    "shippingAddress": "கப்பல் முகவரி",
+    "orderItems": "ஆர்டர் பொருட்கள்",
+    "productId": "தயாரிப்பு ஐடி",
+    "quantity": "அளவு",
+    "pricePerKg": "ஒரு கிலோவுக்கு விலை",
+    "orderSummary": "ஆர்டர் சுருக்கம்",
+    "shippingFee": "கப்பல் கட்டணம்",
+    "tax": "வரி",
+    "totalAmount": "மொத்த தொகை"
+  },
+
   "agent": {
     "dashboard": "முகவர் டாஷ்போர்டு",
     "farmersInRegion": "எனது பிராந்தியத்தில் உள்ள விவசாயிகள்",

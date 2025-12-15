@@ -21,6 +21,8 @@ export interface Order {
   id: string;
   buyerId: string;
   buyerName: string;
+  address: string;
+  buyerEmail?: string;
   items: OrderItem[];
   subtotal: number;
   deliveryFee: number;

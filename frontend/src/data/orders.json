@@ -3,6 +3,8 @@
     "id": "order-1",
     "buyerId": "buyer-1",
     "buyerName": "Amara Silva",
+    "address": "123 Main St, Colombo",
+    "buyerEmail": "buyer1@gmail.com",
     "items": [
       {
         "productId": "prod-1",
@@ -22,7 +24,7 @@
     "subtotal": 2450,
     "deliveryFee": 250,
     "total": 2700,
-    "status": "delivered",
+    "status": "processing",
     "receiptUrl": null,
     "createdAt": "2025-10-01T10:30:00Z",
     "paidAt": "2025-10-01T11:00:00Z",
@@ -31,7 +33,9 @@
   {
     "id": "order-2",
     "buyerId": "buyer-1",
+    "address": "123 Main St, Colombo",
     "buyerName": "Amara Silva",
+    "buyerEmail": "buyer1@gmail.com",
     "items": [
       {
         "productId": "prod-5",
@@ -54,13 +58,15 @@
   {
     "id": "order-3",
     "buyerId": "buyer-2",
+    "address": "456 Market St, Kandy",
     "buyerName": "Priya Jayawardena",
+    "buyerEmail": "buyer2@gmail.com",
     "items": [
       {
         "productId": "prod-2",
         "productName": "Red Onions",
         "sellerId": "seller-1",
-       "sellerName": "Nimal Perera",
+        "sellerName": "Nimal Perera",
         "qty": 100,
         "pricePerKg": 180
       },

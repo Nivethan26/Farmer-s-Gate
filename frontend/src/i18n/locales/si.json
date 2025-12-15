@@ -25,7 +25,8 @@
     "name": "නම",
     "phone": "දුරකථන අංකය",
     "address": "ලිපිනය",
-    "saveChanges": "වෙනස්කම් සුරකින්න"
+    "saveChanges": "වෙනස්කම් සුරකින්න",
+    "currencyFormat": "රු. {{amount}}"
   },
   "nav": {
     "home": "මුල් පිටුව",
@@ -305,6 +306,7 @@
     "delivered": "බෙදා හැර ඇත",
     "cancelled": "අවලංගු කර ඇත"
   },
+  
   "agent": {
     "dashboard": "නියෝජිත උපකරණ පුවරුව",
     "farmersInRegion": "මගේ කලාපයේ ගොවීන්",
@@ -314,6 +316,56 @@
     "support": "ගොවීන්ට සහාය වන්න",
     "farmer": "ගොවියා",
     "contact": "සම්පන්ධය"
+  },
+  "orders": {
+    "pageTitle": "ඇණවුම් කළමනාකරණය",
+    "pageSubtitle": "ඔබගේ නිෂ්පාදන සඳහා ඇති සියලුම ඇණවුම් කළමනාකරණය කර අධීක්ෂණය කරන්න",
+    "noOrders": {
+      "title": "තවමත් ඇණවුම් නැත",
+      "description": "ගැණුම්කරුවන් ඔබේ නිෂ්පාදන මිලදී ගත් විට, ඔවුන්ගේ ඇණවුම් ඔබ කළමනාකරණය කිරීම සඳහා මෙහි පෙන්වනු ඇත."
+    },
+    "summary": {
+      "totalOrders": "ඇණවුම් {{count}}",
+      "processingOrders": "{{count}} සැකසෙමින් පවතී"
+    },
+    "orderNumber": "ඇණවුම් අංකය #{{number}}",
+    "buyer": "ගැණුම්කරු",
+    "items": "අයිතම",
+    "productCount": "නිෂ්පාදන {{count}}",
+    "totalQuantity": "මුළු ප්‍රමාණය",
+    "quantityKg": "{{qty}} කි.ග්‍රෑ.",
+    "subtotal": "උපස්ථර",
+    "actions": {
+      "viewDetails": "විස්තර බලන්න",
+      "viewProducts": "නිෂ්පාදන බලන්න",
+      "exploreMarketplace": "වෙළඳපොළ ගවේෂණය කරන්න",
+      "close": "වසන්න",
+      "markAsPaid": "ගෙවූ ලෙස සලකුණු කරන්න",
+      "updateShipping": "නැව්ගත කිරීම යාවත්කාලීන කරන්න",
+      "markAsDelivered": "බෙදාහරින ලද ලෙස සලකුණු කරන්න"
+    },
+    "status": {
+      "label": "තත්වය",
+      "processing": "සැකසෙමින් පවතී",
+      "paid": "ගෙවා ඇත",
+      "shipped": "නැව්ගත කර ඇත",
+      "delivered": "බෙදාහරින ලදී",
+      "cancelled": "අත්හිටුවා ඇත",
+      "unknown": "නොදන්නා"
+    },
+    "buyerInformation": "ගැණුම්කරුගේ තොරතුරු",
+    "buyerName": "ගැණුම්කරුගේ නම",
+    "email": "විද්‍යුත් තැපෑල",
+    "notProvided": "සපයා නැත",
+    "shippingAddress": "නැව්ගත කිරීමේ ලිපිනය",
+    "orderItems": "ඇණවුම් අයිතම",
+    "productId": "නිෂ්පාදන හැඳුනුම්පත",
+    "quantity": "ප්‍රමාණය",
+    "pricePerKg": "කිලෝ ග්‍රෑමයකට මිල",
+    "orderSummary": "ඇණවුම් සාරාංශය",
+    "shippingFee": "නැව්ගත කිරීමේ ගාස්තුව",
+    "tax": "බදු",
+    "totalAmount": "මුළු මුදල"
   },
   "admin": {
     "dashboard": "පරිපාලක උපකරණ පුවරුව",
