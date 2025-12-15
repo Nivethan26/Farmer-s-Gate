@@ -303,20 +303,15 @@
     "pointsEarned": "Points Earned"
   },
   "orders": {
+    "pageTitle": "Order Management",
     "title": "My Orders",
-    "orderNumber": "Order #",
-    "status": "Status",
     "date": "Date",
-    "items": "Items",
     "pending": "Pending",
     "processing": "Under Processing",
     "paid": "Paid",
     "shipped": "Shipped",
     "delivered": "Delivered",
-    "cancelled": "Cancelled"
-  },
-  "orders": {
-    "pageTitle": "Order Management",
+    "cancelled": "Cancelled",
     "pageSubtitle": "Manage and track all orders for your products",
     "noOrders": {
       "title": "No Orders Yet",
