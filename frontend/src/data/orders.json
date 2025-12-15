@@ -7,6 +7,8 @@
       {
         "productId": "prod-1",
         "productName": "Fresh Tomatoes",
+        "sellerId": "seller-1",
+        "sellerName": "Nimal Perera",
         "qty": 10,
         "pricePerKg": 120
       },
@@ -34,6 +36,8 @@
       {
         "productId": "prod-5",
         "productName": "White Rice (Samba)",
+        "sellerId": "seller-1",
+        "sellerName": "Nimal Perera",
         "qty": 50,
         "pricePerKg": 150
       }
@@ -55,12 +59,16 @@
       {
         "productId": "prod-2",
         "productName": "Red Onions",
+        "sellerId": "seller-1",
+       "sellerName": "Nimal Perera",
         "qty": 100,
         "pricePerKg": 180
       },
       {
         "productId": "prod-10",
         "productName": "Potatoes",
+        "sellerId": "seller-1",
+        "sellerName": "Nimal Perera",
         "qty": 100,
         "pricePerKg": 110
       }
