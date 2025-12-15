@@ -99,6 +99,8 @@ const Cart = () => {
       id: `order-${Date.now()}`,
       buyerId: user!.id,
       buyerName: user!.name,
+      address: user!.address,
+      buyerEmail: user!.email,
       items: cart.items.map((item) => ({
         productId: item.productId,
         productName: item.productName,

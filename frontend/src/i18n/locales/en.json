@@ -28,7 +28,8 @@
     "district": "District",
     "role": "Role",
     "saveChanges": "Save Changes",
-    "status": "Status"
+    "status": "Status",
+    "currencyFormat": "Rs. {{amount}}"
   },
   "nav": {
     "home": "Home",
@@ -313,6 +314,56 @@
     "shipped": "Shipped",
     "delivered": "Delivered",
     "cancelled": "Cancelled"
+  },
+  "orders": {
+    "pageTitle": "Order Management",
+    "pageSubtitle": "Manage and track all orders for your products",
+    "noOrders": {
+      "title": "No Orders Yet",
+      "description": "When buyers purchase your products, their orders will appear here for you to manage."
+    },
+    "summary": {
+      "totalOrders": "{{count}} Total Orders",
+      "processingOrders": "{{count}} Processing"
+    },
+    "orderNumber": "Order #{{number}}",
+    "buyer": "Buyer",
+    "items": "Items",
+    "productCount": "{{count}} products",
+    "totalQuantity": "Total Quantity",
+    "quantityKg": "{{qty}} kg",
+    "subtotal": "Subtotal",
+    "actions": {
+      "viewDetails": "View Details",
+      "viewProducts": "View Products",
+      "exploreMarketplace": "Explore Marketplace",
+      "close": "Close",
+      "markAsPaid": "Mark as Paid",
+      "updateShipping": "Update Shipping",
+      "markAsDelivered": "Mark as Delivered"
+    },
+    "status": {
+      "label": "Status",
+      "processing": "Processing",
+      "paid": "Paid",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "unknown": "Unknown"
+    },
+    "buyerInformation": "Buyer Information",
+    "buyerName": "Buyer Name",
+    "email": "Email",
+    "notProvided": "Not provided",
+    "shippingAddress": "Shipping Address",
+    "orderItems": "Order Items",
+    "productId": "Product ID",
+    "quantity": "Quantity",
+    "pricePerKg": "Price per kg",
+    "orderSummary": "Order Summary",
+    "shippingFee": "Shipping Fee",
+    "tax": "Tax",
+    "totalAmount": "Total Amount"
   },
   "agent": {
     "dashboard": "Agent Dashboard",
