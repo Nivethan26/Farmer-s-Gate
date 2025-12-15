@@ -115,7 +115,7 @@ const AccountProfile = () => {
     }
 
     dispatch(updateProfile(updates))
-    toast.success("Profile updated successfully!")
+    toast.success(t('profile.updateSuccess'))
     setIsEditing(false)
   }
 
