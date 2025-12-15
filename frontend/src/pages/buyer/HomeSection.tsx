@@ -48,9 +48,12 @@ export const HomeSection = ({
               variant="ghost"
               size="sm"
               asChild
-              className="w-full mt-2 text-green-700 hover:text-green-800 hover:bg-green-100 text-xs sm:text-sm py-1.5 sm:py-2 h-auto whitespace-normal"
+              className="w-full mt-2 text-green-700 hover:text-green-800 hover:bg-green-100 text-xs sm:text-sm py-1.5 sm:py-2 h-auto whitespace-normal flex items-center justify-center gap-1"
             >
-              <Link to="/buyer/cart">{t('buyer.viewCart')} <ArrowRight className="inline h-3 w-3 ml-1" /></Link>
+              <Link to="/buyer/cart" className="flex items-center justify-center gap-1 w-full h-full">
+                <span className="truncate">{t('buyer.viewCart')}</span>
+                <ArrowRight className="h-3 w-3 ml-0 flex-shrink-0" />
+              </Link>
             </Button>
           </CardContent>
         </Card>
@@ -69,10 +72,11 @@ export const HomeSection = ({
             <Button
               variant="ghost"
               size="sm"
-              className="w-full mt-2 text-blue-700 hover:text-blue-800 hover:bg-blue-100 text-xs sm:text-sm py-1.5 sm:py-2 h-auto whitespace-normal"
+              className="w-full mt-2 text-blue-700 hover:text-blue-800 hover:bg-blue-100 text-xs sm:text-sm py-1.5 sm:py-2 h-auto whitespace-normal flex items-center justify-center gap-1"
               onClick={onViewOrders}
             >
-              {t('buyer.viewAll')} <ArrowRight className="inline h-3 w-3 ml-1" />
+              <span>{t('buyer.viewAll')}</span>
+              <ArrowRight className="h-3 w-3 flex-shrink-0" />
             </Button>
           </CardContent>
         </Card>
@@ -117,21 +121,21 @@ export const HomeSection = ({
         <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <Link to="/catalog">
-              <Button className="w-full h-auto py-3 sm:py-4 px-4 sm:px-6 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-md hover:shadow-lg transition-all duration-300 group text-sm sm:text-base whitespace-normal">
-                <Store className="mr-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform flex-shrink-0" />
+              <Button className="w-full h-full py-4 px-4 sm:px-6 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-md hover:shadow-lg transition-all duration-300 group text-sm sm:text-base whitespace-normal text-center leading-tight">
+                <Store className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform flex-shrink-0" />
                 <span className="font-semibold">{t('buyer.browseProducts')}</span>
               </Button>
             </Link>
             <Link to="/buyer/cart">
               <Button
                 variant="outline"
-                className="w-full h-auto py-3 sm:py-4 px-4 sm:px-6 border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all duration-300 group text-sm sm:text-base whitespace-normal"
+                className="w-full h-full py-4 px-4 sm:px-6 border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all duration-300 group text-sm sm:text-base whitespace-normal text-center leading-tight"
               >
-                <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-green-600 group-hover:scale-110 transition-transform flex-shrink-0" />
-                <span className="font-semibold text-green-700">
+                <ShoppingCart className="mr-2 h-5 w-5 text-green-600 group-hover:scale-110 transition-transform flex-shrink-0" />
+                <span className="font-semibold text-green-700 flex items-center gap-2">
                   {t('buyer.viewCart')}
                   {cartItems.length > 0 && (
-                    <span className="ml-2 bg-green-600 text-white px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs">
+                    <span className="bg-green-600 text-white px-2 py-0.5 rounded-full text-xs">
                       {cartItems.length}
                     </span>
                   )}
@@ -141,9 +145,9 @@ export const HomeSection = ({
             <Link to="/profile">
               <Button
                 variant="outline"
-                className="w-full h-auto py-3 sm:py-4 px-4 sm:px-6 border-2 border-blue-300 text-blue-600 hover:border-sky-400 hover:bg-sky-50 transition-all duration-300 group text-sm sm:text-base whitespace-normal"
+                className="w-full h-full py-4 px-4 sm:px-6 border-2 border-blue-300 text-blue-600 hover:border-sky-400 hover:bg-sky-50 transition-all duration-300 group text-sm sm:text-base whitespace-normal text-center leading-tight"
               >
-                <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-blue-600 group-hover:scale-110 transition-transform flex-shrink-0" />
+                <User className="mr-2 h-5 w-5 text-blue-600 group-hover:scale-110 transition-transform flex-shrink-0" />
                 <span className="font-semibold text-blue-600">{t('buyer.myProfile')}</span>
               </Button>
             </Link>
@@ -154,14 +158,15 @@ export const HomeSection = ({
       {/* Recent Orders */}
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6 pt-4 sm:pt-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 flex-wrap">
             <CardTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2">
               <div className="h-1 w-1 rounded-full bg-green-600"></div>
               {t('buyer.recentOrders')}
             </CardTitle>
-            <Button variant="ghost" size="sm" asChild className="text-xs sm:text-sm h-auto whitespace-normal">
-              <Link to="#orders" className="text-green-600 hover:text-green-700">
-                {t('buyer.viewAll')} <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1 flex-shrink-0" />
+            <Button variant="ghost" size="sm" asChild className="text-xs sm:text-sm h-auto whitespace-normal flex items-center gap-1">
+              <Link to="#orders" className="text-green-600 hover:text-green-700 flex items-center gap-1">
+                <span>{t('buyer.viewAll')}</span>
+                <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
               </Link>
             </Button>
           </div>

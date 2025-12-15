@@ -119,19 +119,19 @@ export const OverviewSection = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Link to="/catalog">
               <Button
-                className="w-full h-auto py-4 px-6 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-md hover:shadow-lg transition-all duration-300 group"
+                className="w-full h-full py-4 px-6 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-md hover:shadow-lg transition-all duration-300 group text-sm whitespace-normal text-center leading-tight"
               >
-                <Store className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                <Store className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform flex-shrink-0" />
                 <span className="font-semibold">{t('buyer.browseProducts')}</span>
               </Button>
             </Link>
             <Link to="/buyer/cart">
               <Button
                 variant="outline"
-                className="w-full h-auto py-4 px-6 border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all duration-300 group"
+                className="w-full h-full py-4 px-6 border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all duration-300 group text-sm whitespace-normal text-center leading-tight"
               >
-                <ShoppingCart className="mr-2 h-5 w-5 text-green-600 group-hover:scale-110 transition-transform" />
-                <span className="font-semibold text-green-700">
+                <ShoppingCart className="mr-2 h-5 w-5 text-green-600 group-hover:scale-110 transition-transform flex-shrink-0" />
+                <span className="font-semibold text-green-700 flex items-center gap-2 justify-center">
                   {t('buyer.viewCart')}
                   {cartItems.length > 0 && (
                     <span className="ml-2 bg-green-600 text-white px-2 py-0.5 rounded-full text-xs">
@@ -144,9 +144,9 @@ export const OverviewSection = ({
             <Link to="/profile">
               <Button
                 variant="outline"
-                className="w-full h-auto py-4 px-6 border-2 border-blue-300 text-blue-600 hover:border-sky-400 hover:bg-sky-50 transition-all duration-300 group"
+                className="w-full h-full py-4 px-6 border-2 border-blue-300 text-blue-600 hover:border-sky-400 hover:bg-sky-50 transition-all duration-300 group text-sm whitespace-normal text-center leading-tight"
               >
-                <TrendingUp className="mr-2 h-5 w-5 text-blue-600 group-hover:scale-110 transition-transform" />
+                <TrendingUp className="mr-2 h-5 w-5 text-blue-600 group-hover:scale-110 transition-transform flex-shrink-0" />
                 <span className="font-semibold text-blue-600">{t('buyer.myProfile')}</span>
               </Button>
             </Link>
@@ -157,18 +157,39 @@ export const OverviewSection = ({
       {/* Recent Orders */}
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+
+            {/* Title */}
             <CardTitle className="text-xl font-semibold flex items-center gap-2">
               <div className="h-1 w-1 rounded-full bg-green-600"></div>
               {t('buyer.recentOrders')}
             </CardTitle>
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="#orders" className="text-green-600 hover:text-green-700">
-                {t('buyer.viewAll')} <ArrowRight className="h-4 w-4 ml-1" />
+
+            {/* View All – Desktop & Tablet ONLY */}
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="hidden sm:flex"
+            >
+              <Link to="#orders" className="text-green-600 hover:text-green-700 flex items-center">
+                {t('buyer.viewAll')}
+                <ArrowRight className="h-4 w-4 ml-1" />
+              </Link>
+            </Button>
+          </div>
+
+          {/* View All – Mobile ONLY (below heading) */}
+          <div className="sm:hidden">
+            <Button variant="ghost" size="sm" asChild className="px-0">
+              <Link to="#orders" className="text-green-600 hover:text-green-700 flex items-center">
+                {t('buyer.viewAll')}
+                <ArrowRight className="h-4 w-4 ml-1" />
               </Link>
             </Button>
           </div>
         </CardHeader>
+
         <CardContent>
           {orders.length === 0 ? (
             <div className="text-center py-12">
@@ -194,9 +215,10 @@ export const OverviewSection = ({
                         {getStatusIcon(order.status)}
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-900 group-hover:text-green-700 transition-colors">
-                          {t('orderNumber', { number: order.id.slice(-8) })}
+                        <p className="font-semibold text-sm sm:text-base text-gray-900 group-hover:text-green-700 transition-colors truncate">
+                          {t('buyer.recentOrderNumber', { number: order.id.slice(-8) })}
                         </p>
+
                         <p className="text-sm text-muted-foreground">
                           {order.items.length} {t('items')} • Rs. {order.total.toFixed(2)}
                         </p>
