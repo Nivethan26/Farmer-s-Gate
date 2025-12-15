@@ -80,7 +80,27 @@
     "startShopping": "Start shopping to see your orders here",
     "negotiations": "Negotiations",
     "noNegotiations": "No negotiations yet",
-    "browseWholesale": "Browse wholesale products and start negotiating prices"
+    "browseWholesale": "Browse wholesale products and start negotiating prices",
+    "viewAll": "View All",
+    "profile": "Profile",
+    "browse": "Browse",
+    "home":"Home",
+    "subtotal": "Subtotal",
+    "deliveryFee": "Delivery Fee",
+    "pointsRedeemed": "Points Redeemed",
+    "pointsEarned": "Points Earned",
+    "total": "Total",
+    "orderId": "Order #",
+    "underProcessing": "Under Processing",
+    "seller": "Seller",
+    "currentPrice": "Current Price",
+    "yourOffer": "Your Offer",
+    "counterOfferReceived": "Counter Offer Received",
+    "yourNotes": "Your Notes",
+    "contactInfo": "Contact Information",
+    "accountDetails": "Account Details",
+    "nic": "NIC",
+    "notProvided": "Not provided"
   },
 
   "seller": {
@@ -300,7 +320,26 @@
     "pointsDiscount": "Points Discount",
     "redeemPoints": "Redeem Points",
     "clearPoints": "Clear",
-    "pointsEarned": "Points Earned"
+    "pointsEarned": "Points Earned",
+    "emptyTitle": "Your cart is empty",
+    "emptyDesc": "Start adding products to your cart from our catalog",
+    "dashboard": "Dashboard",
+    "itemsInCart": "{{count}} item(s) in your cart",
+    "clearCart": "Clear Cart",
+    "cartCleared": "Cart cleared",
+    "cartClearedDesc": "All items have been removed from your cart.",
+    "secureCheckout": "Secure checkout • Admin will verify your payment receipt",
+    "orderSummary": "Order Summary",
+    "reviewOrder": "Review your items and place the order",
+    "totalAmount": "Total Amount",
+    "totalToPay": "Total Amount to Pay",
+    "transferInstruction": "Please transfer the exact amount to one of the accounts below",
+    "selectBank": "Select Bank for Transfer",
+    "clickToSelect": "Click to select",
+    "viewBankDetails": "View Bank Details",
+    "accountHolder": "Account Holder",
+    "completePayment": "Complete Your Payment",
+    "paymentDesc": "Choose a bank, transfer the amount, and upload your payment receipt"
   },
   "orders": {
     "pageTitle": "Order Management",
@@ -472,6 +511,14 @@
     "mangoes": "Mangoes",
     "papayas": "Papayas",
     "pineapples": "Pineapples"
+  },
+  "product": {
+    "backToCatalog": "Back to Catalog",
+    "notFound": "Product not found",
+    "loginToAdd": "Please login to add items to cart",
+    "openingWhatsapp": "Opening WhatsApp to contact agent!",
+    "relatedProducts": "Related Products",
+    "otherProducts": "Other Products"
   },
   "notifications": {
     "title": "Notifications",

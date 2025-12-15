@@ -222,9 +222,8 @@ const Cart = () => {
       dispatch(
         addNotification({
           title: "New Order Received",
-          message: `${user!.name} placed an order with ${
-            items.length
-          } item(s).`,
+          message: `${user!.name} placed an order with ${items.length
+            } item(s).`,
           type: "info",
           category: "order",
           role: "seller",
@@ -731,11 +730,10 @@ const Cart = () => {
                       />
                       <Label
                         htmlFor={bank.id}
-                        className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
-                          selectedBank === bank.id
-                            ? `border-green-400 bg-gradient-to-r ${bank.color}/10`
-                            : "border-gray-200 hover:border-gray-300"
-                        }`}
+                        className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${selectedBank === bank.id
+                          ? `border-green-400 bg-gradient-to-r ${bank.color}/10`
+                          : "border-gray-200 hover:border-gray-300"
+                          }`}
                       >
                         <div className={`p-2 rounded-lg bg-gradient-to-r ${bank.color} text-white`}>
                           {bank.icon}

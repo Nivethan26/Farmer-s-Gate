@@ -73,7 +73,7 @@ const BuyerDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50/30">
       <Navbar />
-      
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
         {/* Welcome Header */}
         <div className="mb-6 sm:mb-8 lg:mb-10">
@@ -87,26 +87,26 @@ const BuyerDashboard = () => {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <Button 
-                asChild 
-                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 w-full sm:w-auto text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5 hover:shadow-xl hover:scale-105 transition-all duration-300"
+              <Button
+                asChild
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 w-full sm:w-auto text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5 hover:shadow-xl hover:scale-105 transition-all duration-300 h-auto whitespace-normal"
               >
                 <Link to="/" className="flex items-center justify-center gap-2">
-                  <Home className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span className="hidden sm:inline">Home</span>
-                  <span className="sm:hidden">Home</span>
-                  <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <Home className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <span className="hidden sm:inline">{t('buyer.home')}</span>
+                  <span className="sm:hidden">{t('buyer.home')}</span>
+                  <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                 </Link>
               </Button>
-              <Button 
-                asChild 
-                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 w-full sm:w-auto text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5 hover:shadow-xl hover:scale-105 transition-all duration-300"
+              <Button
+                asChild
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 w-full sm:w-auto text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5 hover:shadow-xl hover:scale-105 transition-all duration-300 h-auto whitespace-normal"
               >
                 <Link to="/catalog" className="flex items-center justify-center gap-2">
-                  <Store className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span className="hidden sm:inline">Browse Products</span>
-                  <span className="sm:hidden">Browse</span>
-                  <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <Store className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <span className="hidden sm:inline">{t('buyer.browseProducts')}</span>
+                  <span className="sm:hidden">{t('buyer.browse')}</span>
+                  <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                 </Link>
               </Button>
             </div>
@@ -114,18 +114,18 @@ const BuyerDashboard = () => {
         </div>
 
         <Tabs defaultValue="home" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm">
-            <TabsTrigger value="home" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
+          <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm h-auto p-1">
+            <TabsTrigger value="home" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center">
               {t('nav.home')}
             </TabsTrigger>
-            <TabsTrigger value="orders" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
+            <TabsTrigger value="orders" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center">
               {t('nav.orders')}
             </TabsTrigger>
-            <TabsTrigger value="negotiations" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
+            <TabsTrigger value="negotiations" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center">
               {t('buyer.negotiations')}
             </TabsTrigger>
-            <TabsTrigger value="profile" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
-              Profile
+            <TabsTrigger value="profile" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center">
+              {t('buyer.profile')}
             </TabsTrigger>
           </TabsList>
 

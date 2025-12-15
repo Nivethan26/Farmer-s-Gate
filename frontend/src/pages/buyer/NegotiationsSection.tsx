@@ -39,21 +39,21 @@ export const NegotiationsSection = ({ t, negotiations, getNegotiationStatusColor
                   <div>
                     <p className="font-semibold text-lg text-gray-900 mb-1">{negotiation.productName}</p>
                     <p className="text-sm text-muted-foreground">
-                      Seller: <span className="font-medium text-gray-700">{negotiation.sellerName}</span>
+                      {t('buyer.seller')}: <span className="font-medium text-gray-700">{negotiation.sellerName}</span>
                     </p>
                   </div>
-                  <Badge className={`${getNegotiationStatusColor(negotiation.status)} border font-medium px-4 py-1.5`}>
+                  <Badge className={`${getNegotiationStatusColor(negotiation.status)} border font-medium px-4 py-1.5 h-auto whitespace-normal text-center`}>
                     {negotiation.status.charAt(0).toUpperCase() + negotiation.status.slice(1)}
                   </Badge>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                   <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                    <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide">Current Price</p>
+                    <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide">{t('buyer.currentPrice')}</p>
                     <p className="text-2xl font-bold text-gray-900">Rs. {negotiation.currentPrice}/kg</p>
                   </div>
                   <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                    <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide">Your Offer</p>
+                    <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide">{t('buyer.yourOffer')}</p>
                     <p className="text-2xl font-bold text-green-700">
                       Rs. {negotiation.requestedPrice}/kg
                     </p>
@@ -64,7 +64,7 @@ export const NegotiationsSection = ({ t, negotiations, getNegotiationStatusColor
                   <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-xl p-5 mb-6">
                     <div className="flex items-center gap-2 mb-2">
                       <AlertCircle className="h-5 w-5 text-blue-600" />
-                      <p className="text-sm font-semibold text-blue-900">Counter Offer Received</p>
+                      <p className="text-sm font-semibold text-blue-900">{t('buyer.counterOfferReceived')}</p>
                     </div>
                     <p className="text-2xl font-bold text-blue-900 mb-2">
                       Rs. {negotiation.counterPrice}/kg
@@ -77,7 +77,7 @@ export const NegotiationsSection = ({ t, negotiations, getNegotiationStatusColor
 
                 {negotiation.notes && (
                   <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                    <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide">Your Notes</p>
+                    <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide">{t('buyer.yourNotes')}</p>
                     <p className="text-sm text-gray-700">{negotiation.notes}</p>
                   </div>
                 )}

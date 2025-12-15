@@ -3,7 +3,7 @@ import usersData from '@/data/users.json';
 
 export type UserRole = 'buyer' | 'seller' | 'admin' | 'agent';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   name: string;

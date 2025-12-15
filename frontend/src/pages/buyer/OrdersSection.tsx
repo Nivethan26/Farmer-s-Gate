@@ -45,28 +45,28 @@ export const OrdersSection = ({
                       {getStatusIcon(order.status)}
                     </div>
                     <div>
-                      <p className="font-semibold text-lg text-gray-900 mb-1">Order #{order.id.slice(-8)}</p>
+                      <p className="font-semibold text-lg text-gray-900 mb-1">{t('buyer.orderId')} {order.id.slice(-8)}</p>
                       <p className="text-sm text-muted-foreground">
-                        {new Date(order.createdAt).toLocaleDateString('en-US', { 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
+                        {new Date(order.createdAt).toLocaleDateString(t('language.english'), {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
                         })}
                       </p>
                     </div>
                   </div>
-                  <Badge className={`${getOrderStatusColor(order.status)} border font-medium px-4 py-1.5`}>
-                    {order.status === 'processing' ? 'Under Processing' : order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                  <Badge className={`${getOrderStatusColor(order.status)} border font-medium px-4 py-1.5 h-auto whitespace-normal text-center`}>
+                    {order.status === 'processing' ? t('buyer.underProcessing') : order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                   </Badge>
                 </div>
 
                 <div className="space-y-3 mb-6">
                   {order.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm font-medium text-gray-700">
+                    <div key={idx} className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 bg-gray-50 rounded-lg gap-2">
+                      <span className="text-sm font-medium text-gray-700 break-words">
                         {item.productName} × {item.qty}kg
                       </span>
-                      <span className="font-semibold text-gray-900">
+                      <span className="font-semibold text-gray-900 whitespace-nowrap">
                         Rs. {(item.pricePerKg * item.qty).toFixed(2)}
                       </span>
                     </div>
@@ -75,24 +75,24 @@ export const OrdersSection = ({
 
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50/50 rounded-xl p-4 space-y-2 border border-green-100">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Subtotal:</span>
+                    <span className="text-muted-foreground">{t('buyer.subtotal')}:</span>
                     <span className="font-medium text-gray-900">Rs. {order.subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Delivery Fee:</span>
+                    <span className="text-muted-foreground">{t('buyer.deliveryFee')}:</span>
                     <span className="font-medium text-gray-900">Rs. {order.deliveryFee.toFixed(2)}</span>
                   </div>
                   {(order.redeemedPoints || order.pointsEarned) && (
                     <>
                       {order.redeemedPoints && order.redeemedPoints > 0 && (
                         <div className="flex justify-between text-sm pt-2 border-t border-green-200">
-                          <span className="text-muted-foreground">Points Redeemed:</span>
+                          <span className="text-muted-foreground">{t('buyer.pointsRedeemed')}:</span>
                           <span className="font-medium text-orange-600">-{order.redeemedPoints} points</span>
                         </div>
                       )}
                       {order.pointsEarned && order.pointsEarned > 0 && (
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Points Earned:</span>
+                          <span className="text-muted-foreground">{t('buyer.pointsEarned')}:</span>
                           <span className="font-semibold text-green-600 flex items-center gap-1">
                             <Gift className="h-4 w-4" />
                             +{order.pointsEarned} points
@@ -102,7 +102,7 @@ export const OrdersSection = ({
                     </>
                   )}
                   <div className="flex justify-between font-bold text-lg pt-2 border-t-2 border-green-300">
-                    <span className="text-gray-900">Total:</span>
+                    <span className="text-gray-900">{t('buyer.total')}:</span>
                     <span className="text-green-700">Rs. {order.total.toFixed(2)}</span>
                   </div>
                 </div>
