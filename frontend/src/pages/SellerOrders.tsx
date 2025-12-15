@@ -475,7 +475,7 @@ const SellerOrders = () => {
                                       variant="outline"
                                       className="bg-green-50 text-green-700 border-green-200 whitespace-nowrap"
                                     >
-                                      {t(`orders.status.${selectedOrder.status}`, selectedOrder.status)}
+                                      {String(t(`orders.status.label${selectedOrder.status}`, selectedOrder.status))}
                                     </Badge>
                                   </div>
                                 </div>

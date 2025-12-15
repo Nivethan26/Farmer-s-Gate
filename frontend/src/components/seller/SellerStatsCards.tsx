@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Package,
   Plus,
-  TrendingUp,
   AlertCircle,
   Calendar,
   Clock,
@@ -13,6 +12,7 @@ import {
   XCircle,
 } from "lucide-react";
 import type { Product } from "@/store/catalogSlice";
+import { useNavigate } from "react-router-dom";
 
 interface SellerStatsCardsProps {
   products: Product[];
@@ -24,7 +24,7 @@ const SellerStatsCards = ({
   onAddProduct,
 }: SellerStatsCardsProps) => {
   const { t } = useTranslation();
-
+  const navigate = useNavigate();
   // Get today at start of day for consistent comparison
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -471,11 +471,18 @@ const SellerStatsCards = ({
               <Plus className="mr-2 h-4 w-4" />
               {t("seller.addNewProduct")}
             </Button>
+            <Button
+              onClick={() => navigate("/seller/orders")}
+              className="w-full text-xs hover:bg-green-50 hover:border-green-200 border-green-300 text-white hover:text-green-700"
+            >
+              <Package className="mr-2 h-4 w-4" />
+              {t("orders.title")}
+            </Button>
 
             {stats.expired > 0 && (
               <Button
                 variant="outline"
-                className="w-full text-red-600 border-red-200 hover:bg-red-50 text-xs"
+                className="w-full text-red-600 border-red-200 hover:bg-red-50 text-xs hover:text-red-600"
               >
                 <XCircle className="mr-2 h-4 w-4 " />
                 {t("seller.remove")} {t("seller.expired")}{" "}
