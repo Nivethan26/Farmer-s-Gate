@@ -43,9 +43,32 @@ import {
   Shield,
   Truck,
   CheckCircle2,
+  Building,
+  User,
+  CreditCard,
+  Hash,
+  Banknote,
+  Copy,
+  CheckCheck,
+  X,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import { addNotification } from "@/store/uiSlice";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
+// Bank details interface
+interface BankDetails {
+  id: string;
+  name: string;
+  accountHolder: string;
+  accountNumber: string;
+  branch: string;
+  icon: React.ReactNode;
+  color: string;
+}
+
 const Cart = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -55,6 +78,40 @@ const Cart = () => {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [pointsToRedeem, setPointsToRedeem] = useState(0);
+  const [selectedBank, setSelectedBank] = useState<string>("boc");
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [showBankDetails, setShowBankDetails] = useState(false);
+  const [paymentForm, setPaymentForm] = useState({
+    accountHolderName: "",
+    bankName: "",
+    accountNumber: "",
+    referenceNumber: "",
+    amount: cart.total.toFixed(2),
+  });
+
+  // Bank details configuration
+  const bankDetails: BankDetails[] = [
+    {
+      id: "boc",
+      name: "Bank of Ceylon",
+      accountHolder: "Agro Market Pvt Ltd",
+      accountNumber: "1234567890",
+      branch: "Colombo Main Branch",
+      icon: <Building className="h-5 w-5" />,
+      color: "from-blue-600 to-blue-800",
+    },
+    {
+      id: "peoples",
+      name: "Peoples Bank",
+      accountHolder: "Agro Market Pvt Ltd",
+      accountNumber: "0987654321",
+      branch: "Colombo City Branch",
+      icon: <Banknote className="h-5 w-5" />,
+      color: "from-green-600 to-emerald-800",
+    },
+  ];
+
+  const selectedBankDetail = bankDetails.find(bank => bank.id === selectedBank);
 
   const handleUpdateQty = (productId: string, newQty: number) => {
     if (newQty <= 0) {
@@ -73,9 +130,41 @@ const Cart = () => {
     setCheckoutOpen(true);
   };
 
+  const handleCopyToClipboard = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    toast.success(`${field} copied to clipboard!`);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
+
+  const handlePaymentFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPaymentForm(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   const handleSubmitOrder = () => {
+    // Validate payment form
+    if (!paymentForm.accountHolderName.trim()) {
+      toast.error("Please enter account holder name");
+      return;
+    }
+    if (!paymentForm.bankName.trim()) {
+      toast.error("Please enter bank name");
+      return;
+    }
+    if (!paymentForm.accountNumber.trim()) {
+      toast.error("Please enter account number");
+      return;
+    }
+    if (!paymentForm.referenceNumber.trim()) {
+      toast.error("Please enter reference number");
+      return;
+    }
     if (!receiptFile) {
-      toast.error(t("cart.uploadReceipt"));
+      toast.error("Please upload payment receipt");
       return;
     }
 
@@ -90,6 +179,7 @@ const Cart = () => {
       }
       itemsBySeller[item.sellerId].push(item);
     });
+
     // Redeem points if any were used
     if (redeemedPoints > 0 && user) {
       dispatch(redeemRewardPoints(redeemedPoints));
@@ -114,14 +204,20 @@ const Cart = () => {
       total: cart.total,
       status: "processing" as const,
       receiptUrl: `receipt-${Date.now()}.jpg`,
+      paymentDetails: {
+        ...paymentForm,
+        selectedBank: selectedBankDetail?.name || "",
+      },
       createdAt: new Date().toISOString(),
       paidAt: null,
       deliveredAt: null,
       redeemedPoints: redeemedPoints > 0 ? redeemedPoints : undefined,
       pointsEarned: pointsEarned > 0 ? pointsEarned : undefined,
     };
-    console.log(order);
+
     dispatch(createOrder(order));
+
+    // Send notifications
     Object.entries(itemsBySeller).forEach(([sellerId, items]) => {
       dispatch(
         addNotification({
@@ -151,24 +247,33 @@ const Cart = () => {
       })
     );
 
-    // Show notification for order status
+    // Show order status notification
     toast.info("Order Under Processing", {
       description: `Order #${order.id} has been placed and is now being processed.`,
       duration: 5000,
     });
 
-    // Add reward points to user account
+    // Add reward points
     if (pointsEarned > 0 && user) {
       dispatch(addRewardPoints(pointsEarned));
       toast.success(`Order placed! You earned ${pointsEarned} reward points!`);
     } else {
-      toast.success(t("cart.orderPlaced"));
+      toast.success("Order placed successfully!");
     }
 
+    // Reset everything
     dispatch(clearCart());
     setCheckoutOpen(false);
     setReceiptFile(null);
     setPointsToRedeem(0);
+    setShowBankDetails(false);
+    setPaymentForm({
+      accountHolderName: "",
+      bankName: "",
+      accountNumber: "",
+      referenceNumber: "",
+      amount: "0.00",
+    });
     navigate("/buyer/orders");
   };
 
@@ -497,36 +602,50 @@ const Cart = () => {
                     </div>
                   )}
 
+                  {/* Updated Total Price Section - Mobile Optimized */}
                   <div className="border-t-2 border-green-200 pt-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold text-gray-900">
-                        Total
-                      </span>
-                      <span className="text-2xl font-bold text-green-600">
-                        Rs. {cart.total.toFixed(2)}
-                      </span>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base sm:text-lg font-bold text-gray-900">
+                          Total Amount:
+                        </span>
+                        <div className="sm:hidden text-xs text-muted-foreground">
+                          ({cart.items.length} {cart.items.length === 1 ? 'item' : 'items'})
+                        </div>
+                      </div>
+                      <div className="flex flex-col sm:items-end gap-1">
+                        <span className="text-2xl sm:text-3xl font-bold text-green-600">
+                          Rs. {cart.total.toFixed(2)}
+                        </span>
+                        <div className="hidden sm:block text-xs text-muted-foreground">
+                          ({cart.items.length} {cart.items.length === 1 ? 'item' : 'items'})
+                        </div>
+                      </div>
                     </div>
                   </div>
 
+                  {/* Updated Checkout Buttons - Mobile Optimized */}
                   <div className="pt-2 space-y-3">
                     <Button
-                      className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 font-semibold text-base"
+                      className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 font-semibold text-sm sm:text-base"
                       onClick={handleCheckout}
                     >
-                      <Shield className="mr-2 h-5 w-5" />
-                      {t("cart.checkout")}
-                      <span className="ml-2 text-sm opacity-90">
-                        ({cart.items.length} items)
+                      <Shield className="mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                      <span className="truncate">
+                        {t("cart.checkout") || "Checkout"}
+                        <span className="hidden sm:inline ml-2 opacity-90">
+                          ({cart.items.length} {cart.items.length === 1 ? "item" : "items"})
+                        </span>
                       </span>
                     </Button>
 
                     <Button
                       variant="outline"
-                      className="w-full h-11 border-2 hover:bg-green-50 hover:border-green-300"
+                      className="w-full h-11 border-2 hover:bg-green-50 hover:border-green-300 text-sm sm:text-base"
                       onClick={() => navigate("/catalog")}
                     >
-                      Continue Shopping
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                      <span className="truncate">Continue Shopping</span>
+                      <ArrowRight className="ml-2 h-4 w-4 flex-shrink-0" />
                     </Button>
                   </div>
                 </CardContent>
@@ -535,7 +654,7 @@ const Cart = () => {
                 <div className="px-5 sm:px-6 py-4 bg-gradient-to-r from-gray-50 to-green-50/50 border-t border-gray-200">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Shield className="h-4 w-4 text-green-600" />
-                    <span>
+                    <span className="text-xs">
                       Secure checkout • Admin will verify your payment receipt
                     </span>
                   </div>
@@ -546,116 +665,491 @@ const Cart = () => {
         </div>
       </div>
 
-      {/* Checkout Dialog */}
+      {/* Enhanced Checkout Dialog - Fully Responsive */}
       <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-        <DialogContent className="max-w-xl sm:max-w-2xl">
+        <DialogContent className="sm:max-w-2xl lg:max-w-4xl max-w-[95vw] max-h-[90vh] sm:max-h-[95vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-              Upload Payment Receipt
+            <DialogTitle className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+              Complete Your Payment
             </DialogTitle>
-            <DialogDescription className="text-base">
-              Please upload your payment receipt. Our admin team will verify the
-              payment and process your order.
+            <DialogDescription className="text-sm sm:text-base">
+              Choose a bank, transfer the amount, and upload your payment receipt
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6">
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
-              <Label className="text-base font-semibold text-gray-900">
-                Total Amount
-              </Label>
-              <div className="text-2xl font-bold text-green-700">
-                Rs. {cart.total.toFixed(2)}
+          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 mt-4">
+            {/* Left Column - Bank Details */}
+            <div className="lg:w-1/2 space-y-4 sm:space-y-6">
+              {/* Total Amount */}
+              <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
+                <Label className="text-sm sm:text-base font-semibold text-gray-900 block mb-2">
+                  Total Amount to Pay
+                </Label>
+                <div className="text-2xl sm:text-3xl font-bold text-green-700">
+                  Rs. {cart.total.toFixed(2)}
+                </div>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+                  Please transfer the exact amount to one of the accounts below
+                </p>
+              </div>
+
+              {/* Points Redemption */}
+              {cart.redeemedPoints > 0 && (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-purple-100">
+                      <Gift className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-purple-800">
+                        Redeeming {cart.redeemedPoints} reward points
+                      </p>
+                      <p className="text-xs text-purple-600">
+                        Rs. {cart.redeemedPoints.toFixed(2)} discount applied
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Bank Selection */}
+              <div>
+                <Label className="text-sm sm:text-base font-semibold mb-3 block">
+                  Select Bank for Transfer
+                </Label>
+                <RadioGroup
+                  value={selectedBank}
+                  onValueChange={setSelectedBank}
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                >
+                  {bankDetails.map((bank) => (
+                    <div key={bank.id}>
+                      <RadioGroupItem
+                        value={bank.id}
+                        id={bank.id}
+                        className="sr-only"
+                      />
+                      <Label
+                        htmlFor={bank.id}
+                        className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+                          selectedBank === bank.id
+                            ? `border-green-400 bg-gradient-to-r ${bank.color}/10`
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <div className={`p-2 rounded-lg bg-gradient-to-r ${bank.color} text-white`}>
+                          {bank.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm sm:text-base font-semibold text-gray-900 truncate">
+                            {bank.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">Click to select</p>
+                        </div>
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+
+              {/* Bank Details Toggle for Mobile */}
+              <div className="lg:hidden">
+                <Button
+                  variant="outline"
+                  className="w-full justify-between"
+                  onClick={() => setShowBankDetails(!showBankDetails)}
+                >
+                  <span className="flex items-center gap-2">
+                    <Building className="h-4 w-4" />
+                    View Bank Details
+                  </span>
+                  {showBankDetails ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </Button>
+
+                {showBankDetails && selectedBankDetail && (
+                  <div className="mt-4">
+                    <Card className="border-2 border-green-200 overflow-hidden">
+                      <CardHeader className="bg-gradient-to-r from-gray-50 to-green-50/50 pb-3">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <div className={`p-2 rounded-lg bg-gradient-to-r ${selectedBankDetail.color} text-white`}>
+                            {selectedBankDetail.icon}
+                          </div>
+                          <span className="truncate">{selectedBankDetail.name} Details</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-4 space-y-4">
+                        <div className="space-y-3">
+                          {/* Account Holder */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                              <span className="text-sm font-medium">Account Holder</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <code className="bg-gray-100 px-3 py-1 rounded-lg font-mono text-sm break-all max-w-[200px] sm:max-w-none">
+                                {selectedBankDetail.accountHolder}
+                              </code>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 flex-shrink-0"
+                                onClick={() => handleCopyToClipboard(selectedBankDetail.accountHolder, "Account Holder")}
+                              >
+                                {copiedField === "Account Holder" ? (
+                                  <CheckCheck className="h-4 w-4 text-green-600" />
+                                ) : (
+                                  <Copy className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Account Number */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <CreditCard className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                              <span className="text-sm font-medium">Account Number</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <code className="bg-gray-100 px-3 py-1 rounded-lg font-mono text-sm break-all max-w-[200px] sm:max-w-none">
+                                {selectedBankDetail.accountNumber}
+                              </code>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 flex-shrink-0"
+                                onClick={() => handleCopyToClipboard(selectedBankDetail.accountNumber, "Account Number")}
+                              >
+                                {copiedField === "Account Number" ? (
+                                  <CheckCheck className="h-4 w-4 text-green-600" />
+                                ) : (
+                                  <Copy className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Branch */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <Building className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                              <span className="text-sm font-medium">Branch</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <code className="bg-gray-100 px-3 py-1 rounded-lg font-mono text-sm break-all max-w-[200px] sm:max-w-none">
+                                {selectedBankDetail.branch}
+                              </code>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 flex-shrink-0"
+                                onClick={() => handleCopyToClipboard(selectedBankDetail.branch, "Branch")}
+                              >
+                                {copiedField === "Branch" ? (
+                                  <CheckCheck className="h-4 w-4 text-green-600" />
+                                ) : (
+                                  <Copy className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Important Note */}
+                        <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-3">
+                          <p className="text-sm text-yellow-800 font-medium">
+                            💡 Important: Please include your reference number in the payment description
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+              </div>
+
+              {/* Bank Details for Desktop */}
+              <div className="hidden lg:block">
+                {selectedBankDetail && (
+                  <Card className="border-2 border-green-200 overflow-hidden">
+                    <CardHeader className="bg-gradient-to-r from-gray-50 to-green-50/50 pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className={`p-2 rounded-lg bg-gradient-to-r ${selectedBankDetail.color} text-white`}>
+                          {selectedBankDetail.icon}
+                        </div>
+                        <span className="truncate">{selectedBankDetail.name} Details</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                      <div className="space-y-3">
+                        {/* Account Holder */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            <span className="text-sm font-medium">Account Holder</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <code className="bg-gray-100 px-3 py-1 rounded-lg font-mono text-sm break-all max-w-[200px] sm:max-w-none">
+                              {selectedBankDetail.accountHolder}
+                            </code>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 flex-shrink-0"
+                              onClick={() => handleCopyToClipboard(selectedBankDetail.accountHolder, "Account Holder")}
+                            >
+                              {copiedField === "Account Holder" ? (
+                                <CheckCheck className="h-4 w-4 text-green-600" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Account Number */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            <span className="text-sm font-medium">Account Number</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <code className="bg-gray-100 px-3 py-1 rounded-lg font-mono text-sm break-all max-w-[200px] sm:max-w-none">
+                              {selectedBankDetail.accountNumber}
+                            </code>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 flex-shrink-0"
+                              onClick={() => handleCopyToClipboard(selectedBankDetail.accountNumber, "Account Number")}
+                            >
+                              {copiedField === "Account Number" ? (
+                                <CheckCheck className="h-4 w-4 text-green-600" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Branch */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <Building className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            <span className="text-sm font-medium">Branch</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <code className="bg-gray-100 px-3 py-1 rounded-lg font-mono text-sm break-all max-w-[200px] sm:max-w-none">
+                              {selectedBankDetail.branch}
+                            </code>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 flex-shrink-0"
+                              onClick={() => handleCopyToClipboard(selectedBankDetail.branch, "Branch")}
+                            >
+                              {copiedField === "Branch" ? (
+                                <CheckCheck className="h-4 w-4 text-green-600" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Important Note */}
+                      <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-3">
+                        <p className="text-sm text-yellow-800 font-medium">
+                          💡 Important: Please include your reference number in the payment description
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </div>
 
-            {cart.redeemedPoints > 0 && (
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-green-100">
-                    <Gift className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-green-800">
-                      Redeeming {cart.redeemedPoints} points
-                    </p>
-                    <p className="text-xs text-green-600">
-                      Rs. {cart.redeemedPoints.toFixed(2)} discount applied
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div>
-              <Label
-                htmlFor="receipt"
-                className="block mb-3 text-base font-semibold"
-              >
-                Payment Receipt
-              </Label>
-              <label
-                htmlFor="receipt"
-                className="flex flex-col items-center justify-center w-full h-32 sm:h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-green-400 hover:bg-green-50/50 transition-all duration-300 group"
-              >
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Upload className="h-10 w-10 text-muted-foreground group-hover:text-green-600 mb-3 transition-colors" />
-                  <p className="mb-2 text-sm font-medium text-gray-700 group-hover:text-green-700">
-                    <span className="font-semibold">Click to upload</span> or
-                    drag and drop
+            {/* Right Column - Payment Form */}
+            <div className="lg:w-1/2 space-y-4 sm:space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <CreditCard className="h-5 w-5" />
+                    Payment Details
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Fill in your payment transfer details
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    Accepted: images, pdf (MAX. 5MB)
-                  </p>
-                </div>
-                <Input
-                  id="receipt"
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
-                  className="hidden"
-                />
-              </label>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Account Holder Name */}
+                  <div className="space-y-2">
+                    <Label htmlFor="accountHolderName" className="flex items-center gap-2 text-sm">
+                      <User className="h-4 w-4" />
+                      Account Holder Name
+                    </Label>
+                    <Input
+                      id="accountHolderName"
+                      name="accountHolderName"
+                      value={paymentForm.accountHolderName}
+                      onChange={handlePaymentFormChange}
+                      placeholder="Enter your name as in bank account"
+                      className="border h-11"
+                      required
+                    />
+                  </div>
 
-              {receiptFile && (
-                <div className="mt-4 flex items-center justify-between p-4 bg-green-50 rounded-xl border-2 border-green-200">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-green-100">
-                      <Upload className="h-5 w-5 text-green-600" />
+                  {/* Bank Name and Account Number */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="bankName" className="flex items-center gap-2 text-sm">
+                        <Building className="h-4 w-4" />
+                        Bank Name
+                      </Label>
+                      <Input
+                        id="bankName"
+                        name="bankName"
+                        value={paymentForm.bankName}
+                        onChange={handlePaymentFormChange}
+                        placeholder="Your bank name"
+                        className="border h-11"
+                        required
+                      />
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 truncate max-w-xs">
-                        {receiptFile.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {(receiptFile.size / 1024).toFixed(2)} KB
-                      </p>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="accountNumber" className="flex items-center gap-2 text-sm">
+                        <CreditCard className="h-4 w-4" />
+                        Account Number
+                      </Label>
+                      <Input
+                        id="accountNumber"
+                        name="accountNumber"
+                        value={paymentForm.accountNumber}
+                        onChange={handlePaymentFormChange}
+                        placeholder="Your account number"
+                        className="border h-11"
+                        required
+                      />
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setReceiptFile(null)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    Remove
-                  </Button>
-                </div>
-              )}
+
+                  {/* Reference Number */}
+                  <div className="space-y-2">
+                    <Label htmlFor="referenceNumber" className="flex items-center gap-2 text-sm">
+                      <Hash className="h-4 w-4" />
+                      Payment Reference Number
+                    </Label>
+                    <Input
+                      id="referenceNumber"
+                      name="referenceNumber"
+                      value={paymentForm.referenceNumber}
+                      onChange={handlePaymentFormChange}
+                      placeholder="Enter payment reference number"
+                      className="border h-11"
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      This is the unique reference number from your bank transfer
+                    </p>
+                  </div>
+
+                  {/* Amount Transferred */}
+                  <div className="space-y-2">
+                    <Label htmlFor="amount" className="flex items-center gap-2 text-sm">
+                      <Banknote className="h-4 w-4" />
+                      Amount Transferred
+                    </Label>
+                    <Input
+                      id="amount"
+                      name="amount"
+                      value={paymentForm.amount}
+                      onChange={handlePaymentFormChange}
+                      placeholder="Amount"
+                      className="border h-11 font-mono"
+                      required
+                      readOnly
+                    />
+                  </div>
+
+                  {/* Upload Receipt */}
+                  <div className="space-y-3">
+                    <Label htmlFor="receipt" className="block text-base font-semibold">
+                      Upload Payment Receipt
+                    </Label>
+                    <label
+                      htmlFor="receipt"
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-green-400 hover:bg-green-50/50 transition-all duration-300 group"
+                    >
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6 px-4">
+                        <Upload className="h-10 w-10 text-muted-foreground group-hover:text-green-600 mb-3 transition-colors" />
+                        <p className="mb-2 text-sm font-medium text-gray-700 group-hover:text-green-700 text-center">
+                          <span className="font-semibold">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-muted-foreground text-center">
+                          JPG, PNG, PDF (MAX. 5MB)
+                        </p>
+                      </div>
+                      <Input
+                        id="receipt"
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
+                        className="hidden"
+                        required
+                      />
+                    </label>
+
+                    {receiptFile && (
+                      <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl border-2 border-green-200">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="p-2 rounded-lg bg-green-100 flex-shrink-0">
+                            <Upload className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {receiptFile.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {(receiptFile.size / 1024).toFixed(2)} KB
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setReceiptFile(null)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 flex-shrink-0 ml-2 h-8 w-8"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
 
-          <DialogFooter className="gap-3 sm:gap-0">
+          {/* Footer - Mobile optimized buttons */}
+          <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-4 border-t mt-4">
             <Button
               variant="outline"
               onClick={() => setCheckoutOpen(false)}
-              className="border-2"
+              className="w-full sm:w-auto border h-10 sm:h-11"
+              size="sm"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSubmitOrder}
-              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30"
+              disabled={!receiptFile || !paymentForm.referenceNumber}
+              className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 disabled:opacity-50 h-10 sm:h-11"
+              size="sm"
             >
               <Sparkles className="mr-2 h-4 w-4" />
               Submit Order
