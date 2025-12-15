@@ -67,74 +67,79 @@ export const NotificationDetailsDialog = ({
     };
 
     const renderOrderDetails = () => (
-        <div className="space-y-6">
-            {/* Order Summary Cards */}
-            <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
-                    <p className="text-xs text-muted-foreground font-medium mb-1">Total Amount</p>
-                    <p className="text-xl font-bold text-gray-900">Rs. {metadata.total.toFixed(2)}</p>
-                </div>
-                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
-                    <p className="text-xs text-muted-foreground font-medium mb-1">Items Count</p>
-                    <p className="text-xl font-bold text-gray-900">{metadata.items.length} Items</p>
-                </div>
-            </div>
-
-            {/* Items List */}
-            <div>
-                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                    <Package className="h-4 w-4 text-gray-500" />
-                    Order Items
-                </h4>
-                <div className="space-y-3">
-                    {metadata.items.map((item: any, index: number) => (
-                        <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-gray-100 bg-white shadow-sm">
-                            <div>
-                                <p className="font-medium text-sm text-gray-900">{item.productName}</p>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-xs text-gray-500">Qty: {item.qty} kg</span>
-                                    <span className="text-xs text-gray-300">|</span>
-                                    <span className="text-xs text-gray-500">Seller: {item.sellerName}</span>
-                                </div>
-                            </div>
-                            <p className="font-semibold text-sm">Rs. {(item.pricePerKg * item.qty).toFixed(2)}</p>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Payment & Delivery Info */}
-            <div className="grid sm:grid-cols-2 gap-6">
+        <div className="space-y-6 md:space-y-0 md:grid md:grid-cols-2 md:gap-6">
+            {/* Left Column: Items List (Takes full height on desktop) */}
+            <div className="space-y-6">
                 <div>
                     <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                        <CreditCard className="h-4 w-4 text-gray-500" />
-                        Payment Details
+                        <Package className="h-4 w-4 text-gray-500" />
+                        Order Items
                     </h4>
-                    <div className="bg-gray-50 rounded-lg p-3 space-y-2">
-                        <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Method</span>
-                            <span className="font-medium">Bank Transfer</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Bank</span>
-                            <span className="font-medium">{metadata.paymentDetails?.selectedBank}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Ref No.</span>
-                            <span className="font-medium font-mono text-xs">{metadata.paymentDetails?.referenceNumber}</span>
-                        </div>
+                    <div className="space-y-3">
+                        {metadata.items.map((item: any, index: number) => (
+                            <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-gray-100 bg-white shadow-sm">
+                                <div>
+                                    <p className="font-medium text-sm text-gray-900">{item.productName}</p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className="text-xs text-gray-500">Qty: {item.qty} kg</span>
+                                        <span className="text-xs text-gray-300">|</span>
+                                        <span className="text-xs text-gray-500">Seller: {item.sellerName}</span>
+                                    </div>
+                                </div>
+                                <p className="font-semibold text-sm">Rs. {(item.pricePerKg * item.qty).toFixed(2)}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Right Column: Summary & Info */}
+            <div className="space-y-6">
+                {/* Order Summary Cards */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
+                        <p className="text-xs text-muted-foreground font-medium mb-1">Total Amount</p>
+                        <p className="text-xl font-bold text-gray-900">Rs. {metadata.total.toFixed(2)}</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
+                        <p className="text-xs text-muted-foreground font-medium mb-1">Items Count</p>
+                        <p className="text-xl font-bold text-gray-900">{metadata.items.length} Items</p>
                     </div>
                 </div>
 
-                <div>
-                    <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-gray-500" />
-                        Delivery Info
-                    </h4>
-                    <div className="bg-gray-50 rounded-lg p-3 space-y-2">
-                        <div className="text-sm">
-                            <span className="text-gray-500 block text-xs mb-1">Delivery Address</span>
-                            <span className="font-medium line-clamp-2">{metadata.address}</span>
+                {/* Payment & Delivery Info - Stacked in right column */}
+                <div className="space-y-6">
+                    <div>
+                        <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                            <CreditCard className="h-4 w-4 text-gray-500" />
+                            Payment Details
+                        </h4>
+                        <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Method</span>
+                                <span className="font-medium">Bank Transfer</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Bank</span>
+                                <span className="font-medium">{metadata.paymentDetails?.selectedBank}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Ref No.</span>
+                                <span className="font-medium font-mono text-xs">{metadata.paymentDetails?.referenceNumber}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-gray-500" />
+                            Delivery Info
+                        </h4>
+                        <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                            <div className="text-sm">
+                                <span className="text-gray-500 block text-xs mb-1">Delivery Address</span>
+                                <span className="font-medium line-clamp-2">{metadata.address}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -203,12 +208,12 @@ export const NotificationDetailsDialog = ({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md md:max-w-lg lg:max-w-xl mx-auto overflow-hidden p-0 border-0 shadow-2xl">
+            <DialogContent className="max-w-md md:max-w-lg lg:max-w-4xl mx-auto overflow-hidden p-0 border-0 shadow-2xl">
                 <div className="flex flex-col max-h-[90vh]">
                     {/* Custom Header */}
                     <div className={`
             px-6 py-5 
-            ${isOrder ? 'bg-gradient-to-br from-green-600 to-emerald-600' : 'bg-gradient-to-br from-purple-600 to-pink-600'}
+            ${isOrder ? 'bg-gradient-to-br from-blue-600 to-indigo-600' : 'bg-gradient-to-br from-purple-600 to-pink-600'}
             text-white
           `}>
                         <div className="flex items-center justify-between mb-4">

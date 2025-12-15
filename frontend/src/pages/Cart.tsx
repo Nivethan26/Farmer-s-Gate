@@ -219,6 +219,13 @@ const Cart = () => {
 
     // Send notifications
     Object.entries(itemsBySeller).forEach(([sellerId, items]) => {
+      // Create a simplified order object for the seller metadata containing only their items
+      const sellerOrderMetadata = {
+        ...order,
+        items: items, // Only show items relevant to this seller
+        total: items.reduce((sum, item) => sum + (item.pricePerKg * item.qty), 0) // Recalculate total for this seller
+      };
+
       dispatch(
         addNotification({
           title: "New Order Received",
@@ -230,6 +237,7 @@ const Cart = () => {
           sellerId: sellerId,
           buyerId: user!.id,
           link: `/seller/orders/`,
+          metadata: sellerOrderMetadata,
         })
       );
     });
