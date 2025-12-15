@@ -544,6 +544,45 @@
       "message": "செய்தி",
       "system": " அமைப்பு",
       "promotion": "பிரசாரம்"
+    },
+    "dialog": {
+      "orderPlaced": "ஆர்டர் வைக்கப்பட்டது",
+      "priceNegotiation": "விலை பேச்சுவார்த்தை",
+      "orderDetails": "ஆர்டர் விவரங்கள்",
+      "negotiation": "பேச்சுவார்த்தை",
+      "id": "ஐடி",
+      "close": "மூடு",
+      "detailsNotAvailable": "விவரங்கள் கிடைக்கவில்லை.",
+      "orderItems": "ஆர்டர் பொருட்கள்",
+      "qty": "அளவு",
+      "seller": "விற்பனையாளர்",
+      "totalAmount": "மொத்தத் தொகை",
+      "itemsCount": "பொருட்களின் எண்ணிக்கை",
+      "items": "பொருட்கள்",
+      "paymentDetails": "கட்டண விவரங்கள்",
+      "method": "முறை",
+      "bank": "வங்கி",
+      "refNo": "குறிப்பு எண்.",
+      "deliveryInfo": "விநியோகத் தகவல்",
+      "deliveryAddress": "விநியோக முகவரி",
+      "product": "தயாரிப்பு",
+      "lookingFor": "தேடுவது",
+      "currentMarketPrice": "தற்போதைய சந்தை விலை",
+      "yourOffer": "உங்கள் சலுகை",
+      "preferredDeliveryDate": "விருப்பமான விநியோக தேதி",
+      "notSpecified": "குறிப்பிடப்படவில்லை",
+      "yourNotes": "உங்கள் குறிப்புகள்"
+    },
+    "status": {
+      "pending": "நிலுவையில்",
+      "processing": "செயலாக்கத்தில்",
+      "shipped": "அனுப்பப்பட்டது",
+      "delivered": "வழங்கப்பட்டது",
+      "paid": "செலுத்தப்பட்டது",
+      "open": "திறந்த",
+      "accepted": "ஏற்கப்பட்டது",
+      "rejected": "நிராகரிக்கப்பட்டது",
+      "countered": "எதிர் வழங்கப்பட்டது"
     }
   }
 }

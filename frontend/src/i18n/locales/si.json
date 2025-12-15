@@ -557,6 +557,45 @@
       "message": "පණිවිඩ",
       "system": "සැකසුම්",
       "promotion": "ප්‍රවර්ධන"
+    },
+    "dialog": {
+      "orderPlaced": "ඇණවුම තබන ලදී",
+      "priceNegotiation": "මිල සාකච්ඡාව",
+      "orderDetails": "ඇණවුම් විස්තර",
+      "negotiation": "සාකච්ඡාව",
+      "id": "අංකය",
+      "close": "වසන්න",
+      "detailsNotAvailable": "විස්තර ලබා ගත නොහැක.",
+      "orderItems": "ඇණවුම් අයිතම",
+      "qty": "ප්‍රමාණය",
+      "seller": "විකුණුම්කරු",
+      "totalAmount": "මුළු මුදල",
+      "itemsCount": "අයිතම ගණන",
+      "items": "අයිතම",
+      "paymentDetails": "ගෙවීම් විස්තර",
+      "method": "ක්‍රමය",
+      "bank": "බැංකුව",
+      "refNo": "යොමු අංකය",
+      "deliveryInfo": "බෙදා හැරීමේ තොරතුරු",
+      "deliveryAddress": "බෙදා හැරීමේ ලිපිනය",
+      "product": "නිෂ්පාදනය",
+      "lookingFor": "සොයන්නේ",
+      "currentMarketPrice": "වත්මන් වෙළඳපල මිල",
+      "yourOffer": "ඔබේ දීමනාව",
+      "preferredDeliveryDate": "කැමති බෙදා හැරීමේ දිනය",
+      "notSpecified": "සදහන් කර නැත",
+      "yourNotes": "ඔබේ සටහන්"
+    },
+    "status": {
+      "pending": "විනිශ්චය",
+      "processing": "සැකසෙමින් පවතී",
+      "shipped": "නැව්ගත කර ඇත",
+      "delivered": "බෙදා හැර ඇත",
+      "paid": "ගෙවා ඇත",
+      "open": "විවෘත",
+      "accepted": "පිළිගෙන ඇත",
+      "rejected": "ප්‍රතික්ෂේප කර ඇත",
+      "countered": "ප්‍රති දීමනාව"
     }
   }
 }

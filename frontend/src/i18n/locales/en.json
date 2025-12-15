@@ -585,6 +585,45 @@
       "message": "Messages",
       "system": "System",
       "promotion": "Promotions"
+    },
+    "dialog": {
+      "orderPlaced": "Order Placed",
+      "priceNegotiation": "Price Negotiation",
+      "orderDetails": "Order Details",
+      "negotiation": "Negotiation",
+      "id": "ID",
+      "close": "Close",
+      "detailsNotAvailable": "Details not available.",
+      "orderItems": "Order Items",
+      "qty": "Qty",
+      "seller": "Seller",
+      "totalAmount": "Total Amount",
+      "itemsCount": "Items Count",
+      "items": "Items",
+      "paymentDetails": "Payment Details",
+      "method": "Method",
+      "bank": "Bank",
+      "refNo": "Ref No.",
+      "deliveryInfo": "Delivery Info",
+      "deliveryAddress": "Delivery Address",
+      "product": "Product",
+      "lookingFor": "Looking for",
+      "currentMarketPrice": "Current Market Price",
+      "yourOffer": "Your Offer",
+      "preferredDeliveryDate": "Preferred Delivery Date",
+      "notSpecified": "Not specified",
+      "yourNotes": "Your Notes"
+    },
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "paid": "Paid",
+      "open": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "countered": "Countered"
     }
   }
 }
