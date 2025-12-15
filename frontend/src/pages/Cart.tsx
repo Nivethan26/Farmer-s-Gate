@@ -132,7 +132,7 @@ const Cart = () => {
           role: "seller",
           sellerId: sellerId,
           buyerId: user!.id,
-          link: `/seller/orders/${order.id}`,
+          link: `/seller/orders/`,
         })
       );
     });
@@ -145,7 +145,7 @@ const Cart = () => {
         category: "order",
         role: "buyer",
         buyerId: user!.id,
-        link: `/buyer/orders/${order.id}`,
+        link: `/buyer/orders/`,
       })
     );
 

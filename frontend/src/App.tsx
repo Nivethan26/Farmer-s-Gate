@@ -21,6 +21,8 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import RoleBasedDashboard from "./pages/RoleBasedDashboard";
 import AccountProfile from "./pages/AccountProfile";
+import SellerOrders from "./pages/SellerOrders";
+import BuyerOrders from "./pages/BuyerOrders";
 
 const queryClient = new QueryClient();
 
@@ -39,64 +41,67 @@ const App = () => (
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            
-            <Route 
-              path="/buyer" 
+
+            <Route
+              path="/buyer"
               element={
-                <ProtectedRoute allowedRoles={['buyer']}>
+                <ProtectedRoute allowedRoles={["buyer"]}>
                   <BuyerDashboard />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/buyer/cart" 
-              element={<Cart />} 
-            />
-            
-            <Route 
-              path="/seller" 
+            <Route path="/buyer/cart" element={<Cart />} />
+
+            <Route
+              path="/seller"
               element={
-                <ProtectedRoute allowedRoles={['seller']}>
+                <ProtectedRoute allowedRoles={["seller"]}>
                   <SellerDashboard />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            <Route 
-              path="/admin" 
+            <Route path="/seller/orders" element={<SellerOrders />} />
+            <Route path="/buyer/orders" element={<BuyerOrders />} />
+
+            <Route
+              path="/admin"
               element={
-                <ProtectedRoute allowedRoles={['admin']}>
+                <ProtectedRoute allowedRoles={["admin"]}>
                   <AdminDashboard />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            <Route 
-              path="/agent" 
+
+            <Route
+              path="/agent"
               element={
-                <ProtectedRoute allowedRoles={['agent']}>
+                <ProtectedRoute allowedRoles={["agent"]}>
                   <AgentDashboard />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            <Route 
-              path="/account" 
+
+            <Route
+              path="/account"
               element={
-                <ProtectedRoute allowedRoles={['buyer', 'seller', 'admin', 'agent']}>
+                <ProtectedRoute
+                  allowedRoles={["buyer", "seller", "admin", "agent"]}
+                >
                   <RoleBasedDashboard />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/profile" 
+            <Route
+              path="/profile"
               element={
-                <ProtectedRoute allowedRoles={['buyer', 'seller', 'admin', 'agent']}>
+                <ProtectedRoute
+                  allowedRoles={["buyer", "seller", "admin", "agent"]}
+                >
                   <AccountProfile />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
+
             <Route path="/not-authorized" element={<NotFound />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
