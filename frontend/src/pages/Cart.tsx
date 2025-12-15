@@ -1,16 +1,27 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import type { RootState } from '@/store';
-import { removeFromCart, updateQty, clearCart, setRedeemedPoints } from '@/store/cartSlice';
-import { createOrder } from '@/store/ordersSlice';
-import { redeemRewardPoints, addRewardPoints } from '@/store/authSlice';
-import { Navbar } from '@/components/layout/Navbar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import type { RootState } from "@/store";
+import {
+  removeFromCart,
+  updateQty,
+  clearCart,
+  setRedeemedPoints,
+} from "@/store/cartSlice";
+import { createOrder } from "@/store/ordersSlice";
+import { redeemRewardPoints, addRewardPoints } from "@/store/authSlice";
+import { Navbar } from "@/components/layout/Navbar";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -18,10 +29,23 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Trash2, ShoppingBag, Upload, ChevronLeft, Gift, Plus, Minus, ArrowRight, Sparkles, Shield, Truck, CheckCircle2 } from 'lucide-react';
-import { toast } from 'sonner';
-
+} from "@/components/ui/dialog";
+import {
+  Trash2,
+  ShoppingBag,
+  Upload,
+  ChevronLeft,
+  Gift,
+  Plus,
+  Minus,
+  ArrowRight,
+  Sparkles,
+  Shield,
+  Truck,
+  CheckCircle2,
+} from "lucide-react";
+import { toast } from "sonner";
+import { addNotification } from "@/store/uiSlice";
 const Cart = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -41,9 +65,9 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
-    if (!user || user.role !== 'buyer') {
-      toast.error(t('cart.pleaseSignIn'));
-      navigate('/login');
+    if (!user || user.role !== "buyer") {
+      toast.error(t("cart.pleaseSignIn"));
+      navigate("/login");
       return;
     }
     setCheckoutOpen(true);
@@ -51,14 +75,21 @@ const Cart = () => {
 
   const handleSubmitOrder = () => {
     if (!receiptFile) {
-      toast.error(t('cart.uploadReceipt'));
+      toast.error(t("cart.uploadReceipt"));
       return;
     }
 
     // Calculate points earned (1 point per Rs. 100 spent, rounded down)
     const pointsEarned = Math.floor(cart.total / 100);
     const redeemedPoints = cart.redeemedPoints;
+    const itemsBySeller: Record<string, typeof cart.items> = {};
 
+    cart.items.forEach((item) => {
+      if (!itemsBySeller[item.sellerId]) {
+        itemsBySeller[item.sellerId] = [];
+      }
+      itemsBySeller[item.sellerId].push(item);
+    });
     // Redeem points if any were used
     if (redeemedPoints > 0 && user) {
       dispatch(redeemRewardPoints(redeemedPoints));
@@ -71,13 +102,15 @@ const Cart = () => {
       items: cart.items.map((item) => ({
         productId: item.productId,
         productName: item.productName,
+        sellerId: item.sellerId,
+        sellerName: item.sellerName,
         qty: item.qty,
         pricePerKg: item.pricePerKg,
       })),
       subtotal: cart.subtotal,
       deliveryFee: cart.deliveryFee,
       total: cart.total,
-      status: 'processing' as const,
+      status: "processing" as const,
       receiptUrl: `receipt-${Date.now()}.jpg`,
       createdAt: new Date().toISOString(),
       paidAt: null,
@@ -85,28 +118,56 @@ const Cart = () => {
       redeemedPoints: redeemedPoints > 0 ? redeemedPoints : undefined,
       pointsEarned: pointsEarned > 0 ? pointsEarned : undefined,
     };
-
+    console.log(order);
     dispatch(createOrder(order));
-    
+    Object.entries(itemsBySeller).forEach(([sellerId, items]) => {
+      dispatch(
+        addNotification({
+          title: "New Order Received",
+          message: `${user!.name} placed an order with ${
+            items.length
+          } item(s).`,
+          type: "info",
+          category: "order",
+          role: "seller",
+          sellerId: sellerId,
+          buyerId: user!.id,
+          link: `/seller/orders/${order.id}`,
+        })
+      );
+    });
+
+    dispatch(
+      addNotification({
+        title: "Order Placed",
+        message: `Your order #${order.id} is under processing.`,
+        type: "success",
+        category: "order",
+        role: "buyer",
+        buyerId: user!.id,
+        link: `/buyer/orders/${order.id}`,
+      })
+    );
+
     // Show notification for order status
-    toast.info('Order Under Processing', {
+    toast.info("Order Under Processing", {
       description: `Order #${order.id} has been placed and is now being processed.`,
       duration: 5000,
     });
-    
+
     // Add reward points to user account
     if (pointsEarned > 0 && user) {
       dispatch(addRewardPoints(pointsEarned));
       toast.success(`Order placed! You earned ${pointsEarned} reward points!`);
     } else {
-      toast.success(t('cart.orderPlaced'));
+      toast.success(t("cart.orderPlaced"));
     }
-    
+
     dispatch(clearCart());
     setCheckoutOpen(false);
     setReceiptFile(null);
     setPointsToRedeem(0);
-    navigate('/buyer/orders');
+    navigate("/buyer/orders");
   };
 
   if (cart.items.length === 0) {
@@ -126,16 +187,16 @@ const Cart = () => {
                 Start adding products to your cart from our catalog
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-3">
-                <Button 
-                  onClick={() => navigate('/catalog')} 
+                <Button
+                  onClick={() => navigate("/catalog")}
                   className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30"
                 >
                   Browse Products
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate('/buyer')}
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/buyer")}
                   className="border-2 text-green-700 hover:text-green-800 hover:border-green-300 hover:bg-green-50"
                 >
                   <ChevronLeft className="mr-2 h-4 w-4" />
@@ -161,13 +222,14 @@ const Cart = () => {
               Shopping Cart
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              {cart.items.length} {cart.items.length === 1 ? 'item' : 'items'} in your cart
+              {cart.items.length} {cart.items.length === 1 ? "item" : "items"}{" "}
+              in your cart
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/catalog')}
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/catalog")}
               className="border-2 hover:bg-green-50 hover:border-green-300"
             >
               Continue Shopping
@@ -182,15 +244,19 @@ const Cart = () => {
                     <div className="bg-white rounded-lg shadow-xl border-2 border-green-200 p-3 min-w-[300px] relative overflow-hidden animate-[slideInRight_0.3s_ease-out]">
                       {/* Loading line animation */}
                       <div className="absolute top-0 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 animate-[loading_2s_ease-in-out_forwards]"></div>
-                      
+
                       {/* Content */}
                       <div className="flex items-center gap-2.5">
                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
                           <CheckCircle2 className="h-4 w-4 text-white" />
                         </div>
                         <div className="flex-1">
-                          <p className="font-semibold text-sm text-gray-900">Cart cleared</p>
-                          <p className="text-xs text-green-600 font-medium">All items have been removed from your cart.</p>
+                          <p className="font-semibold text-sm text-gray-900">
+                            Cart cleared
+                          </p>
+                          <p className="text-xs text-green-600 font-medium">
+                            All items have been removed from your cart.
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -235,15 +301,25 @@ const Cart = () => {
                           {item.productName}
                         </h3>
                         <p className="text-xs sm:text-sm text-muted-foreground mb-2">
-                          by <span className="font-semibold text-gray-700">{item.sellerName}</span>
+                          by{" "}
+                          <span className="font-semibold text-gray-700">
+                            {item.sellerName}
+                          </span>
                         </p>
                         <div className="flex flex-wrap items-center gap-3">
                           <div className="flex items-baseline gap-1">
-                            <span className="text-lg sm:text-xl font-bold text-green-600">Rs. {item.pricePerKg}</span>
-                            <span className="text-xs text-muted-foreground">/kg</span>
+                            <span className="text-lg sm:text-xl font-bold text-green-600">
+                              Rs. {item.pricePerKg}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              /kg
+                            </span>
                           </div>
                           <div className="text-xs sm:text-sm text-muted-foreground">
-                            Subtotal: <span className="font-semibold text-gray-900">Rs. {(item.pricePerKg * item.qty).toFixed(2)}</span>
+                            Subtotal:{" "}
+                            <span className="font-semibold text-gray-900">
+                              Rs. {(item.pricePerKg * item.qty).toFixed(2)}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -254,7 +330,9 @@ const Cart = () => {
                         <div className="flex items-center gap-1 bg-gray-50 rounded-lg border border-gray-200 p-0.5">
                           <button
                             aria-label="Decrease quantity"
-                            onClick={() => handleUpdateQty(item.productId, item.qty - 1)}
+                            onClick={() =>
+                              handleUpdateQty(item.productId, item.qty - 1)
+                            }
                             className="p-1.5 rounded-md hover:bg-gray-200 transition-colors text-gray-600 hover:text-gray-900"
                           >
                             <Minus className="h-3.5 w-3.5" />
@@ -272,7 +350,9 @@ const Cart = () => {
                           />
                           <button
                             aria-label="Increase quantity"
-                            onClick={() => handleUpdateQty(item.productId, item.qty + 1)}
+                            onClick={() =>
+                              handleUpdateQty(item.productId, item.qty + 1)
+                            }
                             className="p-1.5 rounded-md hover:bg-green-100 transition-colors text-green-600 hover:text-green-700"
                           >
                             <Plus className="h-3.5 w-3.5" />
@@ -281,11 +361,15 @@ const Cart = () => {
 
                         {/* Quantity Display & Remove */}
                         <div className="flex flex-col items-end gap-1">
-                          <div className="text-xs font-semibold text-gray-700">{item.qty} kg</div>
+                          <div className="text-xs font-semibold text-gray-700">
+                            {item.qty} kg
+                          </div>
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => dispatch(removeFromCart(item.productId))}
+                            onClick={() =>
+                              dispatch(removeFromCart(item.productId))
+                            }
                             className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg"
                             aria-label="Remove item"
                           >
@@ -313,7 +397,9 @@ const Cart = () => {
                       <ShoppingBag className="h-5 w-5" />
                       Order Summary
                     </h2>
-                    <p className="text-green-50 text-sm">Review your items and place the order</p>
+                    <p className="text-green-50 text-sm">
+                      Review your items and place the order
+                    </p>
                   </div>
                 </div>
 
@@ -321,7 +407,9 @@ const Cart = () => {
                 <CardContent className="p-5 sm:p-6 space-y-4">
                   <div className="flex justify-between text-sm py-2 border-b border-gray-200">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span className="font-semibold text-gray-900">Rs. {cart.subtotal.toFixed(2)}</span>
+                    <span className="font-semibold text-gray-900">
+                      Rs. {cart.subtotal.toFixed(2)}
+                    </span>
                   </div>
 
                   <div className="flex justify-between text-sm py-2 border-b border-gray-200">
@@ -329,7 +417,9 @@ const Cart = () => {
                       <Truck className="h-4 w-4" />
                       Delivery Fee
                     </span>
-                    <span className="font-semibold text-gray-900">Rs. {cart.deliveryFee.toFixed(2)}</span>
+                    <span className="font-semibold text-gray-900">
+                      Rs. {cart.deliveryFee.toFixed(2)}
+                    </span>
                   </div>
 
                   {/* Reward Points Redemption */}
@@ -341,8 +431,12 @@ const Cart = () => {
                             <Gift className="h-4 w-4 text-purple-600" />
                           </div>
                           <div>
-                            <span className="font-medium text-gray-900">Redeem Points</span>
-                            <p className="text-xs text-muted-foreground">Available: {user.rewardPoints} pts</p>
+                            <span className="font-medium text-gray-900">
+                              Redeem Points
+                            </span>
+                            <p className="text-xs text-muted-foreground">
+                              Available: {user.rewardPoints} pts
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -350,13 +444,22 @@ const Cart = () => {
                         <Input
                           type="number"
                           min="0"
-                          max={Math.min(user.rewardPoints, cart.subtotal + cart.deliveryFee)}
+                          max={Math.min(
+                            user.rewardPoints,
+                            cart.subtotal + cart.deliveryFee
+                          )}
                           value={pointsToRedeem}
                           onChange={(e) => {
-                            const value = Math.max(0, Math.min(
-                              Number(e.target.value),
-                              Math.min(user!.rewardPoints || 0, cart.subtotal + cart.deliveryFee)
-                            ));
+                            const value = Math.max(
+                              0,
+                              Math.min(
+                                Number(e.target.value),
+                                Math.min(
+                                  user!.rewardPoints || 0,
+                                  cart.subtotal + cart.deliveryFee
+                                )
+                              )
+                            );
                             setPointsToRedeem(value);
                             dispatch(setRedeemedPoints(value));
                           }}
@@ -367,7 +470,10 @@ const Cart = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            const maxRedeem = Math.min(user!.rewardPoints || 0, cart.subtotal + cart.deliveryFee);
+                            const maxRedeem = Math.min(
+                              user!.rewardPoints || 0,
+                              cart.subtotal + cart.deliveryFee
+                            );
                             setPointsToRedeem(maxRedeem);
                             dispatch(setRedeemedPoints(maxRedeem));
                           }}
@@ -378,8 +484,12 @@ const Cart = () => {
                       </div>
                       {cart.redeemedPoints > 0 && (
                         <div className="flex justify-between text-sm bg-green-50 rounded-lg p-3 border border-green-200">
-                          <span className="text-green-700 font-medium">Points Discount:</span>
-                          <span className="font-bold text-green-700">-Rs. {cart.redeemedPoints.toFixed(2)}</span>
+                          <span className="text-green-700 font-medium">
+                            Points Discount:
+                          </span>
+                          <span className="font-bold text-green-700">
+                            -Rs. {cart.redeemedPoints.toFixed(2)}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -387,8 +497,12 @@ const Cart = () => {
 
                   <div className="border-t-2 border-green-200 pt-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold text-gray-900">Total</span>
-                      <span className="text-2xl font-bold text-green-600">Rs. {cart.total.toFixed(2)}</span>
+                      <span className="text-lg font-bold text-gray-900">
+                        Total
+                      </span>
+                      <span className="text-2xl font-bold text-green-600">
+                        Rs. {cart.total.toFixed(2)}
+                      </span>
                     </div>
                   </div>
 
@@ -398,14 +512,16 @@ const Cart = () => {
                       onClick={handleCheckout}
                     >
                       <Shield className="mr-2 h-5 w-5" />
-                      {t('cart.checkout')}
-                      <span className="ml-2 text-sm opacity-90">({cart.items.length} items)</span>
+                      {t("cart.checkout")}
+                      <span className="ml-2 text-sm opacity-90">
+                        ({cart.items.length} items)
+                      </span>
                     </Button>
 
                     <Button
                       variant="outline"
                       className="w-full h-11 border-2 hover:bg-green-50 hover:border-green-300"
-                      onClick={() => navigate('/catalog')}
+                      onClick={() => navigate("/catalog")}
                     >
                       Continue Shopping
                       <ArrowRight className="ml-2 h-4 w-4" />
@@ -417,7 +533,9 @@ const Cart = () => {
                 <div className="px-5 sm:px-6 py-4 bg-gradient-to-r from-gray-50 to-green-50/50 border-t border-gray-200">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Shield className="h-4 w-4 text-green-600" />
-                    <span>Secure checkout • Admin will verify your payment receipt</span>
+                    <span>
+                      Secure checkout • Admin will verify your payment receipt
+                    </span>
                   </div>
                 </div>
               </Card>
@@ -434,14 +552,19 @@ const Cart = () => {
               Upload Payment Receipt
             </DialogTitle>
             <DialogDescription className="text-base">
-              Please upload your payment receipt. Our admin team will verify the payment and process your order.
+              Please upload your payment receipt. Our admin team will verify the
+              payment and process your order.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6">
             <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
-              <Label className="text-base font-semibold text-gray-900">Total Amount</Label>
-              <div className="text-2xl font-bold text-green-700">Rs. {cart.total.toFixed(2)}</div>
+              <Label className="text-base font-semibold text-gray-900">
+                Total Amount
+              </Label>
+              <div className="text-2xl font-bold text-green-700">
+                Rs. {cart.total.toFixed(2)}
+              </div>
             </div>
 
             {cart.redeemedPoints > 0 && (
@@ -463,7 +586,10 @@ const Cart = () => {
             )}
 
             <div>
-              <Label htmlFor="receipt" className="block mb-3 text-base font-semibold">
+              <Label
+                htmlFor="receipt"
+                className="block mb-3 text-base font-semibold"
+              >
                 Payment Receipt
               </Label>
               <label
@@ -473,9 +599,12 @@ const Cart = () => {
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                   <Upload className="h-10 w-10 text-muted-foreground group-hover:text-green-600 mb-3 transition-colors" />
                   <p className="mb-2 text-sm font-medium text-gray-700 group-hover:text-green-700">
-                    <span className="font-semibold">Click to upload</span> or drag and drop
+                    <span className="font-semibold">Click to upload</span> or
+                    drag and drop
                   </p>
-                  <p className="text-xs text-muted-foreground">Accepted: images, pdf (MAX. 5MB)</p>
+                  <p className="text-xs text-muted-foreground">
+                    Accepted: images, pdf (MAX. 5MB)
+                  </p>
                 </div>
                 <Input
                   id="receipt"
@@ -493,15 +622,17 @@ const Cart = () => {
                       <Upload className="h-5 w-5 text-green-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900 truncate max-w-xs">{receiptFile.name}</p>
+                      <p className="text-sm font-medium text-gray-900 truncate max-w-xs">
+                        {receiptFile.name}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         {(receiptFile.size / 1024).toFixed(2)} KB
                       </p>
                     </div>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setReceiptFile(null)}
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
@@ -513,14 +644,14 @@ const Cart = () => {
           </div>
 
           <DialogFooter className="gap-3 sm:gap-0">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setCheckoutOpen(false)}
               className="border-2"
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleSubmitOrder}
               className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30"
             >

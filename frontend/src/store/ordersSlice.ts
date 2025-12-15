@@ -4,6 +4,8 @@ import ordersData from '@/data/orders.json';
 export interface OrderItem {
   productId: string;
   productName: string;
+  sellerId: string;        
+  sellerName: string;
   qty: number;
   pricePerKg: number;
 }

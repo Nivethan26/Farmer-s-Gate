@@ -17,7 +17,7 @@ export interface Notification {
   title: string;
   message: string;
   type: "info" | "success" | "warning" | "error";
-  category?: "order" | "system" | "message" | "promotion";
+  category?: "order" | "system" | "message" | 'delivery' | 'payment';
   role?: UserRole;
   link?: string;
   sender?: {
@@ -25,6 +25,8 @@ export interface Notification {
     name: string;
     role: UserRole;
   };
+  sellerId?: string;  
+  buyerId?: string;
   read: boolean;
   createdAt: string;
 }
