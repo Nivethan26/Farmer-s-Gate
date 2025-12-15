@@ -58,7 +58,7 @@ export const ProfileSection = ({ user }: ProfileSectionProps) => {
                 <div className="grid grid-cols-1 gap-3 sm:gap-4 text-xs sm:text-sm">
                   <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
                     <p className="text-muted-foreground text-[10px] sm:text-xs">{t('buyer.rewardPoints')}</p>
-                    <p className="font-medium text-purple-700 mt-1">{user?.rewardPoints || 0} points</p>
+                    <p className="font-medium text-purple-700 mt-1">{user?.rewardPoints || 0} {t('buyer.points')}</p>
                   </div>
                   <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
                     <p className="text-muted-foreground text-[10px] sm:text-xs">{t('buyer.nic')}</p>

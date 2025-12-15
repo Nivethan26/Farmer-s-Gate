@@ -50,7 +50,7 @@ export const HomeSection = ({
               asChild
               className="w-full mt-2 text-green-700 hover:text-green-800 hover:bg-green-100 text-xs sm:text-sm py-1.5 sm:py-2 h-auto whitespace-normal"
             >
-              <Link to="/buyer/cart">{t('buyer.viewCart')} →</Link>
+              <Link to="/buyer/cart">{t('buyer.viewCart')} <ArrowRight className="inline h-3 w-3 ml-1" /></Link>
             </Button>
           </CardContent>
         </Card>
@@ -72,7 +72,7 @@ export const HomeSection = ({
               className="w-full mt-2 text-blue-700 hover:text-blue-800 hover:bg-blue-100 text-xs sm:text-sm py-1.5 sm:py-2 h-auto whitespace-normal"
               onClick={onViewOrders}
             >
-              {t('buyer.viewAll')} →
+              {t('buyer.viewAll')} <ArrowRight className="inline h-3 w-3 ml-1" />
             </Button>
           </CardContent>
         </Card>
@@ -192,16 +192,16 @@ export const HomeSection = ({
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold text-sm sm:text-base text-gray-900 group-hover:text-green-700 transition-colors truncate">
-                          Order #{order.id.slice(-8)}
+                          {t('orderNumber', { number: order.id.slice(-8) })}
                         </p>
                         <p className="text-xs sm:text-sm text-muted-foreground">
-                          {order.items.length} items • Rs. {order.total.toFixed(2)}
+                          {order.items.length} {t('items')} • Rs. {order.total.toFixed(2)}
                         </p>
                       </div>
                     </div>
                   </div>
                   <Badge className={`${getOrderStatusColor(order.status)} border font-medium px-2 sm:px-3 py-1 text-xs sm:text-sm whitespace-nowrap`}>
-                    {order.status === 'processing' ? 'Under Processing' : order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    {t(`buyer.status.${order.status}`)}
                   </Badge>
                 </div>
               ))}

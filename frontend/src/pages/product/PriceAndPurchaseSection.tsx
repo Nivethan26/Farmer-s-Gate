@@ -58,22 +58,22 @@ export const PriceAndPurchaseSection = ({
         sellerName: product.sellerName,
       })
     );
-    
+
     // Custom toast with loading animation
     toast.custom(
       () => (
         <div className="bg-white rounded-lg shadow-xl border-2 border-green-200 p-3 min-w-[300px] relative overflow-hidden animate-[slideInRight_0.3s_ease-out]">
           {/* Loading line animation */}
           <div className="absolute top-0 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 animate-[loading_2s_ease-in-out_forwards]"></div>
-          
+
           {/* Content */}
           <div className="flex items-center gap-2.5">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
               <CheckCircle2 className="h-4 w-4 text-white" />
             </div>
             <div className="flex-1">
-              <p className="font-semibold text-sm text-gray-900">{qty}kg of {product.name}</p>
-              <p className="text-xs text-green-600 font-medium">{t('catalog.addToCart')}!</p>
+              <p className="font-semibold text-sm text-gray-900">{t('product.qtyOfProduct', { qty, product: product.name })}</p>
+              <p className="text-xs text-green-600 font-medium">{t('product.addedToCart')}</p>
             </div>
           </div>
         </div>
@@ -95,13 +95,13 @@ export const PriceAndPurchaseSection = ({
             </p>
             <span className="text-lg text-muted-foreground">/kg</span>
           </div>
-          <p className="text-sm text-muted-foreground">Price per kilogram</p>
+          <p className="text-sm text-muted-foreground">{t('product.pricePerKgLabel')}</p>
         </div>
 
         {/* Quantity Section */}
         <div className="mb-4">
           <Label htmlFor="qty" className="text-sm font-semibold mb-2 block">
-            Quantity (kg)
+            {t('cart.quantity')} (kg)
           </Label>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1 bg-gray-50 rounded-xl border-2 border-gray-200 p-1">
@@ -130,7 +130,7 @@ export const PriceAndPurchaseSection = ({
               </button>
             </div>
             <div className="flex-1">
-              <div className="text-sm text-muted-foreground">Subtotal</div>
+              <div className="text-sm text-muted-foreground">{t('cart.subtotal')}</div>
               <div className="text-xl font-bold text-gray-900">Rs. {(product.pricePerKg * qty).toFixed(2)}</div>
             </div>
           </div>
@@ -147,8 +147,8 @@ export const PriceAndPurchaseSection = ({
               <div className="flex items-center justify-center gap-2">
                 <MessageCircle className="h-6 w-6" />
                 <div className="text-left">
-                  <div className="font-bold text-lg">Chat with Agent</div>
-                  <div className="text-xs font-normal opacity-90">Instant WhatsApp Support</div>
+                  <div className="font-bold text-lg">{t('product.chatWithAgent')}</div>
+                  <div className="text-xs font-normal opacity-90">{t('product.instantSupport')}</div>
                 </div>
                 <Zap className="h-5 w-5 ml-auto animate-bounce" />
               </div>
@@ -180,19 +180,19 @@ export const PriceAndPurchaseSection = ({
               className="w-full h-12 border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 text-purple-700 hover:text-purple-800 hover:border-purple-300 text-base font-semibold"
               onClick={() => {
                 if (!user) {
-                  toast.info('Please login to negotiate');
+                  toast.info(t('product.loginToNegotiate'));
                   navigate('/login', { state: { from: `/product/${product.id}` } });
                   return;
                 }
                 if (user.role !== 'buyer') {
-                  toast.error('Only buyers can negotiate prices');
+                  toast.error(t('product.onlyBuyersNegotiate'));
                   return;
                 }
                 onNegotiateOpen();
               }}
             >
               <Scale className="mr-2 h-5 w-5" />
-              Negotiate Price
+              {t('product.negotiatePrice')}
             </Button>
           )}
 
@@ -217,7 +217,7 @@ export const PriceAndPurchaseSection = ({
               }}
             >
               <CreditCard className="mr-2 h-5 w-5" />
-              Checkout
+              {t('product.checkout')}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           )}
@@ -230,7 +230,7 @@ export const PriceAndPurchaseSection = ({
               onClick={onAgentDetailsOpen}
             >
               <Shield className="mr-2 h-5 w-5" />
-              View Agent Details
+              {t('product.viewAgentDetails')}
             </Button>
           )}
         </div>

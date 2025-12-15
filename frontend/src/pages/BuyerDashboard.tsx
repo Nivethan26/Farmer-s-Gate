@@ -114,7 +114,7 @@ const BuyerDashboard = () => {
         </div>
 
         <Tabs defaultValue="home" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm h-auto p-1">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm h-auto p-1">
             <TabsTrigger value="home" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center">
               {t('nav.home')}
             </TabsTrigger>

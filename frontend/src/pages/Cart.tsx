@@ -296,10 +296,10 @@ const Cart = () => {
                 <ShoppingBag className="h-12 w-12 text-green-600" />
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                Your cart is empty
+                {t("cart.emptyTitle")}
               </h2>
               <p className="text-muted-foreground mb-8 text-sm sm:text-base">
-                Start adding products to your cart from our catalog
+                {t("cart.emptyDesc")}
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-3">
                 <Button
@@ -334,11 +334,10 @@ const Cart = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
           <div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-poppins bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">
-              Shopping Cart
+              {t("cart.title")}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              {cart.items.length} {cart.items.length === 1 ? "item" : "items"}{" "}
-              in your cart
+              {t(cart.items.length === 1 ? "cart.itemsInCart_one" : "cart.itemsInCart_other", { count: cart.items.length })}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -347,7 +346,7 @@ const Cart = () => {
               onClick={() => navigate("/catalog")}
               className="border-2 hover:bg-green-50 hover:border-green-300"
             >
-              Continue Shopping
+              {t("cart.continueShopping")}
             </Button>
             <Button
               variant="outline"
@@ -384,7 +383,7 @@ const Cart = () => {
               className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              Clear Cart
+              {t("cart.clearCart")}
             </Button>
           </div>
         </div>
@@ -510,10 +509,10 @@ const Cart = () => {
                   <div className="relative z-10">
                     <h2 className="text-xl font-bold mb-1 flex items-center gap-2">
                       <ShoppingBag className="h-5 w-5" />
-                      Order Summary
+                      {t("cart.orderSummary")}
                     </h2>
                     <p className="text-green-50 text-sm">
-                      Review your items and place the order
+                      {t("cart.reviewOrder")}
                     </p>
                   </div>
                 </div>
@@ -615,7 +614,7 @@ const Cart = () => {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                       <div className="flex items-center gap-2">
                         <span className="text-base sm:text-lg font-bold text-gray-900">
-                          Total Amount:
+                          {t("cart.totalAmount")}:
                         </span>
                         <div className="sm:hidden text-xs text-muted-foreground">
                           ({cart.items.length} {cart.items.length === 1 ? 'item' : 'items'})
@@ -640,9 +639,9 @@ const Cart = () => {
                     >
                       <Shield className="mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                       <span className="truncate">
-                        {t("cart.checkout") || "Checkout"}
+                        {t("cart.checkout")}
                         <span className="hidden sm:inline ml-2 opacity-90">
-                          ({cart.items.length} {cart.items.length === 1 ? "item" : "items"})
+                          ({t("cart.itemsInCart_other", { count: cart.items.length })})
                         </span>
                       </span>
                     </Button>
@@ -652,7 +651,7 @@ const Cart = () => {
                       className="w-full h-11 border-2 hover:bg-green-50 hover:border-green-300 text-sm sm:text-base"
                       onClick={() => navigate("/catalog")}
                     >
-                      <span className="truncate">Continue Shopping</span>
+                      <span className="truncate">{t("cart.continueShopping")}</span>
                       <ArrowRight className="ml-2 h-4 w-4 flex-shrink-0" />
                     </Button>
                   </div>
@@ -663,7 +662,7 @@ const Cart = () => {
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Shield className="h-4 w-4 text-green-600" />
                     <span className="text-xs">
-                      Secure checkout • Admin will verify your payment receipt
+                      {t("cart.secureCheckoutDesc")}
                     </span>
                   </div>
                 </div>
@@ -678,10 +677,10 @@ const Cart = () => {
         <DialogContent className="sm:max-w-2xl lg:max-w-4xl max-w-[95vw] max-h-[90vh] sm:max-h-[95vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-              Complete Your Payment
+              {t("cart.paySecurely")}
             </DialogTitle>
             <DialogDescription className="text-sm sm:text-base">
-              Choose a bank, transfer the amount, and upload your payment receipt
+              {t("cart.chooseBankDesc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -691,13 +690,13 @@ const Cart = () => {
               {/* Total Amount */}
               <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
                 <Label className="text-sm sm:text-base font-semibold text-gray-900 block mb-2">
-                  Total Amount to Pay
+                  {t("cart.totalToPay")}
                 </Label>
                 <div className="text-2xl sm:text-3xl font-bold text-green-700">
                   Rs. {cart.total.toFixed(2)}
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-                  Please transfer the exact amount to one of the accounts below
+                  {t("cart.transferExact")}
                 </p>
               </div>
 

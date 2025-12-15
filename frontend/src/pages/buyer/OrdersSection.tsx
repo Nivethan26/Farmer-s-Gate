@@ -47,7 +47,7 @@ export const OrdersSection = ({
                     <div>
                       <p className="font-semibold text-lg text-gray-900 mb-1">{t('buyer.orderId')} {order.id.slice(-8)}</p>
                       <p className="text-sm text-muted-foreground">
-                        {new Date(order.createdAt).toLocaleDateString(t('language.english'), {
+                        {new Date(order.createdAt).toLocaleDateString(undefined, {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric'
@@ -56,7 +56,7 @@ export const OrdersSection = ({
                     </div>
                   </div>
                   <Badge className={`${getOrderStatusColor(order.status)} border font-medium px-4 py-1.5 h-auto whitespace-normal text-center`}>
-                    {order.status === 'processing' ? t('buyer.underProcessing') : order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    {t(`buyer.status.${order.status}`)}
                   </Badge>
                 </div>
 
@@ -87,7 +87,7 @@ export const OrdersSection = ({
                       {order.redeemedPoints && order.redeemedPoints > 0 && (
                         <div className="flex justify-between text-sm pt-2 border-t border-green-200">
                           <span className="text-muted-foreground">{t('buyer.pointsRedeemed')}:</span>
-                          <span className="font-medium text-orange-600">-{order.redeemedPoints} points</span>
+                          <span className="font-medium text-orange-600">-{order.redeemedPoints} {t('buyer.points')}</span>
                         </div>
                       )}
                       {order.pointsEarned && order.pointsEarned > 0 && (
@@ -95,7 +95,7 @@ export const OrdersSection = ({
                           <span className="text-muted-foreground">{t('buyer.pointsEarned')}:</span>
                           <span className="font-semibold text-green-600 flex items-center gap-1">
                             <Gift className="h-4 w-4" />
-                            +{order.pointsEarned} points
+                            +{order.pointsEarned} {t('buyer.points')}
                           </span>
                         </div>
                       )}
