@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/store/hooks';
 import { createNegotiation } from '@/store/catalogSlice';
+import { addNotification } from '@/store/uiSlice';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -100,8 +101,25 @@ export const NegotiationDialogSection = ({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    
+
     dispatch(createNegotiation(negotiation));
+
+    // Add notification to header
+    dispatch(addNotification({
+      title: 'Negotiation Requested',
+      message: `Your offer of Rs. ${negotiationPrice}/kg for ${product.name} has been sent to ${product.sellerName}. Status: Pending`,
+      type: 'neutral', // Neutral/Info for Pending
+      category: 'message',
+      role: 'buyer',
+      link: '/buyer?tab=negotiations',
+      metadata: negotiation,
+      sender: {
+        id: 'system',
+        name: 'System',
+        role: 'admin'
+      }
+    }));
+
     toast.success('Negotiation request sent successfully!');
     onOpenChange(false);
     setNegotiationPrice('');
@@ -191,11 +209,11 @@ export const NegotiationDialogSection = ({
                   type="text"
                   value={`Rs. ${product.pricePerKg}`}
                   readOnly
-                  className="bg-gray-50 border-gray-200 text-gray-700 text-sm sm:text-base pr-24"
+                  className="bg-green-50 border-green-200 text-green-700 text-sm sm:text-base pr-24 font-bold"
                 />
-                <Badge 
-                  variant="outline" 
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 whitespace-nowrap text-xs sm:text-sm"
+                <Badge
+                  variant="outline"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 whitespace-nowrap text-xs sm:text-sm bg-green-100 text-green-700 border-green-200"
                 >
                   Original Price
                 </Badge>
@@ -223,7 +241,7 @@ export const NegotiationDialogSection = ({
               />
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-              Total for {negotiationQty} kg: 
+              Total for {negotiationQty} kg:
               <span className="font-semibold text-gray-900 ml-2">
                 Rs. {(Number(negotiationPrice || 0) * negotiationQty).toFixed(2)}
               </span>
@@ -247,23 +265,11 @@ export const NegotiationDialogSection = ({
             </Select>
           </div>
 
-          {/* Product Description/Notes */}
-          <div>
-            <Label className="text-sm sm:text-base font-semibold mb-2 block">Additional Notes</Label>
-            <Textarea
-              value={negotiationNotes}
-              onChange={(e) => setNegotiationNotes(e.target.value)}
-              className="min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
-              placeholder="Add any special requirements, quality specifications, or additional notes..."
-            />
-            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-              This will be sent to the seller along with your offer.
-            </p>
-          </div>
+
 
           {/* Seller Information (Readonly) */}
           <div>
-            <Label className="text-sm sm:text-base font-semibold mb-2 block">Seller Information</Label>
+            <Label className="text-sm sm:text-base font-semibold mb-2 block">Seller Id</Label>
             <Input
               type="text"
               value={product.sellerId}
@@ -277,14 +283,14 @@ export const NegotiationDialogSection = ({
         </div>
 
         <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 mt-4">
-          <Button 
-            variant="outline" 
-            onClick={() => onOpenChange(false)} 
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
             className="w-full sm:w-auto border sm:border-2 text-sm sm:text-base"
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleNegotiate}
             className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm sm:text-base"
             disabled={!negotiationPrice || !deliveryDate}

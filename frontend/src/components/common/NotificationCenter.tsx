@@ -40,6 +40,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { NotificationDetailsDialog } from './NotificationDetailsDialog';
+import type { Notification } from '@/store/uiSlice';
 
 interface NotificationCenterProps {
   trigger?: React.ReactNode;
@@ -67,6 +69,7 @@ const getNotificationColor = (type: string) => {
     case 'success': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
     case 'error': return 'bg-rose-50 text-rose-700 border-rose-200';
     case 'warning': return 'bg-amber-50 text-amber-700 border-amber-200';
+    case 'neutral': return 'bg-gray-50 text-gray-700 border-gray-200';
     default: return 'bg-blue-50 text-blue-700 border-blue-200';
   }
 };
@@ -87,24 +90,25 @@ export const NotificationCenter = ({ trigger }: NotificationCenterProps) => {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
-  
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+
   const user = useAppSelector((state) => state.auth.user);
   const notifications = useAppSelector((state) => state.ui.notifications);
-  
+
   // Filter notifications by role and tab
   const filteredNotifications = notifications.filter((n) => {
     // Filter by user role
     if (n.role && n.role !== 'all' && n.role !== user?.role) return false;
-    
+
     // Filter by tab
     if (activeTab !== 'all' && n.category !== activeTab) return false;
-    
+
     // Filter by read status
     if (showUnreadOnly && n.read) return false;
-    
+
     return true;
   });
-  
+
   const unreadCount = filteredNotifications.filter((n) => !n.read).length;
   const totalUnread = notifications.filter((n) => !n.read).length;
 
@@ -112,7 +116,14 @@ export const NotificationCenter = ({ trigger }: NotificationCenterProps) => {
     if (!notification.read) {
       dispatch(markNotificationRead(notification.id));
     }
-    
+
+    // Check if we should open details dialog
+    if (notification.metadata) {
+      setSelectedNotification(notification);
+      setOpen(false);
+      return;
+    }
+
     if (notification.link) {
       navigate(notification.link);
       setOpen(false);
@@ -136,7 +147,7 @@ export const NotificationCenter = ({ trigger }: NotificationCenterProps) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-    
+
     if (diffInHours < 1) {
       return t('notifications.justNow');
     } else if (diffInHours < 24) {
@@ -177,8 +188,8 @@ export const NotificationCenter = ({ trigger }: NotificationCenterProps) => {
       <DropdownMenuTrigger asChild>
         {PremiumTrigger}
       </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        align="end" 
+      <DropdownMenuContent
+        align="end"
         className="w-[90vw] max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl p-0 border border-gray-200 shadow-xl rounded-xl overflow-hidden bg-white"
         sideOffset={5}
         collisionPadding={16}
@@ -193,7 +204,7 @@ export const NotificationCenter = ({ trigger }: NotificationCenterProps) => {
               <div className="min-w-0">
                 <h3 className="font-bold text-lg truncate">{t('notifications.title')}</h3>
                 <p className="text-sm text-gray-300 truncate">
-                  {unreadCount > 0 
+                  {unreadCount > 0
                     ? t('notifications.unreadCount', { count: unreadCount })
                     : t('notifications.allRead')
                   }
@@ -311,14 +322,14 @@ export const NotificationCenter = ({ trigger }: NotificationCenterProps) => {
                             <Clock className="h-3 w-3 flex-shrink-0" />
                             <span className="truncate">{formatTime(notification.createdAt)}</span>
                           </span>
-                          
+
                           {notification.sender && (
                             <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-600">
                               <div className={cn(
                                 "p-1 rounded flex-shrink-0",
                                 notification.sender.role === 'admin' ? 'bg-purple-100 text-purple-700' :
-                                notification.sender.role === 'seller' ? 'bg-blue-100 text-blue-700' :
-                                'bg-gray-100 text-gray-700'
+                                  notification.sender.role === 'seller' ? 'bg-blue-100 text-blue-700' :
+                                    'bg-gray-100 text-gray-700'
                               )}>
                                 {getSenderIcon(notification.sender.role)}
                               </div>
@@ -326,7 +337,7 @@ export const NotificationCenter = ({ trigger }: NotificationCenterProps) => {
                             </div>
                           )}
                         </div>
-                        
+
                         <div className="flex items-center justify-between sm:justify-end">
                           {notification.category && (
                             <span className="text-xs text-gray-500 capitalize sm:hidden">
@@ -348,8 +359,7 @@ export const NotificationCenter = ({ trigger }: NotificationCenterProps) => {
                             className="h-7 text-xs border-gray-300 hover:border-emerald-300 hover:text-emerald-700 w-full sm:w-auto"
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate(notification.link!);
-                              setOpen(false);
+                              handleNotificationClick(notification);
                             }}
                           >
                             {t('notifications.viewDetails')}
@@ -380,6 +390,11 @@ export const NotificationCenter = ({ trigger }: NotificationCenterProps) => {
           </div>
         )}
       </DropdownMenuContent>
+      <NotificationDetailsDialog
+        open={!!selectedNotification}
+        onOpenChange={(open) => !open && setSelectedNotification(null)}
+        notification={selectedNotification}
+      />
     </DropdownMenu>
   );
 };

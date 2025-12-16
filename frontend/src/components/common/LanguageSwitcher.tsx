@@ -37,11 +37,11 @@ export const LanguageSwitcher = () => {
         <Button
           variant="outline"
           size="sm"
-          className="group gap-2 h-9 px-3 rounded-lg border-green-200 bg-white/80 hover:bg-green-50 transition-all duration-300 hover:shadow-md hover:shadow-green-100/50 hover:border-green-300 md:h-11 md:px-4"
+          className="group gap-2 h-8 w-8 px-0 sm:w-auto sm:px-3 rounded-lg border-green-200 bg-white/80 hover:bg-green-50 transition-all duration-300 hover:shadow-md hover:shadow-green-100/50 hover:border-green-300 md:h-11 md:px-4"
           aria-label="Change language"
         >
           <Languages className="h-4 w-4 text-green-700 group-hover:text-green-800 transition-colors md:h-5 md:w-5" />
-          <span className="font-semibold text-sm text-green-800 whitespace-nowrap md:text-base">
+          <span className="hidden sm:inline font-semibold text-sm text-green-800 whitespace-nowrap md:text-base">
             {currentLang.native.split(' ')[0]}
           </span>
         </Button>
@@ -54,11 +54,10 @@ export const LanguageSwitcher = () => {
           <DropdownMenuItem
             key={lang.code}
             onClick={() => handleLanguageChange(lang.code)}
-            className={`cursor-pointer transition-all duration-200 ${
-              currentLanguage === lang.code 
-                ? 'bg-gradient-to-r from-green-50 to-emerald-50 text-green-800 font-semibold' 
+            className={`cursor-pointer transition-all duration-200 ${currentLanguage === lang.code
+                ? 'bg-gradient-to-r from-green-50 to-emerald-50 text-green-800 font-semibold'
                 : 'hover:bg-green-50/50 text-green-700'
-            }`}
+              }`}
           >
             <span className="flex items-center gap-2">
               <Languages className="h-4 w-4" />

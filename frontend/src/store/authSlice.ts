@@ -3,7 +3,7 @@ import usersData from '@/data/users.json';
 
 export type UserRole = 'buyer' | 'seller' | 'admin' | 'agent';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   name: string;
@@ -72,16 +72,16 @@ const authSlice = createSlice({
         // Find user data based on role
         switch (credentials.role) {
           case 'buyer':
-            userData = usersData.buyers.find((u) => u.id === credentials.userId) as User;
+            userData = usersData.buyers.find((u) => u.id === credentials.userId) as unknown as User;
             break;
           case 'seller':
-            userData = usersData.sellers.find((u) => u.id === credentials.userId) as User;
+            userData = usersData.sellers.find((u) => u.id === credentials.userId) as unknown as User;
             break;
           case 'agent':
-            userData = usersData.agents.find((u) => u.id === credentials.userId) as User;
+            userData = usersData.agents.find((u) => u.id === credentials.userId) as unknown as User;
             break;
           case 'admin':
-            userData = usersData.admins.find((u) => u.id === credentials.userId) as User;
+            userData = usersData.admins.find((u) => u.id === credentials.userId) as unknown as User;
             break;
         }
 

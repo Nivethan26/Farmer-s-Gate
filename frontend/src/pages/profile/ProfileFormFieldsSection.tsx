@@ -1,4 +1,5 @@
 import { UseFormRegister, FieldErrors, UseFormSetValue, UseFormWatch } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,7 +9,7 @@ import { User, Mail, Phone, MapPin, Award as IdCard, Lock, Shield } from 'lucide
 import type { User as AuthUser } from '@/store/authSlice';
 
 type ProfileFormData = {
-  email: string;
+  email?: string;
   phone?: string;
   address?: string;
   district?: string;
@@ -41,6 +42,7 @@ export const ProfileFormFieldsSection = ({
   getLastName,
   sriLankaDistricts,
 }: ProfileFormFieldsSectionProps) => {
+  const { t } = useTranslation();
   const selectedDistrict = watch('district') || '';
 
   return (
@@ -54,7 +56,7 @@ export const ProfileFormFieldsSection = ({
             className="text-sm font-semibold flex items-center gap-2 text-gray-700"
           >
             <User className="h-4 w-4 text-green-600" />
-            First Name
+            {t('profile.firstName')}
           </Label>
           <div className="relative group">
             <Input
@@ -67,7 +69,7 @@ export const ProfileFormFieldsSection = ({
           </div>
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <Shield className="h-3 w-3" />
-            This field cannot be changed
+            {t('profile.fieldCannotChange')}
           </p>
         </div>
 
@@ -75,7 +77,7 @@ export const ProfileFormFieldsSection = ({
         <div className="space-y-2">
           <Label htmlFor="lastName" className="text-sm font-semibold flex items-center gap-2 text-gray-700">
             <User className="h-4 w-4 text-green-600" />
-            Last Name
+            {t('profile.lastName')}
           </Label>
           <div className="relative group">
             <Input
@@ -88,7 +90,7 @@ export const ProfileFormFieldsSection = ({
           </div>
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <Shield className="h-3 w-3" />
-            This field cannot be changed
+            {t('profile.fieldCannotChange')}
           </p>
         </div>
       </div>
@@ -100,11 +102,11 @@ export const ProfileFormFieldsSection = ({
       <div className="space-y-2">
         <Label htmlFor="email" className="text-sm font-semibold flex items-center gap-2 text-gray-700">
           <Mail className="h-4 w-4 text-green-600" />
-          Email Address
+          {t('profile.email')}
           {isBuyer && <span className="text-green-600 text-base">*</span>}
           {isBuyer && isEditing && (
             <Badge variant="secondary" className="ml-2 text-xs">
-              Editable
+              {t('profile.editable')}
             </Badge>
           )}
         </Label>
@@ -140,7 +142,7 @@ export const ProfileFormFieldsSection = ({
         {!isBuyer && (
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <Shield className="h-3 w-3" />
-            Email cannot be changed
+            {t('profile.emailCannotChange')}
           </p>
         )}
       </div>
@@ -149,12 +151,12 @@ export const ProfileFormFieldsSection = ({
       <div className="space-y-2">
         <Label htmlFor="nic" className="text-sm font-semibold flex items-center gap-2 text-gray-700">
           <IdCard className="h-4 w-4 text-green-600" />
-          NIC Number
+          {t('profile.nic')}
         </Label>
         <div className="relative group">
           <Input
             id="nic"
-            value={user.nic || 'Not provided'}
+            value={user.nic || t('buyer.notProvided')}
             disabled
             className="bg-gray-50/80 border-gray-200 pr-10 disabled:opacity-70 group-hover:border-gray-300 transition-colors font-mono"
           />
@@ -162,7 +164,7 @@ export const ProfileFormFieldsSection = ({
         </div>
         <p className="text-xs text-muted-foreground flex items-center gap-1">
           <Shield className="h-3 w-3" />
-          This field cannot be changed
+          {t('profile.fieldCannotChange')}
         </p>
       </div>
 
@@ -173,11 +175,11 @@ export const ProfileFormFieldsSection = ({
       <div className="space-y-2">
         <Label htmlFor="phone" className="text-sm font-semibold flex items-center gap-2 text-gray-700">
           <Phone className="h-4 w-4 text-green-600" />
-          Phone Number
+          {t('profile.phone')}
           {isBuyer && <span className="text-green-600 text-base">*</span>}
           {isBuyer && isEditing && (
             <Badge variant="secondary" className="ml-2 text-xs">
-              Editable
+              {t('profile.editable')}
             </Badge>
           )}
         </Label>
@@ -187,7 +189,7 @@ export const ProfileFormFieldsSection = ({
               id="phone"
               {...register('phone')}
               className="border-2 border-green-200 focus:border-green-400 focus:ring-green-400/20 transition-all"
-              placeholder="+94771234567"
+              placeholder={t('profile.enterPhone')}
             />
             {errors.phone && (
               <p className="text-sm text-red-600 flex items-center gap-1">
@@ -199,7 +201,7 @@ export const ProfileFormFieldsSection = ({
         ) : (
           <Input
             id="phone"
-            value={user.phone || 'Not provided'}
+            value={user.phone || t('buyer.notProvided')}
             disabled
             className="bg-gray-50/80 border-gray-200 disabled:opacity-70"
           />
@@ -212,11 +214,11 @@ export const ProfileFormFieldsSection = ({
         <div className="space-y-2">
           <Label htmlFor="district" className="text-sm font-semibold flex items-center gap-2 text-gray-700">
             <MapPin className="h-4 w-4 text-green-600" />
-            District
+            {t('profile.district')}
             {isBuyer && <span className="text-green-600 text-base">*</span>}
             {isBuyer && isEditing && (
               <Badge variant="secondary" className="ml-2 text-xs">
-                Editable
+                {t('profile.editable')}
               </Badge>
             )}
           </Label>
@@ -227,7 +229,7 @@ export const ProfileFormFieldsSection = ({
               onValueChange={(value) => setValue('district', value, { shouldDirty: true })}
             >
               <SelectTrigger className="border-2 border-green-200 focus:border-green-400 focus:ring-green-400/20 transition-all">
-                <SelectValue placeholder="Select your district" />
+                <SelectValue placeholder={t('profile.selectDistrict')} />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
                 {sriLankaDistricts.map((district) => (
@@ -240,7 +242,7 @@ export const ProfileFormFieldsSection = ({
           ) : (
             <Input
               id="district"
-              value={user.district || 'Not provided'}
+              value={user.district || t('buyer.notProvided')}
               disabled
               className="bg-gray-50/80 border-gray-200 disabled:opacity-70"
             />
@@ -252,11 +254,11 @@ export const ProfileFormFieldsSection = ({
       <div className="space-y-2">
         <Label htmlFor="address" className="text-sm font-semibold flex items-center gap-2 text-gray-700">
           <MapPin className="h-4 w-4 text-green-600" />
-          Full Address
+          {t('profile.fullAddress')}
           {isBuyer && <span className="text-green-600 text-base">*</span>}
           {isBuyer && isEditing && (
             <Badge variant="secondary" className="ml-2 text-xs">
-              Editable
+              {t('profile.editable')}
             </Badge>
           )}
         </Label>
@@ -265,12 +267,12 @@ export const ProfileFormFieldsSection = ({
             id="address"
             {...register('address')}
             className="border-2 border-green-200 focus:border-green-400 focus:ring-green-400/20 transition-all min-h-[120px] resize-none"
-            placeholder="Enter your full address"
+            placeholder={t('profile.addressPlaceholder')}
           />
         ) : (
           <Textarea
             id="address"
-            value={user.address || 'Not provided'}
+            value={user.address || t('buyer.notProvided')}
             disabled
             className="bg-gray-50/80 border-gray-200 disabled:opacity-70 min-h-[120px] resize-none"
           />

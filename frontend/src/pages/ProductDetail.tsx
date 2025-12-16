@@ -32,7 +32,7 @@ const ProductDetail = () => {
   );
   const agents = useAppSelector((state: RootState) => state.users.agents);
   const allProducts = useAppSelector((state: RootState) => state.catalog.products);
-  
+
   // Get related products (same category, exclude current product)
   const relatedProducts = product
     ? allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4)
@@ -60,7 +60,7 @@ const ProductDetail = () => {
 
   const handleWhatsAppClick = () => {
     if (!sellerAgent || !product) return;
-    
+
     const productUrl = window.location.href;
     const message = encodeURIComponent(
       `Hello ${sellerAgent.name}!\n\nI'm interested in purchasing "${product.name}" (${category?.name}).\n\n` +
@@ -72,10 +72,10 @@ const ProductDetail = () => {
       `Please let me know about availability and next steps.\n\n` +
       `Product Link: ${productUrl}`
     );
-    
+
     const whatsappUrl = `https://wa.me/${sellerAgent.phone.replace(/[^0-9]/g, '')}?text=${message}`;
     window.open(whatsappUrl, '_blank');
-    
+
     // Track click
     toast.success('Opening WhatsApp to contact agent!', {
       icon: <MessageCircle className="h-5 w-5" />,
@@ -113,14 +113,14 @@ const ProductDetail = () => {
         sellerName: relatedProduct.sellerName,
       })
     );
-    
+
     // Custom toast with loading animation
     toast.custom(
       () => (
         <div className="bg-white rounded-lg shadow-xl border-2 border-green-200 p-3 min-w-[300px] relative overflow-hidden animate-[slideInRight_0.3s_ease-out]">
           {/* Loading line animation */}
           <div className="absolute top-0 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 animate-[loading_2s_ease-in-out_forwards]"></div>
-          
+
           {/* Content */}
           <div className="flex items-center gap-2.5">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
@@ -151,9 +151,9 @@ const ProductDetail = () => {
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Back Button */}
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/catalog')} 
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/catalog')}
           className="mb-4 sm:mb-6 hover:bg-green-50 hover:text-green-700"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

@@ -16,7 +16,7 @@ export interface Notification {
   id: string;
   title: string;
   message: string;
-  type: "info" | "success" | "warning" | "error";
+  type: "info" | "success" | "warning" | "error" | "neutral";
   category?: "order" | "system" | "message" | 'delivery' | 'payment';
   role?: UserRole;
   link?: string;
@@ -25,10 +25,11 @@ export interface Notification {
     name: string;
     role: UserRole;
   };
-  sellerId?: string;  
+  sellerId?: string;
   buyerId?: string;
   read: boolean;
   createdAt: string;
+  metadata?: any;
 }
 
 interface UIState {
