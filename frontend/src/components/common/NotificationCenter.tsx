@@ -195,7 +195,18 @@ export const NotificationCenter = ({ trigger }: NotificationCenterProps) => {
         collisionPadding={16}
       >
         {/* Header */}
-        <div className="p-4 bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+        <div className="relative p-4 bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+          <div className="absolute top-3 right-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/20 h-8 w-8"
+              onClick={() => setOpen(false)}
+              aria-label={t('notifications.dialog.close')}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3 flex-shrink-0">
               <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">

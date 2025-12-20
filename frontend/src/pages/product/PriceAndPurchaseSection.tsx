@@ -217,7 +217,7 @@ export const PriceAndPurchaseSection = ({
               }}
             >
               <CreditCard className="mr-2 h-5 w-5" />
-              {t('product.checkout')}
+              {t('product.buyNow', { defaultValue: 'Buy Now' })}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           )}

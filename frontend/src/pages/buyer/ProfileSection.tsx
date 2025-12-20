@@ -1,73 +1,149 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useAppDispatch } from '@/store/hooks';
+import { updateProfile } from '@/store/authSlice';
+import { toast } from 'sonner';
+import { Card, CardContent } from '@/components/ui/card';
+import { ProfileCardHeaderSection } from '@/pages/profile/ProfileCardHeaderSection';
+import { ProfileFormFieldsSection } from '@/pages/profile/ProfileFormFieldsSection';
+import { ProfileActionButtonsSection } from '@/pages/profile/ProfileActionButtonsSection';
 import type { User } from '@/store/authSlice';
 
 interface ProfileSectionProps {
   user: User | null;
 }
 
+const profileSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  phone: z.string().min(10, 'Phone number must be at least 10 digits').optional(),
+  address: z.string().optional(),
+  district: z.string().optional(),
+});
+
+type ProfileFormData = z.infer<typeof profileSchema>;
+
 export const ProfileSection = ({ user }: ProfileSectionProps) => {
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
+  const [isEditing, setIsEditing] = useState(false);
+
+  const getFirstName = () => {
+    if (user?.firstName) return user.firstName;
+    if (user?.name) {
+      const parts = user.name.split(' ');
+      return parts[0] || user.name;
+    }
+    return '';
+  };
+
+  const getLastName = () => {
+    if (user?.lastName) return user.lastName;
+    if (user?.name) {
+      const parts = user.name.split(' ');
+      return parts.slice(1).join(' ') || '';
+    }
+    return '';
+  };
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+    watch,
+  } = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      email: user?.email || '',
+      phone: user?.phone || '',
+      address: user?.address || '',
+      district: user?.district || '',
+    },
+  });
+
+  if (!user) return null;
+
+  const onSubmit = (data: ProfileFormData) => {
+    const updates: any = {
+      email: data.email,
+      phone: data.phone,
+      address: data.address,
+      district: data.district,
+    };
+
+    dispatch(updateProfile(updates));
+    toast.success(t('profile.updateSuccess'));
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    reset();
+    setIsEditing(false);
+  };
+
+  const isBuyer = user.role === 'buyer';
+  const editableFields = isBuyer ? ['email', 'phone', 'address', 'district'] : [];
+
+  const sriLankaDistricts = [
+    'Colombo',
+    'Gampaha',
+    'Kalutara',
+    'Kandy',
+    'Matale',
+    'Nuwara Eliya',
+    'Galle',
+    'Matara',
+    'Hambantota',
+    'Jaffna',
+    'Kilinochchi',
+    'Mannar',
+    'Mullaitivu',
+    'Vavuniya',
+    'Puttalam',
+    'Kurunegala',
+    'Anuradhapura',
+    'Polonnaruwa',
+    'Badulla',
+    'Monaragala',
+    'Ratnapura',
+    'Kegalle',
+    'Trincomalee',
+    'Batticaloa',
+    'Ampara',
+  ];
 
   return (
     <div className="space-y-4">
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-        <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6 pt-4 sm:pt-6">
-          <CardTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2">
-            <div className="h-1 w-1 rounded-full bg-green-600"></div>
-            {t('buyer.myProfile')}
-          </CardTitle>
-        </CardHeader>
+        <ProfileCardHeaderSection
+          user={user}
+          isBuyer={isBuyer}
+          isEditing={isEditing}
+          onEditClick={() => setIsEditing(true)}
+        />
+
         <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
-          <div className="space-y-4 sm:space-y-6">
-            {/* Profile Info */}
-            <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-bold text-xl">
-                  {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900 text-base sm:text-lg">{user?.name}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">{user?.email}</p>
-                </div>
-              </div>
-              <Button variant="outline" size="sm" asChild className="md:ml-auto md:self-start text-xs sm:text-sm h-auto whitespace-normal">
-                <Link to="/profile">{t('seller.profile.editProfile')}</Link>
-              </Button>
-            </div>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <ProfileFormFieldsSection
+              user={user}
+              isBuyer={isBuyer}
+              isEditing={isEditing}
+              editableFields={editableFields}
+              register={register}
+              errors={errors}
+              setValue={setValue}
+              watch={watch}
+              getFirstName={getFirstName}
+              getLastName={getLastName}
+              sriLankaDistricts={sriLankaDistricts}
+            />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-              <div className="space-y-3 sm:space-y-4">
-                <h4 className="font-semibold text-gray-900 text-sm sm:text-base">{t('buyer.contactInfo')}</h4>
-                <div className="grid grid-cols-1 gap-3 sm:gap-4 text-xs sm:text-sm">
-                  <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
-                    <p className="text-muted-foreground text-[10px] sm:text-xs">{t('common.phone')}</p>
-                    <p className="font-medium mt-1">{user?.phone || t('buyer.notProvided')}</p>
-                  </div>
-                  <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
-                    <p className="text-muted-foreground text-[10px] sm:text-xs">{t('common.district')}</p>
-                    <p className="font-medium mt-1">{user?.district || t('buyer.notProvided')}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3 sm:space-y-4">
-                <h4 className="font-semibold text-gray-900 text-sm sm:text-base">{t('buyer.accountDetails')}</h4>
-                <div className="grid grid-cols-1 gap-3 sm:gap-4 text-xs sm:text-sm">
-                  <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
-                    <p className="text-muted-foreground text-[10px] sm:text-xs">{t('buyer.rewardPoints')}</p>
-                    <p className="font-medium text-purple-700 mt-1">{user?.rewardPoints || 0} {t('buyer.points')}</p>
-                  </div>
-                  <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
-                    <p className="text-muted-foreground text-[10px] sm:text-xs">{t('buyer.nic')}</p>
-                    <p className="font-medium mt-1">{user?.nic || t('buyer.notProvided')}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+            <ProfileActionButtonsSection isEditing={isEditing} onCancel={handleCancel} />
+          </form>
         </CardContent>
       </Card>
     </div>

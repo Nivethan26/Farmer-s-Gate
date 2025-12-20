@@ -28,7 +28,7 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
     <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-white/90 backdrop-blur-sm hover:-translate-y-1 flex flex-col h-full">
       {/* Product Image - Smaller and more compact */}
       <Link to={`/product/${product.id}`} className="block relative">
-        <div className="relative h-48 sm:h-52 lg:h-56 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
+        <div className="relative h-24 sm:h-48 lg:h-56 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
           <img
             src={product.image}
             alt={product.name}
@@ -47,9 +47,9 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
           )}
         </div>
       </Link>
-      <CardContent className="p-4 flex-grow flex flex-col">
+      <CardContent className="p-2 sm:p-3 flex-grow flex flex-col">
         <Link to={`/product/${product.id}`} className="block">
-          <h3 className="text-lg sm:text-xl font-bold text-gray-900 line-clamp-2 hover:text-green-600 transition-colors">
+          <h3 className="text-sm sm:text-base font-bold text-gray-900 line-clamp-2 hover:text-green-600 transition-colors">
             {displayName}
           </h3>
         </Link>
@@ -84,10 +84,10 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
         </div>
 
         {/* Price Section */}
-        <div className="mt-auto pt-3 border-t border-gray-200">
+        <div className="mt-auto pt-2 border-t border-gray-200">
           <div className="flex items-baseline justify-between gap-2">
             <div>
-              <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+              <p className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                 Rs. {product.pricePerKg}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">per kilogram</p>

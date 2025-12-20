@@ -24,14 +24,31 @@ export const OtherProductsSection = ({
           Explore products from other categories
         </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {otherProducts.map((otherProduct) => (
-          <ProductCard
-            key={otherProduct.id}
-            product={otherProduct}
-            onAddToCart={onAddToCart}
-          />
-        ))}
+      <div>
+        {/* Horizontal scroll on small screens, grid on sm+ */}
+        <div className="flex gap-4 overflow-x-auto hide-scrollbar py-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:block">
+          <div className="flex items-stretch gap-4">
+            {otherProducts.slice(0, 20).map((otherProduct) => (
+              <div key={otherProduct.id} className="min-w-[220px] flex-shrink-0 sm:min-w-0 sm:w-full">
+                <ProductCard
+                  product={otherProduct}
+                  onAddToCart={onAddToCart}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Grid fallback for larger screens */}
+        <div className="hidden sm:grid grid-cols-2 lg:grid-cols-4 gap-5 mt-4">
+          {otherProducts.map((otherProduct) => (
+            <ProductCard
+              key={otherProduct.id}
+              product={otherProduct}
+              onAddToCart={onAddToCart}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

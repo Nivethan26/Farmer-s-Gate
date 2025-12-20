@@ -107,7 +107,7 @@ export const ProductInfoSection = ({
                 <User className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Farmer</p>
+                <p className="text-xs text-muted-foreground mb-1">ID </p>
                 <p className="font-semibold text-gray-900">{product.sellerId}</p>
               </div>
             </div>

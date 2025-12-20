@@ -323,6 +323,7 @@
     "deliveryFee": "Delivery Fee",
     "total": "Total",
     "checkout": "Checkout",
+    "buyNow": "Buy Now",
     "removeItem": "Remove Item",
     "updateQuantity": "Update Quantity",
     "quantity": "Quantity",
