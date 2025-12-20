@@ -25,16 +25,21 @@ import {
   Users,
   Shield,
   BadgeCheck,
+  Fingerprint,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Navbar } from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+
+// NIC validation regex for Sri Lankan NIC formats (old: 9 digits with optional V, new: 12 digits)
+const nicRegex = /^([0-9]{9}[vVxX]|[0-9]{12})$/;
 
 const buyerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  nic: z.string().regex(nicRegex, "Please enter a valid NIC (9 digits with V/X or 12 digits)"),
   district: z.string().min(1, "District is required"),
   address: z.string().min(5, "Address is required"),
 });
@@ -44,6 +49,7 @@ const sellerSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  nic: z.string().regex(nicRegex, "Please enter a valid NIC (9 digits with V/X or 12 digits)"),
   farmName: z.string().min(2, "Farm name is required"),
   district: z.string().min(1, "District is required"),
   address: z.string().min(5, "Address is required"),
@@ -271,25 +277,50 @@ const Signup = () => {
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="buyer-district"
-                    className="text-green-800 font-semibold"
-                  >
-                    {t("profile.district")} *
-                  </Label>
-                  <Input
-                    id="buyer-district"
-                    {...buyerForm.register("district")}
-                    placeholder="Colombo"
-                    className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
-                    disabled={isLoading}
-                  />
-                  {buyerForm.formState.errors.district && (
-                    <p className="text-sm text-red-600 mt-1">
-                      {buyerForm.formState.errors.district.message}
-                    </p>
-                  )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <Label
+                      htmlFor="buyer-nic"
+                      className="text-green-800 font-semibold flex items-center gap-2"
+                    >
+                     
+                      {t("profile.nic")} *
+                    </Label>
+                    <Input
+                      id="buyer-nic"
+                      {...buyerForm.register("nic")}
+                      placeholder="123456789V or 123456789012"
+                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
+                      disabled={isLoading}
+                    />
+                    {buyerForm.formState.errors.nic && (
+                      <p className="text-sm text-red-600 mt-1">
+                        {buyerForm.formState.errors.nic.message}
+                      </p>
+                    )}
+                    
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label
+                      htmlFor="buyer-district"
+                      className="text-green-800 font-semibold"
+                    >
+                      {t("profile.district")} *
+                    </Label>
+                    <Input
+                      id="buyer-district"
+                      {...buyerForm.register("district")}
+                      placeholder="Colombo"
+                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
+                      disabled={isLoading}
+                    />
+                    {buyerForm.formState.errors.district && (
+                      <p className="text-sm text-red-600 mt-1">
+                        {buyerForm.formState.errors.district.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-3">
@@ -443,6 +474,29 @@ const Signup = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <Label
+                      htmlFor="seller-nic"
+                      className="text-green-800 font-semibold flex items-center gap-2"
+                    >
+                       
+                      {t("profile.nic")} *
+                    </Label>
+                    <Input
+                      id="seller-nic"
+                      {...sellerForm.register("nic")}
+                      placeholder="123456789V or 123456789012"
+                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
+                      disabled={isLoading}
+                    />
+                    {sellerForm.formState.errors.nic && (
+                      <p className="text-sm text-red-600 mt-1">
+                        {sellerForm.formState.errors.nic.message}
+                      </p>
+                    )}
+                     
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label
                       htmlFor="seller-farmName"
                       className="text-green-800 font-semibold"
                     >
@@ -461,7 +515,9 @@ const Signup = () => {
                       </p>
                     )}
                   </div>
+                </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <Label
                       htmlFor="seller-district"
