@@ -207,6 +207,9 @@ const ProductDetail = () => {
         user={user}
         open={negotiateOpen}
         onOpenChange={setNegotiateOpen}
+        sellerAgent={sellerAgent}
+        onWhatsAppClick={handleWhatsAppClick}
+        onAgentDetailsOpen={() => setAgentDetailsOpen(true)}
       />
 
       <AgentDialogSection

@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Scale, Plus, Minus, CheckCircle2 } from 'lucide-react';
+import { Scale, Plus, Minus, CheckCircle2, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Product } from '@/store/catalogSlice';
 import type { Category } from '@/store/catalogSlice';
@@ -36,6 +36,9 @@ interface NegotiationDialogSectionProps {
   user: User | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  sellerAgent?: any;
+  onWhatsAppClick?: () => void;
+  onAgentDetailsOpen?: () => void;
 }
 
 export const NegotiationDialogSection = ({
@@ -44,6 +47,9 @@ export const NegotiationDialogSection = ({
   user,
   open,
   onOpenChange,
+  sellerAgent,
+  onWhatsAppClick,
+  onAgentDetailsOpen,
 }: NegotiationDialogSectionProps) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -280,6 +286,34 @@ export const NegotiationDialogSection = ({
               Your negotiation request will be sent to this seller.
             </p>
           </div>
+
+          {/* Connect with Agent (WhatsApp) - show in dialog when a matching sellerAgent exists (region match); fallback to Agent details if WhatsApp handler missing */}
+          {sellerAgent && (
+            <div>
+              <Label className="text-sm sm:text-base font-semibold mb-2 block">Connect with Agent</Label>
+              <Button
+                className="w-full h-11 bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#1da851] hover:to-[#0d6e5f] text-white shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 text-sm font-semibold"
+                onClick={() => {
+                  if (onWhatsAppClick) {
+                    onWhatsAppClick();
+                    return;
+                  }
+                  if (onAgentDetailsOpen) {
+                    onAgentDetailsOpen();
+                    return;
+                  }
+                }}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <MessageCircle className="h-5 w-5" />
+                  <div className="text-left">
+                    <div className="font-bold text-sm">{`WhatsApp ${sellerAgent.name}`}</div>
+                    <div className="text-xs font-normal opacity-90">Instant WhatsApp Support</div>
+                  </div>
+                </div>
+              </Button>
+            </div>
+          )}
         </div>
 
         <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 mt-4">
