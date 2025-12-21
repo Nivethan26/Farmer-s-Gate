@@ -46,7 +46,7 @@ const Catalog = () => {
       navigate('/login', { state: { from: '/catalog' } });
       return;
     }
-    
+
     dispatch(
       addToCart({
         productId: product.id,
@@ -64,7 +64,7 @@ const Catalog = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-green-50/30 to-white">
       <Navbar />
-      
+
       <div className="w-full px-6 md:px-12 py-10">
         {/* Header */}
         <div className="mb-8 md:mb-12">
@@ -89,7 +89,7 @@ const Catalog = () => {
               className="pl-11 h-12 rounded-xl border-gray-200 focus:border-green-400 focus:ring-green-400 shadow-sm"
             />
           </div>
-          
+
           <Select
             value={filters.sortBy}
             onValueChange={(value: any) => dispatch(setFilters({ sortBy: value }))}
@@ -113,8 +113,8 @@ const Catalog = () => {
                 Filters
               </Button>
             </SheetTrigger>
-            <SheetContent 
-              side="left" 
+            <SheetContent
+              side="left"
               className="w-full sm:w-80 h-full flex flex-col p-0"
             >
               <div className="flex-1 overflow-hidden px-6 pt-4">
@@ -136,7 +136,7 @@ const Catalog = () => {
             <div className="mb-6 text-sm font-medium text-gray-600">
               Showing {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
             </div>
-            
+
             {filteredProducts.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-lg font-medium text-gray-600 mb-6">No products found</p>
@@ -144,8 +144,8 @@ const Catalog = () => {
                   Clear Filters
                 </Button>
               </div>
-              ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-5">
                 {filteredProducts.map((product) => (
                   <ProductCard
                     key={product.id}

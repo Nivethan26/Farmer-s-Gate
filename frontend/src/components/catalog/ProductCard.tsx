@@ -23,7 +23,7 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   // Check if product is expiring soon
   const expiresDate = new Date(product.expiresOn);
   const isExpiringSoon = (expiresDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24) < 3;
-  
+
   return (
     <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-white/90 backdrop-blur-sm hover:-translate-y-1 flex flex-col h-full">
       {/* Product Image - Smaller and more compact */}
@@ -36,7 +36,7 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
           />
           {/* Gradient overlay on hover */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          
+
           {/* Expiring Soon Badge - Only on image */}
           {isExpiringSoon && (
             <div className="absolute top-3 right-3 z-10">
@@ -49,26 +49,25 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
       </Link>
       <CardContent className="p-2 sm:p-3 flex-grow flex flex-col">
         <Link to={`/product/${product.id}`} className="block">
-          <h3 className="text-sm sm:text-base font-bold text-gray-900 line-clamp-2 hover:text-green-600 transition-colors">
+          <h3 className="text-sm sm:text-base font-bold text-gray-1500 line-clamp-2 hover:text-green-600 transition-colors">
             {displayName}
           </h3>
         </Link>
 
         {/* Supply Type Badge - Moved to details section */}
-        <div className="mb-3">
-          <Badge 
-            className={`${
-              product.supplyType === 'wholesale' 
-                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-md shadow-green-500/30' 
-                : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-500/30'
-            } text-xs font-bold px-3 py-1 border-0`}
+        <div className="mb-1.5 sm:mb-3">
+          <Badge
+            className={`${product.supplyType === 'wholesale'
+              ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-md shadow-green-500/30'
+              : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-500/30'
+              } text-xs font-bold px-3 py-1 border-0`}
           >
             {product.supplyType === 'wholesale' ? t('seller.wholesale') : t('seller.smallScale')}
           </Badge>
         </div>
 
         {/* Location and Stock Info */}
-        <div className="space-y-2 mb-3 flex-1">
+        <div className="space-y-1 mb-2 sm:mb-3 flex-1">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <div className="flex items-center justify-center w-5 h-5 rounded-full bg-green-100 text-green-600 flex-shrink-0">
               <MapPin className="h-3 w-3" />
@@ -87,10 +86,9 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
         <div className="mt-auto pt-2 border-t border-gray-200">
           <div className="flex items-baseline justify-between gap-2">
             <div>
-              <p className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                Rs. {product.pricePerKg}
+              <p className="text-base sm:text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                Rs. {product.pricePerKg}/kg
               </p>
-              <p className="text-xs text-muted-foreground mt-0.5">per kilogram</p>
             </div>
             {product.stockQty > 0 && (
               <div className="flex items-center gap-1 text-green-600">
