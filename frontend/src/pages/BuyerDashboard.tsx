@@ -114,23 +114,24 @@ const BuyerDashboard = () => {
         </div>
 
         <Tabs defaultValue="home" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm h-auto p-1">
-            <TabsTrigger value="home" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm h-auto p-1 divide-x divide-gray-100 rounded-lg overflow-hidden">
+            <TabsTrigger value="home" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center px-3">
               {t('nav.home')}
             </TabsTrigger>
-            <TabsTrigger value="orders" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center">
+            <TabsTrigger value="orders" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center px-3">
               {t('nav.orders')}
             </TabsTrigger>
-            <TabsTrigger value="negotiations" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center">
+            <TabsTrigger value="negotiations" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center px-3">
               {t('buyer.negotiations')}
             </TabsTrigger>
-            <TabsTrigger value="profile" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center">
+            <TabsTrigger value="profile" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center px-3">
               {t('buyer.profile')}
             </TabsTrigger>
           </TabsList>
 
           {/* Home Tab */}
           <TabsContent value="home" className="space-y-6">
+            <div className="border border-gray-100 rounded-lg bg-white p-4">
             <OverviewSection
               t={t}
               cartItems={cartItems}
@@ -140,30 +141,37 @@ const BuyerDashboard = () => {
               getStatusIcon={getStatusIcon}
               getOrderStatusColor={getOrderStatusColor}
             />
+            </div>
           </TabsContent>
 
           {/* Orders Tab */}
           <TabsContent value="orders" className="space-y-4">
-            <OrdersSection
+            <div className="border border-gray-100 rounded-lg bg-white p-4">
+              <OrdersSection
               t={t}
               orders={orders}
               getStatusIcon={getStatusIcon}
               getOrderStatusColor={getOrderStatusColor}
             />
+            </div>
           </TabsContent>
 
           {/* Negotiations Tab */}
           <TabsContent value="negotiations" className="space-y-4">
-            <NegotiationsSection
+            <div className="border border-gray-100 rounded-lg bg-white p-4">
+              <NegotiationsSection
               t={t}
               negotiations={negotiations}
               getNegotiationStatusColor={getNegotiationStatusColor}
             />
+            </div>
           </TabsContent>
 
           {/* Profile Tab */}
           <TabsContent value="profile" className="space-y-4">
-            <ProfileSection user={user} />
+            <div className="border border-gray-100 rounded-lg bg-white p-4">
+              <ProfileSection user={user} />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

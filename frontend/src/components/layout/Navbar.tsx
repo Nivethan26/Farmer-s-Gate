@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
-import { NotificationBell } from "@/components/common/NotificationBell";
+// import { NotificationBell } from "@/components/common/NotificationBell";
 import { NotificationCenter } from "../common/NotificationCenter";
 
 
@@ -273,36 +273,38 @@ export const Navbar = () => {
 
       {/* Mobile Dropdown Menu */}
       <div
-        className={`md:hidden border-t bg-white shadow-lg transition-all duration-300 overflow-hidden ${menuOpen
+        className={`md:hidden bg-white shadow-lg transition-all duration-300 overflow-hidden ${menuOpen
           ? "max-h-[24rem] opacity-100 border-gray-100"
           : "max-h-0 opacity-0 border-transparent"
           }`}
       >
-        <div className="flex flex-col p-4 space-y-1">
-          {!user &&
-            navigationItems.map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setMenuOpen(false)}
-                  className="w-full"
-                >
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`w-full justify-start rounded-lg ${isActive
-                      ? "text-white bg-gradient-to-r from-green-600 to-emerald-600"
-                      : "text-green-800 hover:text-green-600 hover:bg-green-50"
-                      }`}
+        <div className="flex flex-col p-4 space-y-4 px-4 border-l border-r border-gray-100 rounded-b-lg">
+          <div className="space-y-2 pb-2 border-b border-gray-100">
+            {!user &&
+              navigationItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setMenuOpen(false)}
+                    className="w-full"
                   >
-                    <item.icon className="mr-3 h-4 w-4" />
-                    <span>{item.label}</span>
-                  </Button>
-                </Link>
-              );
-            })}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={`w-full justify-start rounded-lg py-3 ${isActive
+                        ? "text-white bg-gradient-to-r from-green-600 to-emerald-600"
+                        : "text-green-800 hover:text-green-600 hover:bg-green-50"
+                        }`}
+                    >
+                      <item.icon className="mr-3 h-4 w-4" />
+                      <span>{item.label}</span>
+                    </Button>
+                  </Link>
+                );
+              })}
+          </div>
 
           {/* Mobile User Actions */}
           <div className="space-y-2 pt-2">

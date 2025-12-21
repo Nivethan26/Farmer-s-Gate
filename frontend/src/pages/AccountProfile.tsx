@@ -15,10 +15,13 @@ import { ProfileCardHeaderSection } from "./profile/ProfileCardHeaderSection"
 import { ProfileFormFieldsSection } from "./profile/ProfileFormFieldsSection"
 import { ProfileActionButtonsSection } from "./profile/ProfileActionButtonsSection"
 
-// Profile schema - only editable fields for buyers
+// Profile schema - editable fields for buyers (include first/last name and NIC)
 const profileSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits").optional(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().min(10, 'Phone number must be at least 10 digits').optional(),
+  nic: z.string().optional(),
   address: z.string().optional(),
   district: z.string().optional(),
 })
@@ -89,10 +92,13 @@ const AccountProfile = () => {
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      email: user?.email || "",
-      phone: user?.phone || "",
-      address: user?.address || "",
-      district: user?.district || "",
+      firstName: getFirstName(),
+      lastName: getLastName(),
+      email: user?.email || '',
+      phone: user?.phone || '',
+      nic: user?.nic || '',
+      address: user?.address || '',
+      district: user?.district || '',
     },
   })
 
@@ -103,8 +109,11 @@ const AccountProfile = () => {
 
   const onSubmit = (data: ProfileFormData) => {
     const updates: any = {
+      firstName: data.firstName,
+      lastName: data.lastName,
       email: data.email,
       phone: data.phone,
+      nic: data.nic,
       address: data.address,
       district: data.district,
     }
@@ -124,9 +133,11 @@ const AccountProfile = () => {
     setIsEditing(false)
   }
 
-  // For buyers, only these fields are editable
-  const isBuyer = user.role === "buyer"
-  const editableFields = isBuyer ? ["email", "phone", "address", "district"] : []
+  // For buyers, allow editing of first/last name, phone, address, district and nic. Keep email read-only.
+  const isBuyer = user.role === 'buyer'
+  const editableFields = isBuyer
+    ? ['firstName', 'lastName', 'phone', 'address', 'district', 'nic']
+    : []
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50/50 via-white to-green-50/50">

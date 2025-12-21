@@ -235,4 +235,14 @@ All colors MUST be HSL.
   * {
     scroll-behavior: smooth;
   }
+
+  /* Hide native scrollbars while keeping touch/drag scroll functional */
+  .hide-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+  }
 }
