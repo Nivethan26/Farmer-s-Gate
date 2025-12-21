@@ -356,7 +356,7 @@ const SellerStatsCards = ({
                   <div className="flex items-center gap-2">
                     <Clock className="h-5 w-5 text-blue-600" />
                     <h3 className="font-semibold text-blue-900">
-                      {t("seller.expirythisweek")} (4-7 days)
+                      {t("seller.expirythisweek")} (4-7 {t("seller.days")})
                     </h3>
                   </div>
                   <Badge className="bg-blue-100 text-blue-800">

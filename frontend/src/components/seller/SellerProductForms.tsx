@@ -137,29 +137,7 @@ const SellerProductForms = ({
     }
   }, [imageUrl]);
 
-  // Sample images for quick selection
-  const sampleImages = [
-    {
-      name: "Vegetables",
-      url: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400",
-    },
-    {
-      name: "Fruits",
-      url: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?w-400",
-    },
-    {
-      name: "Grains",
-      url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400",
-    },
-    {
-      name: "Spices",
-      url: "https://images.unsplash.com/photo-1604586376807-f73185cf5867?w=400",
-    },
-    {
-      name: "Default",
-      url: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400",
-    },
-  ];
+
 
   const handleAddProduct = (data: ProductFormData) => {
     const newProduct: Product = {
@@ -287,23 +265,6 @@ const SellerProductForms = ({
 
         {/* Upload Options */}
         <div className="space-y-3">
-          {/* URL Input */}
-          <div>
-            <Input
-              id="imageUrl"
-              {...register("imageUrl")}
-              placeholder="https://example.com/image.jpg"
-              className="w-full"
-            />
-            {errors.imageUrl && (
-              <p className="text-sm text-destructive mt-1">
-                {errors.imageUrl.message}
-              </p>
-            )}
-            <p className="text-xs text-muted-foreground mt-1">
-              Enter image URL or upload from your device
-            </p>
-          </div>
 
           {/* File Upload */}
           <div>
@@ -332,32 +293,6 @@ const SellerProductForms = ({
             </Label>
           </div>
 
-          {/* Sample Images */}
-          <div>
-            <p className="text-sm font-medium mb-2">
-              Or select a sample image:
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              {sampleImages.map((img, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => selectSampleImage(img.url)}
-                  className="relative aspect-square overflow-hidden rounded-lg border hover:border-green-500 hover:shadow-sm transition-all group"
-                >
-                  <img
-                    src={img.url}
-                    alt={img.name}
-                    className="h-full w-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-1 text-center truncate">
-                    {img.name}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
 
