@@ -181,7 +181,112 @@ const SellerStatsCards = ({
           </CardContent>
         </Card>
       </div>
+      {/* Summary and Actions */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("seller.quickActions")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button onClick={onAddProduct} className="w-full text-xs">
+              <Plus className="mr-2 h-4 w-4" />
+              {t("seller.addNewProduct")}
+            </Button>
+            <Button
+              onClick={() => navigate("/seller/orders")}
+              className="w-full text-xs hover:bg-green-50 hover:border-green-200 border-green-300 text-white hover:text-green-700"
+            >
+              <Package className="mr-2 h-4 w-4" />
+              {t("orders.title")}
+            </Button>
 
+            {stats.expired > 0 && (
+              <Button
+                variant="outline"
+                className="w-full text-red-600 border-red-200 hover:bg-red-50 text-xs hover:text-red-600"
+              >
+                <XCircle className="mr-2 h-4 w-4 " />
+                {t("seller.remove")} {t("seller.expired")}{" "}
+                {t("seller.products")} ({stats.expired})
+              </Button>
+            )}
+
+            {stats.expiringSoonCount > 0 && (
+              <Button
+                variant="outline"
+                className="w-full text-orange-600 border-orange-200 hover:bg-orange-50"
+              >
+                <Calendar className="mr-2 h-4 w-4" />
+                {t("seller.extendexpirydates")} ({stats.expiringSoonCount})
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Summary Stats */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("seller.inventorySummery")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  {t("seller.total")} {t("seller.active")}{" "}
+                  {t("seller.products")}{" "}
+                </span>
+                <span className="font-medium">{stats.active}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  {t("seller.nearestexpiry")}
+                </span>
+                <span className="font-medium">
+                  {stats.expiringSoonCount > 0
+                    ? `${Math.min(
+                        ...stats.expiringSoon.map((p) => p.daysLeft)
+                      )} ${t("seller.days")}`
+                    : stats.expiringThisWeekCount > 0
+                    ? `${Math.min(
+                        ...stats.expiringThisWeek.map((p) => p.daysLeft)
+                      )} ${t("seller.days")}`
+                    : stats.expiringThisMonthCount > 0
+                    ? `${Math.min(
+                        ...stats.expiringThisMonth.map((p) => p.daysLeft)
+                      )} ${t("seller.days")}`
+                    : t("seller.morethan30days")}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  {t("seller.expiryhealth")}
+                </span>
+                <Badge
+                  variant={
+                    stats.expiringSoonCount > 0
+                      ? "destructive"
+                      : stats.expired > 0
+                      ? "outline"
+                      : "default"
+                  }
+                >
+                  {stats.expiringSoonCount > 0
+                    ? t("seller.needsAttention")
+                    : stats.expired > 0
+                    ? t("seller.good")
+                    : t("seller.excellent")}
+                </Badge>
+              </div>
+              <div className="pt-3 border-t">
+                <p className="text-xs text-muted-foreground">
+                  {t("seller.today")}: {today.toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
       {/* Expiry Timeline Overview */}
       <Card>
         <CardHeader>
@@ -458,113 +563,6 @@ const SellerStatsCards = ({
           </div>
         </CardContent>
       </Card>
-
-      {/* Summary and Actions */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("seller.quickActions")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button onClick={onAddProduct} className="w-full text-xs">
-              <Plus className="mr-2 h-4 w-4" />
-              {t("seller.addNewProduct")}
-            </Button>
-            <Button
-              onClick={() => navigate("/seller/orders")}
-              className="w-full text-xs hover:bg-green-50 hover:border-green-200 border-green-300 text-white hover:text-green-700"
-            >
-              <Package className="mr-2 h-4 w-4" />
-              {t("orders.title")}
-            </Button>
-
-            {stats.expired > 0 && (
-              <Button
-                variant="outline"
-                className="w-full text-red-600 border-red-200 hover:bg-red-50 text-xs hover:text-red-600"
-              >
-                <XCircle className="mr-2 h-4 w-4 " />
-                {t("seller.remove")} {t("seller.expired")}{" "}
-                {t("seller.products")} ({stats.expired})
-              </Button>
-            )}
-
-            {stats.expiringSoonCount > 0 && (
-              <Button
-                variant="outline"
-                className="w-full text-orange-600 border-orange-200 hover:bg-orange-50"
-              >
-                <Calendar className="mr-2 h-4 w-4" />
-                {t("seller.extendexpirydates")} ({stats.expiringSoonCount})
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Summary Stats */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("seller.inventorySummery")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  {t("seller.total")} {t("seller.active")}{" "}
-                  {t("seller.products")}{" "}
-                </span>
-                <span className="font-medium">{stats.active}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  {t("seller.nearestexpiry")}
-                </span>
-                <span className="font-medium">
-                  {stats.expiringSoonCount > 0
-                    ? `${Math.min(
-                        ...stats.expiringSoon.map((p) => p.daysLeft)
-                      )} ${t("seller.days")}`
-                    : stats.expiringThisWeekCount > 0
-                    ? `${Math.min(
-                        ...stats.expiringThisWeek.map((p) => p.daysLeft)
-                      )} ${t("seller.days")}`
-                    : stats.expiringThisMonthCount > 0
-                    ? `${Math.min(
-                        ...stats.expiringThisMonth.map((p) => p.daysLeft)
-                      )} ${t("seller.days")}`
-                    : t("seller.moreThan30Days")}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  {t("seller.expiryhealth")}
-                </span>
-                <Badge
-                  variant={
-                    stats.expiringSoonCount > 0
-                      ? "destructive"
-                      : stats.expired > 0
-                      ? "outline"
-                      : "default"
-                  }
-                >
-                  {stats.expiringSoonCount > 0
-                    ? t("seller.needsAttention")
-                    : stats.expired > 0
-                    ? t("seller.good")
-                    : t("seller.excellent")}
-                </Badge>
-              </div>
-              <div className="pt-3 border-t">
-                <p className="text-xs text-muted-foreground">
-                  {t("seller.today")}: {today.toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 };
