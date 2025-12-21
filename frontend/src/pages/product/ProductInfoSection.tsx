@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Calendar, MapPin, Package, User, Sparkles, MessageCircle } from 'lucide-react';
 import type { Product } from '@/store/catalogSlice';
 import type { Category } from '@/store/catalogSlice';
+import { useTranslation } from 'react-i18next';
 
 interface ProductInfoSectionProps {
   product: Product;
@@ -17,6 +18,7 @@ export const ProductInfoSection = ({
   showWhatsAppButton,
   expiresDate,
 }: ProductInfoSectionProps) => {
+  const { t } = useTranslation();
   return (
     <div className="lg:col-span-7 space-y-4">
       {/* Header Section */}
@@ -25,25 +27,25 @@ export const ProductInfoSection = ({
           <Badge variant="outline" className="text-sm px-3 py-1">
             {category?.icon} {category?.name}
           </Badge>
-          <Badge 
+          <Badge
             className={`${
-              product.supplyType === 'wholesale' 
-                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white' 
+              product.supplyType === 'wholesale'
+                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white'
                 : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
             } text-sm px-3 py-1 border-0`}
           >
-            {product.supplyType === 'wholesale' ? 'Wholesale' : 'Small Scale'}
+            {product.supplyType === 'wholesale' ? t('product.wholesale', 'Wholesale') : t('product.smallScale', 'Small Scale')}
           </Badge>
           {product.stockQty > 0 && (
             <Badge className="bg-green-100 text-green-800 border-green-200 text-sm px-3 py-1">
               <Sparkles className="h-3 w-3 mr-1" />
-              In Stock
+              {t('product.inStock', 'In Stock')}
             </Badge>
           )}
           {showWhatsAppButton && (
             <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm px-3 py-1 border-0">
               <MessageCircle className="h-3 w-3 mr-1" />
-              Agent Available
+              {t('product.agentAvailable', 'Agent Available')}
             </Badge>
           )}
         </div>
@@ -65,7 +67,7 @@ export const ProductInfoSection = ({
                 <Calendar className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Expires On</p>
+                <p className="text-xs text-muted-foreground mb-1">{t('product.expiresOn', 'Expires On')}</p>
                 <p className="font-semibold text-gray-900">{expiresDate.toLocaleDateString()}</p>
               </div>
             </div>
@@ -79,7 +81,7 @@ export const ProductInfoSection = ({
                 <MapPin className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Location</p>
+                <p className="text-xs text-muted-foreground mb-1">{t('product.location', 'Location')}</p>
                 <p className="font-semibold text-gray-900">{product.locationDistrict}</p>
               </div>
             </div>
@@ -93,7 +95,7 @@ export const ProductInfoSection = ({
                 <Package className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Available Stock</p>
+                <p className="text-xs text-muted-foreground mb-1">{t('product.availableStock', 'Available Stock')}</p>
                 <p className="font-semibold text-gray-900">{product.stockQty} kg</p>
               </div>
             </div>
@@ -107,7 +109,7 @@ export const ProductInfoSection = ({
                 <User className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">ID </p>
+                <p className="text-xs text-muted-foreground mb-1">{t('product.sellerId', 'ID')}</p>
                 <p className="font-semibold text-gray-900">{product.sellerId}</p>
               </div>
             </div>
