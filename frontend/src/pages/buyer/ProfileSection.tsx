@@ -86,7 +86,7 @@ export const ProfileSection = ({ user }: ProfileSectionProps) => {
   };
 
   const isBuyer = user.role === 'buyer';
-  const editableFields = isBuyer ? ['email', 'phone', 'address', 'district'] : [];
+  const editableFields = isBuyer ? ['firstName', 'lastName', 'phone', 'address', 'district', 'nic'] : [];
 
   const sriLankaDistricts = [
     'Colombo',

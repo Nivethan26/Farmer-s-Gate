@@ -13,9 +13,9 @@ type ProfileFormData = {
   lastName?: string;
   email?: string;
   phone?: string;
-  nic?: string;
   address?: string;
   district?: string;
+  nic?: string;
 };
 
 interface ProfileFormFieldsSectionProps {
@@ -47,29 +47,42 @@ export const ProfileFormFieldsSection = ({
 }: ProfileFormFieldsSectionProps) => {
   const { t } = useTranslation();
   const selectedDistrict = watch('district') || '';
-
-  // Helper function to check if field is editable
-  const isFieldEditable = (fieldName: string) => {
-    return isEditing && editableFields.includes(fieldName);
+  const canEditField = (field: string) => {
+    // If not in edit mode, nothing is editable
+    if (!isEditing) return false;
+    // If editableFields is provided and non-empty, use it as the source of truth
+    if (Array.isArray(editableFields) && editableFields.length > 0) {
+      return editableFields.includes(field);
+    }
+    // Default behavior: all fields editable in edit mode except email
+    return field !== 'email';
   };
 
   return (
-    <div className="pt-4 space-y-6 sm:pt-6 sm:space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Name Fields Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-5">
         {/* First Name */}
         <div className="space-y-2">
-          <Label htmlFor="firstName" className="text-sm font-semibold flex items-center gap-2 text-gray-700">
+          <Label
+            htmlFor="firstName"
+            className="text-sm font-semibold flex items-center gap-2 text-gray-700"
+          >
             <User className="h-4 w-4 text-green-600" />
             {t('profile.firstName')}
-            {isBuyer && isFieldEditable('firstName') && (
+            {isBuyer && isEditing && (
               <Badge variant="secondary" className="ml-2 text-xs">
                 {t('profile.editable')}
               </Badge>
             )}
           </Label>
-          {isEditing ? (
-            <Input id="firstName" {...register('firstName')} className="w-full max-w-lg lg:max-w-md border-2 border-green-200 focus:border-green-400 transition-all" />
+          {canEditField('firstName') ? (
+            <Input
+              id="firstName"
+              {...register('firstName')}
+              defaultValue={getFirstName()}
+              className="border-2 border-green-200 focus:border-green-400 focus:ring-green-400/20 transition-all"
+            />
           ) : (
             <div className="relative group">
               <Input
@@ -78,7 +91,11 @@ export const ProfileFormFieldsSection = ({
                 disabled
                 className="bg-gray-50/80 border-gray-200 pr-10 disabled:opacity-70 group-hover:border-gray-300 transition-colors"
               />
-              <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              {isEditing ? (
+                !editableFields.includes('firstName') && (
+                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                )
+              ) : null}
             </div>
           )}
         </div>
@@ -88,14 +105,19 @@ export const ProfileFormFieldsSection = ({
           <Label htmlFor="lastName" className="text-sm font-semibold flex items-center gap-2 text-gray-700">
             <User className="h-4 w-4 text-green-600" />
             {t('profile.lastName')}
-            {isBuyer && isFieldEditable('lastName') && (
+            {isBuyer && isEditing && (
               <Badge variant="secondary" className="ml-2 text-xs">
                 {t('profile.editable')}
               </Badge>
             )}
           </Label>
-          {isEditing ? (
-            <Input id="lastName" {...register('lastName')} className="w-full max-w-lg lg:max-w-md border-2 border-green-200 focus:border-green-400 transition-all" />
+          {canEditField('lastName') ? (
+            <Input
+              id="lastName"
+              {...register('lastName')}
+              defaultValue={getLastName()}
+              className="border-2 border-green-200 focus:border-green-400 focus:ring-green-400/20 transition-all"
+            />
           ) : (
             <div className="relative group">
               <Input
@@ -104,7 +126,11 @@ export const ProfileFormFieldsSection = ({
                 disabled
                 className="bg-gray-50/80 border-gray-200 pr-10 disabled:opacity-70 group-hover:border-gray-300 transition-colors"
               />
-              <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              {isEditing ? (
+                !editableFields.includes('lastName') && (
+                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                )
+              ) : null}
             </div>
           )}
         </div>
@@ -113,49 +139,84 @@ export const ProfileFormFieldsSection = ({
       {/* Divider */}
       <div className="border-t border-gray-100"></div>
 
-      {/* Email + NIC Row (email and NIC are read-only) */}
+      {/* Email + NIC Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+        {/* Email - Editable for Buyers */}
         <div className="space-y-2">
           <Label htmlFor="email" className="text-sm font-semibold flex items-center gap-2 text-gray-700">
             <Mail className="h-4 w-4 text-green-600" />
             {t('profile.email')}
+            {isBuyer && <span className="text-green-600 text-base">*</span>}
+             
           </Label>
-          <div className="relative group">
-            <Input
-              id="email"
-              value={user.email}
-              disabled
-              className="w-full max-w-lg lg:max-w-md bg-gray-50/80 border-gray-200 pr-10 disabled:opacity-70 group-hover:border-gray-300 transition-colors"
-            />
-            <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          </div>
-          <p className="text-xs text-muted-foreground flex items-center gap-1">
-            <Shield className="h-3 w-3" />
-            {t('profile.fieldCannotChange')}
-          </p>
+          {canEditField('email') ? (
+            <div className="space-y-2">
+              <Input
+                id="email"
+                type="email"
+                {...register('email')}
+                className="border-2 border-green-200 focus:border-green-400 focus:ring-green-400/20 transition-all"
+                placeholder="your.email@example.com"
+              />
+              {errors.email && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <span className="text-base">⚠</span>
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="relative group">
+              <Input
+                id="email"
+                value={user.email}
+                disabled
+                className="bg-gray-50/80 border-gray-200 pr-10 disabled:opacity-70 group-hover:border-gray-300 transition-colors"
+              />
+              {!(isEditing && editableFields.includes('email')) && (
+                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              )}
+            </div>
+          )}
+          {!(isEditing && editableFields.includes('email')) && (
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <Shield className="h-3 w-3" />
+              {t('profile.fieldCannotChange')}
+            </p>
+          )}
         </div>
 
+        {/* NIC */}
         <div className="space-y-2">
           <Label htmlFor="nic" className="text-sm font-semibold flex items-center gap-2 text-gray-700">
             <IdCard className="h-4 w-4 text-green-600" />
             {t('profile.nic')}
-            {isBuyer && isFieldEditable('nic') && (
-              <Badge variant="secondary" className="ml-2 text-xs">
-                {t('profile.editable')}
-              </Badge>
-            )}
+          {isBuyer && isEditing && (
+            <Badge variant="secondary" className="ml-2 text-xs">
+              {t('profile.editable')}
+            </Badge>
+          )}
           </Label>
-          {isEditing ? (
-            <Input id="nic" {...register('nic')} className="w-full max-w-lg lg:max-w-md border-2 border-green-200 focus:border-green-400 transition-all font-mono" />
+          {isEditing && editableFields.includes('nic') ? (
+            <Input
+              id="nic"
+              {...register('nic')}
+              defaultValue={user.nic || ''}
+              className="border-2 border-green-200 focus:border-green-400 focus:ring-green-400/20 transition-all font-mono"
+            />
           ) : (
             <div className="relative group">
               <Input
                 id="nic"
                 value={user.nic || t('buyer.notProvided')}
                 disabled
-                className="w-full max-w-lg lg:max-w-md bg-gray-50/80 border-gray-200 pr-10 disabled:opacity-70 group-hover:border-gray-300 transition-colors font-mono"
+                className="bg-gray-50/80 border-gray-200 pr-10 disabled:opacity-70 group-hover:border-gray-300 transition-colors font-mono"
               />
-              <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              {isEditing ? (
+                !editableFields.includes('nic') && (
+                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                )
+              ) : null}
             </div>
           )}
         </div>
@@ -164,14 +225,15 @@ export const ProfileFormFieldsSection = ({
       {/* Divider */}
       <div className="border-t border-gray-100"></div>
 
-      {/* Phone + District Row (editable when allowed) */}
+      {/* Phone + District Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+        {/* Phone - Editable for Buyers */}
         <div className="space-y-2">
           <Label htmlFor="phone" className="text-sm font-semibold flex items-center gap-2 text-gray-700">
             <Phone className="h-4 w-4 text-green-600" />
             {t('profile.phone')}
             {isBuyer && <span className="text-green-600 text-base">*</span>}
-            {isBuyer && isFieldEditable('phone') && (
+            {isBuyer && isEditing && (
               <Badge variant="secondary" className="ml-2 text-xs">
                 {t('profile.editable')}
               </Badge>
@@ -182,7 +244,7 @@ export const ProfileFormFieldsSection = ({
               <Input
                 id="phone"
                 {...register('phone')}
-                className="w-full max-w-lg lg:max-w-md border-2 border-green-200 focus:border-green-400 focus:ring-green-400/20 transition-all"
+                className="border-2 border-green-200 focus:border-green-400 focus:ring-green-400/20 transition-all"
                 placeholder={t('profile.enterPhone')}
               />
               {errors.phone && (
@@ -193,24 +255,22 @@ export const ProfileFormFieldsSection = ({
               )}
             </div>
           ) : (
-            <div className="relative group">
-              <Input
-                id="phone"
-                value={user.phone || t('buyer.notProvided')}
-                disabled
-                className="w-full max-w-lg lg:max-w-md bg-gray-50/80 border-gray-200 pr-10 disabled:opacity-70"
-              />
-              <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            </div>
+            <Input
+              id="phone"
+              value={user.phone || t('buyer.notProvided')}
+              disabled
+              className="bg-gray-50/80 border-gray-200 disabled:opacity-70"
+            />
           )}
         </div>
 
+        {/* District - Editable for Buyers */}
         <div className="space-y-2">
           <Label htmlFor="district" className="text-sm font-semibold flex items-center gap-2 text-gray-700">
             <MapPin className="h-4 w-4 text-green-600" />
             {t('profile.district')}
             {isBuyer && <span className="text-green-600 text-base">*</span>}
-            {isBuyer && isFieldEditable('district') && (
+            {isBuyer && isEditing && (
               <Badge variant="secondary" className="ml-2 text-xs">
                 {t('profile.editable')}
               </Badge>
@@ -222,7 +282,7 @@ export const ProfileFormFieldsSection = ({
               value={selectedDistrict}
               onValueChange={(value) => setValue('district', value, { shouldDirty: true })}
             >
-              <SelectTrigger className="w-full max-w-lg lg:max-w-md border-2 border-green-200 focus:border-green-400 focus:ring-green-400/20 transition-all">
+              <SelectTrigger className="border-2 border-green-200 focus:border-green-400 focus:ring-green-400/20 transition-all">
                 <SelectValue placeholder={t('profile.selectDistrict')} />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
@@ -234,15 +294,12 @@ export const ProfileFormFieldsSection = ({
               </SelectContent>
             </Select>
           ) : (
-            <div className="relative group">
-              <Input
-                id="district"
-                value={user.district || t('buyer.notProvided')}
-                disabled
-                className="w-full max-w-lg lg:max-w-md bg-gray-50/80 border-gray-200 pr-10 disabled:opacity-70"
-              />
-              <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            </div>
+            <Input
+              id="district"
+              value={user.district || t('buyer.notProvided')}
+              disabled
+              className="bg-gray-50/80 border-gray-200 disabled:opacity-70"
+            />
           )}
         </div>
       </div>
@@ -253,7 +310,7 @@ export const ProfileFormFieldsSection = ({
           <MapPin className="h-4 w-4 text-green-600" />
           {t('profile.fullAddress')}
           {isBuyer && <span className="text-green-600 text-base">*</span>}
-          {isBuyer && isFieldEditable('address') && (
+          {isBuyer && isEditing && (
             <Badge variant="secondary" className="ml-2 text-xs">
               {t('profile.editable')}
             </Badge>
@@ -267,15 +324,12 @@ export const ProfileFormFieldsSection = ({
             placeholder={t('profile.addressPlaceholder')}
           />
         ) : (
-          <div className="relative group">
-            <Textarea
-              id="address"
-              value={user.address || t('buyer.notProvided')}
-              disabled
-              className="bg-gray-50/80 border-gray-200 pr-10 disabled:opacity-70 min-h-[120px] resize-none"
-            />
-            <Lock className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
-          </div>
+          <Textarea
+            id="address"
+            value={user.address || t('buyer.notProvided')}
+            disabled
+            className="bg-gray-50/80 border-gray-200 disabled:opacity-70 min-h-[120px] resize-none"
+          />
         )}
       </div>
     </div>
