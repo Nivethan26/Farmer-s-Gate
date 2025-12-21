@@ -143,8 +143,8 @@ const ProductDetail = () => {
   const expiresDate = new Date(product.expiresOn);
   const isExpiringSoon = (expiresDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24) < 3;
 
-  // Check if WhatsApp button should be shown
-  const showWhatsAppButton = sellerAgent && product.supplyType === 'wholesale';
+  // Check if WhatsApp button / Agent Available badge should be shown
+  const showWhatsAppButton = !!(sellerAgent && product.negotiationEnabled);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50/30">
@@ -201,9 +201,8 @@ const ProductDetail = () => {
           onAddToCart={handleRelatedProductAddToCart}
         />
 
-        {/* Dynamic spacer for mobile fixed action bar */}
-        <div className={`sm:hidden ${product.negotiationEnabled ? 'h-48' : 'h-32'}`} aria-hidden="true" />
       </div>
+
 
       <NegotiationDialogSection
         product={product}

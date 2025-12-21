@@ -11,38 +11,33 @@ export const ProductImageSection = ({ product, isExpiringSoon }: ProductImageSec
   return (
     <div className="lg:col-span-5">
       <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50 border-2 border-gray-200 shadow-xl group">
-        <div className="h-[400px] sm:h-[450px] lg:h-[500px]">
+        <div className="h-[250px] sm:h-[450px] lg:h-[500px]">
           <img
             src={product.image}
             alt={product.name}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </div>
-        {/* Badges container: stacks on mobile, side-by-side on larger screens */}
-        <div className="absolute top-4 left-4 right-4 z-10 pointer-events-none">
-          <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
-            <div className="flex flex-col sm:flex-row gap-2 items-start pointer-events-auto">
-              {product.negotiationEnabled && (
-                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-3 py-1.5 border-0 shadow-lg shadow-purple-500/50">
-                  <Scale className="h-3 w-3 mr-1" />
-                  Negotiation Enabled
-                </Badge>
-              )}
-              {product.supplyType === 'wholesale' && (
-                <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-bold px-3 py-1.5 border-0 shadow-lg shadow-blue-500/50">
-                  <Truck className="h-3 w-3 mr-1" />
-                  Wholesale
-                </Badge>
-              )}
-            </div>
-
-            <div className="flex justify-end items-start pointer-events-auto">
-              {isExpiringSoon && (
-                <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-3 py-1.5 border-0 shadow-lg shadow-red-500/50">
-                  Expiring Soon
-                </Badge>
-              )}
-            </div>
+        {/* Badges container: All badges in a single line at the top */}
+        <div className="absolute top-3 left-3 right-3 z-10 pointer-events-none">
+          <div className="flex flex-row flex-wrap items-center gap-2 pointer-events-auto">
+            {product.negotiationEnabled && (
+              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/40 text-[10px] sm:text-xs font-bold px-2.5 py-1 sm:px-3 sm:py-1.5 border-0 rounded-full">
+                <Scale className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
+                Negotiation
+              </Badge>
+            )}
+            {product.supplyType === 'wholesale' && (
+              <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/40 text-[10px] sm:text-xs font-bold px-2.5 py-1 sm:px-3 sm:py-1.5 border-0 rounded-full">
+                <Truck className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
+                Wholesale
+              </Badge>
+            )}
+            {isExpiringSoon && (
+              <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg shadow-red-500/40 text-[10px] sm:text-xs font-bold px-2.5 py-1 sm:px-3 sm:py-1.5 border-0 rounded-full">
+                Expiring Soon
+              </Badge>
+            )}
           </div>
         </div>
       </div>
