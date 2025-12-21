@@ -114,17 +114,29 @@ const BuyerDashboard = () => {
         </div>
 
         <Tabs defaultValue="home" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm h-auto p-1 divide-x divide-gray-100 rounded-lg overflow-hidden">
-            <TabsTrigger value="home" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center px-3">
+          <TabsList className="flex flex-wrap w-full bg-transparent border-none shadow-none h-auto p-0">
+            <TabsTrigger 
+              value="home" 
+              className="flex-1 min-w-[120px] bg-white border border-gray-200 rounded-lg h-auto py-3 whitespace-normal text-center px-4 font-medium transition-all duration-200 text-gray-700 hover:!text-green-600 hover:border-green-300 hover:shadow-sm data-[state=active]:bg-green-600 data-[state=active]:!text-white data-[state=active]:border-green-600 data-[state=active]:hover:bg-green-600 data-[state=active]:hover:!text-white mr-3 mb-3"
+            >
               {t('nav.home')}
             </TabsTrigger>
-            <TabsTrigger value="orders" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center px-3">
+            <TabsTrigger 
+              value="orders" 
+              className="flex-1 min-w-[120px] bg-white border border-gray-200 rounded-lg h-auto py-3 whitespace-normal text-center px-4 font-medium transition-all duration-200 text-gray-700 hover:!text-green-600 hover:border-green-300 hover:shadow-sm data-[state=active]:bg-green-600 data-[state=active]:!text-white data-[state=active]:border-green-600 data-[state=active]:hover:bg-green-600 data-[state=active]:hover:!text-white mr-3 mb-3"
+            >
               {t('nav.orders')}
             </TabsTrigger>
-            <TabsTrigger value="negotiations" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center px-3">
+            <TabsTrigger 
+              value="negotiations" 
+              className="flex-1 min-w-[120px] bg-white border border-gray-200 rounded-lg h-auto py-3 whitespace-normal text-center px-4 font-medium transition-all duration-200 text-gray-700 hover:!text-green-600 hover:border-green-300 hover:shadow-sm data-[state=active]:bg-green-600 data-[state=active]:!text-white data-[state=active]:border-green-600 data-[state=active]:hover:bg-green-600 data-[state=active]:hover:!text-white mr-3 mb-3"
+            >
               {t('buyer.negotiations')}
             </TabsTrigger>
-            <TabsTrigger value="profile" className="data-[state=active]:bg-green-600 data-[state=active]:text-white h-auto py-2 whitespace-normal text-center px-3">
+            <TabsTrigger 
+              value="profile" 
+              className="flex-1 min-w-[120px] bg-white border border-gray-200 rounded-lg h-auto py-3 whitespace-normal text-center px-4 font-medium transition-all duration-200 text-gray-700 hover:!text-green-600 hover:border-green-300 hover:shadow-sm data-[state=active]:bg-green-600 data-[state=active]:!text-white data-[state=active]:border-green-600 data-[state=active]:hover:bg-green-600 data-[state=active]:hover:!text-white mb-3"
+            >
               {t('buyer.profile')}
             </TabsTrigger>
           </TabsList>

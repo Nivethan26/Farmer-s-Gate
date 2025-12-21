@@ -344,7 +344,7 @@ const Cart = () => {
             <Button
               variant="ghost"
               onClick={() => navigate("/catalog")}
-              className="border-2 hover:bg-green-50 hover:border-green-300"
+              className="border-2 text-green-600 hover:bg-green-50 hover:border-green-300 hover:text-green-700"
             >
               {t("cart.continueShopping")}
             </Button>
@@ -380,7 +380,7 @@ const Cart = () => {
                   }
                 );
               }}
-              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
             >
               <Trash2 className="mr-2 h-4 w-4" />
               {t("cart.clearCart")}
@@ -648,7 +648,7 @@ const Cart = () => {
 
                     <Button
                       variant="outline"
-                      className="w-full h-11 border-2 hover:bg-green-50 hover:border-green-300 text-sm sm:text-base"
+                      className="w-full h-11 border-2 text-green-600 hover:bg-green-50 hover:border-green-300 hover:text-green-700 text-sm sm:text-base"
                       onClick={() => navigate("/catalog")}
                     >
                       <span className="truncate">{t("cart.continueShopping")}</span>

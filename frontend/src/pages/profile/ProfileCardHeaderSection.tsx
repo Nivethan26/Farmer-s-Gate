@@ -45,7 +45,7 @@ export const ProfileCardHeaderSection = ({
             variant="outline"
             size="sm"
             onClick={onEditClick}
-            className="border-2 border-green-300 hover:bg-green-50 hover:border-green-400 transition-all duration-200 shadow-sm hover:shadow-md w-full sm:w-auto"
+            className="border-2 border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md w-full sm:w-auto"
           >
             <Edit2 className="mr-2 h-4 w-4" />
             {t('profile.editProfile')}

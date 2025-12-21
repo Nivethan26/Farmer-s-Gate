@@ -149,12 +149,12 @@ const ProductDetail = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50/30">
       <Navbar />
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Back Button */}
         <Button
           variant="ghost"
           onClick={() => navigate('/catalog')}
-          className="mb-4 sm:mb-6 hover:bg-green-50 hover:text-green-700"
+          className="hidden sm:flex mb-4 sm:mb-6 hover:bg-green-50 hover:text-green-700"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Catalog

@@ -21,8 +21,6 @@ import {
   MessageSquare,
   ExternalLink,
   Clock,
-  Eye,
-  EyeOff,
   User,
   Store,
   Shield,
@@ -223,15 +221,6 @@ export const NotificationCenter = ({ trigger }: NotificationCenterProps) => {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20 h-8 w-8 shrink-0"
-                onClick={() => setShowUnreadOnly(!showUnreadOnly)}
-                title={showUnreadOnly ? "Show all" : "Show unread only"}
-              >
-                {showUnreadOnly ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
               {totalUnread > 0 && (
                 <Button
                   variant="ghost"
@@ -249,18 +238,18 @@ export const NotificationCenter = ({ trigger }: NotificationCenterProps) => {
         </div>
 
         {/* Tabs */}
-        <div className="px-3 sm:px-4 pt-3 border-b overflow-x-auto">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full min-w-max">
-            <TabsList className="w-full bg-gray-100 p-1 inline-flex">
+        <div className="px-3 sm:px-4 pt-3 pb-3 border-b overflow-x-auto">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="flex flex-wrap w-full gap-3 bg-transparent border-none shadow-none h-auto p-0">
               {categories.map((cat) => (
                 <TabsTrigger
                   key={cat.value}
                   value={cat.value}
-                  className="flex-1 min-w-20 data-[state=active]:bg-white data-[state=active]:shadow-sm px-2 sm:px-3"
+                  className="flex-1 min-w-[80px] bg-white border border-gray-200 rounded-lg h-auto py-2.5 whitespace-normal text-center px-3 sm:px-4 font-medium transition-all duration-200 text-gray-700 hover:text-green-600 hover:border-green-300 hover:shadow-sm data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:border-green-600 data-[state=active]:hover:bg-green-600 data-[state=active]:hover:text-white text-xs sm:text-sm"
                 >
-                  <span className="text-xs truncate">{cat.label}</span>
+                  <span className="truncate">{cat.label}</span>
                   {cat.count > 0 && (
-                    <Badge className="ml-1 sm:ml-2 h-5 min-w-5 px-2 text-[10px] bg-emerald-500">
+                    <Badge className={`ml-1.5 sm:ml-2 h-5 min-w-5 px-2 text-[10px] ${activeTab === cat.value ? 'bg-white text-green-600' : 'bg-emerald-500 text-white'}`}>
                       {cat.count > 9 ? '9+' : cat.count}
                     </Badge>
                   )}
