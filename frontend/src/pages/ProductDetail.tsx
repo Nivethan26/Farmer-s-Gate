@@ -63,14 +63,15 @@ const ProductDetail = () => {
 
     const productUrl = window.location.href;
     const message = encodeURIComponent(
-      `Hello ${sellerAgent.name}!\n\nI'm interested in purchasing "${product.name}" (${category?.name}).\n\n` +
-      `Product Details:\n` +
-      `• Price: Rs. ${product.pricePerKg}/kg\n` +
-      `• Quantity: ${qty} kg\n` +
-      `• Location: ${product.locationDistrict}\n` +
-      `• Expires: ${new Date(product.expiresOn).toLocaleDateString()}\n\n` +
-      `Please let me know about availability and next steps.\n\n` +
-      `Product Link: ${productUrl}`
+      `${t('product.contactGreeting', 'Hello')} ${sellerAgent.name}!\n\n` +
+      t('product.contactIntro', "I'm interested in purchasing \"") + `${product.name}` + `\" (${category?.name}).\n\n` +
+      `${t('product.productDetailsLabel', 'Product Details')}:\n` +
+      `• ${t('product.priceLabel', 'Price')}: Rs. ${product.pricePerKg}/kg\n` +
+      `• ${t('product.quantityLabel', 'Quantity')}: ${qty} kg\n` +
+      `• ${t('product.locationLabel', 'Location')}: ${product.locationDistrict}\n` +
+      `• ${t('product.expiresLabel', 'Expires')}: ${new Date(product.expiresOn).toLocaleDateString()}\n\n` +
+      `${t('product.contactPlease', 'Please let me know about availability and next steps.')}\n\n` +
+      `${t('product.productLinkLabel', 'Product Link')}: ${productUrl}`
     );
 
     const whatsappUrl = `https://wa.me/${sellerAgent.phone.replace(/[^0-9]/g, '')}?text=${message}`;
@@ -149,15 +150,15 @@ const ProductDetail = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50/30">
       <Navbar />
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-        {/* Back Button */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4 sm:py-6 lg:py-8">
+        {/* Back Button (hidden on mobile) */}
         <Button
           variant="ghost"
           onClick={() => navigate('/catalog')}
-          className="hidden sm:flex mb-4 sm:mb-6 hover:bg-green-50 hover:text-green-700"
+          className="hidden sm:inline-flex mb-4 sm:mb-6 hover:bg-green-50 hover:text-green-700"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Catalog
+          {t('product.backToCatalog', 'Back to Catalog')}
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
@@ -199,6 +200,9 @@ const ProductDetail = () => {
           otherProducts={otherProducts}
           onAddToCart={handleRelatedProductAddToCart}
         />
+
+        {/* Dynamic spacer for mobile fixed action bar */}
+        <div className={`sm:hidden ${product.negotiationEnabled ? 'h-48' : 'h-32'}`} aria-hidden="true" />
       </div>
 
       <NegotiationDialogSection

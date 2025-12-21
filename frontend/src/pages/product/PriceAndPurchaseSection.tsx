@@ -270,8 +270,7 @@ export const PriceAndPurchaseSection = ({
                 )}
               </div>
             </div>
-            {/* add spacing so content isn't hidden behind fixed bar */}
-            <div className="h-20" />
+            {/* Mobile action bar spacing will be handled by the parent container */}
           </div>
         </div>
       </CardContent>

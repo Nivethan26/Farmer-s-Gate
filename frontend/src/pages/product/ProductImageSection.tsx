@@ -18,32 +18,33 @@ export const ProductImageSection = ({ product, isExpiringSoon }: ProductImageSec
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </div>
-        {/* Expiring Soon Badge */}
-        {isExpiringSoon && (
-          <div className="absolute top-4 right-4 z-10">
-            <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-3 py-1.5 border-0 shadow-lg shadow-red-500/50">
-              Expiring Soon
-            </Badge>
+        {/* Badges container: stacks on mobile, side-by-side on larger screens */}
+        <div className="absolute top-4 left-4 right-4 z-10 pointer-events-none">
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 items-start pointer-events-auto">
+              {product.negotiationEnabled && (
+                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-3 py-1.5 border-0 shadow-lg shadow-purple-500/50">
+                  <Scale className="h-3 w-3 mr-1" />
+                  Negotiation Enabled
+                </Badge>
+              )}
+              {product.supplyType === 'wholesale' && (
+                <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-bold px-3 py-1.5 border-0 shadow-lg shadow-blue-500/50">
+                  <Truck className="h-3 w-3 mr-1" />
+                  Wholesale
+                </Badge>
+              )}
+            </div>
+
+            <div className="flex justify-end items-start pointer-events-auto">
+              {isExpiringSoon && (
+                <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-3 py-1.5 border-0 shadow-lg shadow-red-500/50">
+                  Expiring Soon
+                </Badge>
+              )}
+            </div>
           </div>
-        )}
-        {/* Allow Negotiation Badge */}
-        {product.negotiationEnabled && (
-          <div className="absolute top-4 left-4 z-10">
-            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-3 py-1.5 border-0 shadow-lg shadow-purple-500/50">
-              <Scale className="h-3 w-3 mr-1" />
-              Negotiation Enabled
-            </Badge>
-          </div>
-        )}
-        {/* Wholesale Badge */}
-        {product.supplyType === 'wholesale' && (
-          <div className="absolute bottom-4 left-4 z-10">
-            <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-bold px-3 py-1.5 border-0 shadow-lg shadow-blue-500/50">
-              <Truck className="h-3 w-3 mr-1" />
-              Wholesale
-            </Badge>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );

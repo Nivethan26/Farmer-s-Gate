@@ -527,6 +527,11 @@
   },
   "product": {
     "backToCatalog": "නාමාවලිය වෙත ආපසු",
+    "agentAvailable": "නියෝජිතයා ඇත",
+    "expiresOn": "කල් ඉකුත්වන දිනය",
+    "location": "ස්ථානය",
+    "availableStock": "ලබා ගත හැකි තොගය",
+    "sellerId": "අංකය",
     "buyNow": "දැන් මිලදී ගන්න",
     "notFound": "නිෂ්පාදනය සොයාගත නොහැක",
     "loginToAdd": "කරත්තයට අයිතම එකතු කිරීමට කරුණාකර ඇතුළු වන්න",
