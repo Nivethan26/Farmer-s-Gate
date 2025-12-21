@@ -27,7 +27,7 @@ export const ProfileActionButtonsSection = ({ isEditing, onCancel }: ProfileActi
         type="button"
         variant="outline"
         onClick={onCancel}
-        className="border-2 border-gray-300 hover:bg-gray-50 transition-all duration-200 h-11 bg-transparent"
+        className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 h-11 bg-transparent"
       >
         <X className="mr-2 h-4 w-4" />
         {t('profile.cancel')}

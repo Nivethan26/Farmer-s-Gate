@@ -9,6 +9,8 @@ import type { RootState } from "@/store"
 import { updateProfile } from "@/store/authSlice"
 import { Navbar } from "@/components/layout/Navbar"
 import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 import { ProfileHeaderSection } from "./profile/ProfileHeaderSection"
 import { ProfileCardHeaderSection } from "./profile/ProfileCardHeaderSection"
@@ -143,7 +145,16 @@ const AccountProfile = () => {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50/50 via-white to-green-50/50">
       <Navbar />
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 max-w-7xl">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-10 max-w-7xl relative">
+        {/* Back Button - Top Left Corner */}
+        <Button
+          variant="ghost"
+          onClick={() => navigate(-1)}
+          className="hidden sm:flex absolute top-4 left-4 sm:left-6 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          {t('profile.back')}
+        </Button>
         {/* Header Section */}
         <ProfileHeaderSection />
 

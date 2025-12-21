@@ -20,9 +20,10 @@ const districts = [
 
 interface FiltersProps {
   isMobile?: boolean;
+  onClose?: () => void;
 }
 
-export const Filters = ({ isMobile = false }: FiltersProps) => {
+export const Filters = ({ isMobile = false, onClose }: FiltersProps) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const categories = useAppSelector((state) => state.catalog.categories);
@@ -58,10 +59,15 @@ export const Filters = ({ isMobile = false }: FiltersProps) => {
   };
 
   return (
-    <div className={`space-y-5 ${isMobile ? 'pb-4' : ''}`}>
-      <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+    <div className={`space-y-4 ${isMobile ? 'pb-4' : ''}`}>
+      <div className="flex items-center pb-2 border-b border-gray-200">
         <h3 className="font-bold text-lg text-gray-800">{t('catalog.filters')}</h3>
-        <Button variant="ghost" size="sm" onClick={handleReset} className="text-green-600 hover:text-green-700 hover:bg-green-50">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleReset} 
+          className="text-green-600 hover:text-green-700 hover:bg-green-50 ml-4"
+        >
           <X className="mr-1 h-4 w-4" />
           {t('common.cancel')}
         </Button>

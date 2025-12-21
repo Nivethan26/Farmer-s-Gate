@@ -117,18 +117,8 @@ const Catalog = () => {
               side="left" 
               className="w-full sm:w-80 h-full flex flex-col p-0"
             >
-              <div className="absolute top-4 right-4 z-50">
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={() => setMobileFiltersOpen(false)}
-                  className="h-8 w-8 rounded-full bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex-1 overflow-hidden px-6 pt-16">
-                <Filters isMobile={true} />
+              <div className="flex-1 overflow-hidden px-6 pt-4">
+                <Filters isMobile={true} onClose={() => setMobileFiltersOpen(false)} />
               </div>
             </SheetContent>
           </Sheet>
