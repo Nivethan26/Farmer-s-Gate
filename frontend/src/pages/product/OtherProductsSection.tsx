@@ -26,7 +26,7 @@ export const OtherProductsSection = ({
       </div>
       <div>
         {/* Horizontal scroll on small screens (1 or 2 rows), grid on sm+ */}
-        <div className={`grid ${otherProducts.length > 1 ? 'grid-rows-2' : 'grid-rows-1'} grid-flow-col gap-4 overflow-x-auto hide-scrollbar py-2 -mx-4 px-4 sm:mx-0 sm:px-0 block sm:hidden`}>
+        <div className={`grid ${otherProducts.length >= 4 ? 'grid-rows-2' : 'grid-rows-1'} grid-flow-col gap-4 overflow-x-auto hide-scrollbar py-2 -mx-4 px-4 sm:mx-0 sm:px-0 block sm:hidden`}>
           {otherProducts.slice(0, 20).map((otherProduct) => (
             <div key={otherProduct.id} className="min-w-[180px] flex-shrink-0 sm:min-w-0 sm:w-full">
               <ProductCard

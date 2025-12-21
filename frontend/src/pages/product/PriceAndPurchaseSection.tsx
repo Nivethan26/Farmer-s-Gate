@@ -138,139 +138,73 @@ export const PriceAndPurchaseSection = ({
 
         {/* Action Buttons */}
         <div className="space-y-3">
-          {/* Desktop / tablet actions: hidden on small screens */}
-          <div className="hidden sm:block">
-          {/* WhatsApp Button removed from product actions — moved into negotiation dialog */}
+          {/* Action Buttons: Responsive for all screen sizes */}
+          <div>
+            <Button
+              className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 text-sm sm:text-base font-semibold"
+              variant={!user ? "outline" : "default"}
+              onClick={handleAddToCart}
+            >
+              {!user ? (
+                <>
+                  <LogIn className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                  {t('catalog.loginToBuy')}
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                  {t('catalog.addToCart')}
+                </>
+              )}
+            </Button>
 
-          <Button
-            className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 text-base font-semibold"
-            variant={!user ? "outline" : "default"}
-            onClick={handleAddToCart}
-          >
-            {!user ? (
-              <>
-                <LogIn className="mr-2 h-5 w-5" />
-                {t('catalog.loginToBuy')}
-              </>
-            ) : (
-              <>
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                {t('catalog.addToCart')}
-              </>
+            {/* Negotiation Button - Only show if seller enabled negotiation */}
+            {product.negotiationEnabled && (
+              <Button
+                variant="outline"
+                className="w-full h-12 mt-3 border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 text-purple-700 hover:text-purple-800 hover:border-purple-300 text-sm sm:text-base font-semibold"
+                onClick={() => {
+                  if (!user) {
+                    toast.info(t('product.loginToNegotiate'));
+                    navigate('/login', { state: { from: `/product/${product.id}` } });
+                    return;
+                  }
+                  if (user.role !== 'buyer') {
+                    toast.error(t('product.onlyBuyersNegotiate'));
+                    return;
+                  }
+                  onNegotiateOpen();
+                }}
+              >
+                <Scale className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                {t('product.negotiatePrice')}
+              </Button>
             )}
-          </Button>
 
-          {/* Negotiation Button - Only show if seller enabled negotiation */}
-          {product.negotiationEnabled && (
-            <Button
-              variant="outline"
-              className="w-full h-12 border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 text-purple-700 hover:text-purple-800 hover:border-purple-300 text-base font-semibold"
-              onClick={() => {
-                if (!user) {
-                  toast.info(t('product.loginToNegotiate'));
-                  navigate('/login', { state: { from: `/product/${product.id}` } });
-                  return;
-                }
-                if (user.role !== 'buyer') {
-                  toast.error(t('product.onlyBuyersNegotiate'));
-                  return;
-                }
-                onNegotiateOpen();
-              }}
-            >
-              <Scale className="mr-2 h-5 w-5" />
-              {t('product.negotiatePrice')}
-            </Button>
-          )}
-
-          {/* Checkout Button */}
-          {user && (
-            <Button
-              className="w-full h-12 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 text-base font-semibold"
-              onClick={() => {
-                // Add to cart first, then navigate to checkout
-                dispatch(
-                  addToCart({
-                    productId: product.id,
-                    productName: product.name,
-                    pricePerKg: product.pricePerKg,
-                    qty,
-                    image: product.image,
-                    sellerId: product.sellerId,
-                    sellerName: product.sellerName,
-                  })
-                );
-                navigate('/buyer/cart');
-              }}
-            >
-              <CreditCard className="mr-2 h-5 w-5" />
-              {t('product.buyNow', { defaultValue: 'Buy Now' })}
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          )}
-
-          {/* View Agent Details Button (for mobile/alternative) */}
-          {/* View Agent Details button removed — agent contact moved into negotiation dialog */}
-          </div>
-
-          {/* Mobile fixed action bar: visible only on small screens */}
-          <div className="sm:hidden">
-            <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 p-3 z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={handleAddToCart}
-                  className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg shadow text-sm font-semibold flex items-center justify-center gap-2"
-                >
-                  <ShoppingCart className="h-4 w-4" />
-                  {user ? 'Add to Cart' : 'Login to Buy'}
-                </button>
-
-                {product.negotiationEnabled && (
-                  <button
-                    onClick={() => {
-                      if (!user) {
-                        toast.info(t('product.loginToNegotiate'));
-                        navigate('/login', { state: { from: `/product/${product.id}` } });
-                        return;
-                      }
-                      if (user.role !== 'buyer') {
-                        toast.error(t('product.onlyBuyersNegotiate'));
-                        return;
-                      }
-                      onNegotiateOpen();
-                    }}
-                    className="w-full h-12 border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 rounded-lg flex items-center justify-center shadow text-sm font-semibold"
-                  >
-                    <Scale className="mr-2 h-4 w-4" />
-                    {t('product.negotiatePrice')}
-                  </button>
-                )}
-
-                {user && (
-                  <button
-                    onClick={() => {
-                      dispatch(
-                        addToCart({
-                          productId: product.id,
-                          productName: product.name,
-                          pricePerKg: product.pricePerKg,
-                          qty,
-                          image: product.image,
-                          sellerId: product.sellerId,
-                          sellerName: product.sellerName,
-                        })
-                      );
-                      navigate('/buyer/cart');
-                    }}
-                    className="w-full h-12 bg-blue-600 text-white rounded-lg flex items-center justify-center shadow text-sm font-semibold"
-                  >
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    {t('product.buyNow', { defaultValue: 'Buy Now' })}
-                  </button>
-                )}
-              </div>
-            </div>
-            {/* Mobile action bar spacing will be handled by the parent container */}
+            {/* Checkout Button */}
+            {user && (
+              <Button
+                className="w-full h-12 mt-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 text-sm sm:text-base font-semibold"
+                onClick={() => {
+                  dispatch(
+                    addToCart({
+                      productId: product.id,
+                      productName: product.name,
+                      pricePerKg: product.pricePerKg,
+                      qty,
+                      image: product.image,
+                      sellerId: product.sellerId,
+                      sellerName: product.sellerName,
+                    })
+                  );
+                  navigate('/buyer/cart');
+                }}
+              >
+                <CreditCard className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                {t('product.buyNow', { defaultValue: 'Buy Now' })}
+                <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
