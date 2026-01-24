@@ -103,10 +103,10 @@ const Index = () => {
   ];
 
   const categories = [
-    { name: 'Vegetables', count: '150+ items', color: 'bg-emerald-500', emoji: '🥬', icon: Leaf },
-    { name: 'Fruits', count: '80+ items', color: 'bg-orange-500', emoji: '🍎', icon: Sprout },
-    { name: 'Rice & Grains', count: '40+ items', color: 'bg-amber-500', emoji: '🌾', icon: Package },
-    { name: 'Spices', count: '60+ items', color: 'bg-red-500', emoji: '🌶️', icon: Sparkles }
+    { name: 'Vegetables', count: '150+ items', color: 'bg-emerald-500', emoji: '🥬', image: '/images/vegetables.png' },
+    { name: 'Fruits', count: '80+ items', color: 'bg-orange-500', emoji: '🍎', image: '/images/fruits.png' },
+    { name: 'Rice & Grains', count: '40+ items', color: 'bg-amber-500', emoji: '🌾', image: '/images/rice.png' },
+    { name: 'Spices', count: '60+ items', color: 'bg-red-500', emoji: '🌶️', image: '/images/Spices.png' }
   ];
 
   const testimonials = [
@@ -126,7 +126,7 @@ const Index = () => {
     <div className="min-h-screen bg-background font-inter">
     <Navbar />
       {/* Hero Section with Image Slider and Static Text */}
-      <section className="relative h-[60vh] min-h-[450px] md:h-[70vh] overflow-hidden">
+      <section className="relative overflow-hidden" style={{ height: '60vh', minHeight: '450px' }}>
         {/* Background Image Slider */}
         {heroImages.map((item, index) => (
           <div
@@ -150,41 +150,43 @@ const Index = () => {
         ))}
 
         {/* Static Content Overlay */}
-        <div className="relative mx-auto flex h-full items-center px-4 sm:px-6 lg:px-12 z-10">
+        <div className="relative mx-auto flex h-full items-center z-10" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
           <div className="max-w-4xl w-full animate-fade-in">
             {/* Badge */}
-            <div className="mb-4 md:mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 md:px-4 md:py-2 backdrop-blur-sm">
-              <Leaf className="h-3 w-3 md:h-4 md:w-4 text-green-300" />
+            <div className="inline-flex items-center rounded-full bg-white/10 backdrop-blur-sm" style={{ marginBottom: '16px', gap: '8px', paddingLeft: '12px', paddingRight: '12px', paddingTop: '6px', paddingBottom: '6px' }}>
+              <Leaf className="h-3 w-3 text-green-300" />
               <span className="text-xs md:text-sm font-medium text-white">100% Organic & Fresh</span>
             </div>
             
             {/* Main Heading - Static */}
-            <h1 className="mb-4 md:mb-5 font-poppins text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl lg:text-6xl drop-shadow-2xl">
+            <h2 className="font-poppins text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl lg:text-6xl drop-shadow-2xl" style={{ marginBottom: '10px' }}>
               Connecting Farmers with Smart Buyers
-            </h1>
+            </h2>
             
             {/* Subtitle - Static */}
-            <p className="mb-8 md:mb-10 text-base sm:text-lg md:text-xl text-white/95 font-light max-w-2xl drop-shadow-lg leading-relaxed">
-              Fresh from the Field — Fair Prices, Quality Assured
+            <p className="text-base sm:text-lg md:text-xl text-white/95 font-light max-w-2xl drop-shadow-lg leading-relaxed" style={{ marginBottom: '22px' }}>
+              Fresh - Fair Price - Quality Assured
             </p>
             
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-start sm:items-center">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center" style={{ gap: '8px', marginBottom: '40px' }}>
               <Button 
                 size="lg" 
                 onClick={() => navigate('/signup')}
-                className="group bg-white text-primary hover:bg-white/90 font-semibold text-sm sm:text-base px-6 sm:px-8 py-6 sm:py-7 shadow-2xl hover:shadow-white/20 transition-all duration-300 hover:scale-105 rounded-xl"
+                className="group bg-white text-primary hover:bg-white/90 font-semibold text-sm sm:text-base shadow-2xl hover:shadow-white/20 transition-all duration-300 hover:scale-105 rounded-xl flex items-center justify-center"
+                style={{ width: '280px', height: '56px' }}
               >
-                <ShoppingCart className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
-                Buy Fresh Produce
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <ShoppingCart className="mr-1 h-5 w-5 sm:h-6 sm:w-6" />
+                Buy Fresh Products
+                <ArrowRight className="ml-1 h-5 w-3 group-hover:translate-x-0 transition-transform" />
               </Button>
               
               <Button 
                 size="lg" 
                 onClick={() => navigate('/signup')}
                 variant="outline" 
-                className="group border-2 border-white bg-white/10 text-white hover:bg-white hover:text-primary backdrop-blur-sm font-semibold text-sm sm:text-base px-6 sm:px-8 py-6 sm:py-7 shadow-2xl transition-all duration-300 hover:scale-105 rounded-xl"
+                className="group border-2 border-white bg-white/10 text-white hover:bg-white hover:text-primary backdrop-blur-sm font-semibold text-sm sm:text-base shadow-2xl transition-all duration-300 hover:scale-100 rounded-xl flex items-center justify-center"
+                style={{ width: '280px', height: '56px' }}
               >
                 <Store className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
                 Sell Your Harvest
@@ -193,17 +195,17 @@ const Index = () => {
             </div>
             
             {/* Stats */}
-            <div className="mt-10 md:mt-14 grid grid-cols-3 gap-4 sm:gap-8 max-w-2xl">
+            <div className="grid grid-cols-3 max-w-2xl" style={{ marginTop: '30px', gap: '32px' }}>
               <div className="text-left">
-                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-1 md:mb-1.5">500+</div>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-white" style={{ marginBottom: '4px' }}>500+</div>
                 <div className="text-xs sm:text-sm md:text-base text-white/80 leading-relaxed font-medium">Active Farmers</div>
               </div>
               <div className="text-left">
-                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-1 md:mb-1.5">2000+</div>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-white" style={{ marginBottom: '4px' }}>2000+</div>
                 <div className="text-xs sm:text-sm md:text-base text-white/80 leading-relaxed font-medium">Happy Buyers</div>
               </div>
               <div className="text-left">
-                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-1 md:mb-1.5">100%</div>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-white" style={{ marginBottom: '4px' }}>100%</div>
                 <div className="text-xs sm:text-sm md:text-base text-white/80 leading-relaxed font-medium">Organic</div>
               </div>
             </div>
@@ -211,56 +213,51 @@ const Index = () => {
         </div>
         
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce hidden md:block z-10">
-          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex items-start justify-center p-2">
-            <div className="w-1 h-3 bg-white/50 rounded-full animate-scroll"></div>
+        <div className="absolute left-1/2 -translate-x-1/2 animate-bounce hidden md:block z-10" style={{ bottom: '32px' }}>
+          <div className="border-2 border-white/50 rounded-full flex items-start justify-center" style={{ width: '24px', height: '40px', padding: '8px' }}>
+            <div className="bg-white/50 rounded-full animate-scroll" style={{ width: '4px', height: '12px' }}></div>
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="py-12 md:py-16 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 relative overflow-hidden">
+      <section className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 relative overflow-hidden" style={{ paddingTop: '35px', paddingBottom: '10px' }}>
         {/* Decorative background elements */}
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-10 left-10 w-32 h-32 bg-green-400 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 right-10 w-40 h-40 bg-emerald-400 rounded-full blur-3xl"></div>
+          <div className="absolute bg-green-400 rounded-full blur-3xl" style={{ top: '40px', left: '40px', width: '128px', height: '128px' }}></div>
+          <div className="absolute bg-emerald-400 rounded-full blur-3xl" style={{ bottom: '40px', right: '40px', width: '160px', height: '160px' }}></div>
         </div>
         
-        <div className="container mx-auto px-6 md:px-12 relative">
-          <div className="text-center mb-8 md:mb-12">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-5 py-2.5 rounded-full mb-4 font-semibold text-sm shadow-lg">
-              <Zap className="h-4 w-4" />
-              Simple Process
-            </div>
-            <h2 className="font-poppins text-3xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-green-700 to-emerald-700 bg-clip-text text-transparent">How It Works</h2>
+        <div className="container mx-auto relative" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
+          <div className="text-center" style={{ marginBottom: '20px' }}>
+           
+            <h2 className="font-poppins text-3xl md:text-5xl font-bold bg-gradient-to-r from-green-700 to-emerald-700 bg-clip-text text-transparent" style={{ marginBottom: '10px' }}>How It Works</h2>
             <p className="text-gray-600 text-base md:text-xl max-w-2xl mx-auto font-medium leading-relaxed">Get started in three easy steps</p>
           </div>
-          <div className="grid gap-5 md:gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 w-full">
+          <div className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3" style={{ gap: '10px' }}>
             {features.map((feature, index) => (
               <Card key={index} className="group relative overflow-hidden border-0 bg-white/80 backdrop-blur-sm transition-all duration-500 hover:shadow-2xl hover:scale-105 hover:-translate-y-2 animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
                 {/* Gradient background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 group-hover:from-green-500/10 group-hover:to-emerald-500/10 transition-all" />
                 
                 {/* Step number badge - top right */}
-                <div className="absolute top-3 right-3 md:top-5 md:right-5 z-10">
-                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <span className="text-sm md:text-lg font-bold text-white">{index + 1}</span>
-                  </div>
+                <div className="absolute z-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform" style={{ top: '12px', right: '12px', width: '32px', height: '32px' }}>
+                  <span className="text-sm font-bold text-white">{index + 1}</span>
                 </div>
 
-                <CardContent className="p-6 md:p-8 relative">
+                <CardContent className="relative" style={{ padding: '15px' }}>
                   {/* Icon container */}
                   <div className="flex flex-col items-center text-center">
-                    <div className="relative mb-5 md:mb-6">
+                    <div className="relative" style={{ marginBottom: '15px' }}>
                       {/* Icon glow effect */}
                       <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity" />
-                      <div className="relative rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 p-4 md:p-5 shadow-xl group-hover:shadow-2xl transition-all group-hover:scale-110 duration-300">
+                      <div className="relative rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-xl group-hover:shadow-2xl transition-all group-hover:scale-110 duration-300" style={{ padding: '16px' }}>
                         <feature.icon className="h-7 w-7 md:h-12 md:w-12 text-white" />
                       </div>
                     </div>
                     
                     {/* Title */}
-                    <h3 className="font-poppins text-lg md:text-2xl font-bold mb-3 md:mb-4 text-gray-900 group-hover:text-green-600 transition-colors leading-tight">
+                    <h3 className="font-poppins text-lg md:text-2xl font-bold text-gray-900 group-hover:text-green-600 transition-colors leading-tight" style={{ marginBottom: '10px' }}>
                       {feature.title}
                     </h3>
                     
@@ -280,26 +277,24 @@ const Index = () => {
       </section>
 
       {/* Categories */}
-      <section className="py-16 md:py-20 bg-gradient-to-b from-white via-green-50/30 to-white relative overflow-hidden">
+      <section className="bg-gradient-to-b from-white via-green-50/30 to-white relative overflow-hidden" style={{ paddingTop: '0px', paddingBottom: '34px' }}>
         {/* Animated decorative background */}
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-20 right-20 w-64 h-64 bg-green-400 rounded-full blur-3xl animate-pulse-slow"></div>
-          <div className="absolute bottom-20 left-20 w-80 h-80 bg-emerald-400 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-lime-300 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute bg-green-400 rounded-full blur-3xl animate-pulse-slow" style={{ top: '80px', right: '80px', width: '256px', height: '256px' }}></div>
+          <div className="absolute bg-emerald-400 rounded-full blur-3xl animate-pulse-slow" style={{ bottom: '80px', left: '80px', width: '320px', height: '320px', animationDelay: '1s' }}></div>
+          <div className="absolute bg-lime-300 rounded-full blur-3xl animate-pulse-slow" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '288px', height: '288px', animationDelay: '2s' }}></div>
         </div>
         
-        <div className="container mx-auto px-6 md:px-12 relative">
-          <div className="text-center mb-12 md:mb-16">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-full mb-5 font-semibold text-sm shadow-xl animate-fade-in">
-              <Package className="h-5 w-5" />
-              Wide Selection
-            </div>
-            <h2 className="font-poppins text-3xl md:text-5xl font-bold mb-5 bg-gradient-to-r from-green-700 via-emerald-700 to-green-800 bg-clip-text text-transparent animate-fade-in" style={{ animationDelay: '0.1s' }}>Shop by Category</h2>
+        <div className="container mx-auto relative" style={{ paddingLeft: '12px', paddingRight: '12px' }}>
+          <div className="text-center" style={{ marginBottom: '20px' }}>
+            
+            <h2 className="font-poppins text-3xl md:text-5xl font-bold bg-gradient-to-r from-green-700 via-emerald-700 to-green-800 bg-clip-text text-transparent animate-fade-in" style={{ marginBottom: '15px', marginTop: '15px', animationDelay: '0.1s' }}>Shop by Category</h2>
             <p className="text-gray-600 text-base md:text-xl font-medium leading-relaxed max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '0.2s' }}>Discover fresh, organic products from local farmers</p>
           </div>
-          <div className="grid gap-6 md:gap-8 grid-cols-2 md:grid-cols-4 max-w-7xl mx-auto">
+          <div className="flex justify-center" style={{ marginLeft: '0px', marginRight: '18px' }}>
+            <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: '24px', width: 'fit-content' }}>
             {categories.map((category, index) => (
-              <Card key={index} className="group cursor-pointer relative overflow-hidden border-2 border-green-100 bg-white shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+              <Card key={index} className="group cursor-pointer relative overflow-hidden border-2 border-green-100 bg-white shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 animate-fade-in" style={{ animationDelay: `${index * 0.1}s`, width: '165px', height: '200px' }}>
                 {/* Animated gradient background */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
                 
@@ -308,56 +303,52 @@ const Index = () => {
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                 </div>
                 
-                <CardContent className="p-6 md:p-8 relative text-center">
-                  {/* Icon container with enhanced effects */}
-                  <div className="relative mb-6 md:mb-8 mx-auto inline-block">
+                <CardContent className="relative text-center" style={{ padding: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                  {/* Image container with enhanced effects */}
+                  <div className="relative mx-auto inline-block" style={{ marginBottom: '5px' }}>
                     {/* Pulsing glow effect */}
                     <div className={`absolute inset-0 ${category.color} rounded-full blur-2xl opacity-30 group-hover:opacity-50 animate-pulse-slow`} />
                     
-                    {/* Main icon container */}
-                    <div className={`relative w-20 h-20 md:w-28 md:h-28 rounded-3xl ${category.color} shadow-2xl group-hover:shadow-3xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 flex items-center justify-center overflow-hidden`}>
-                      {/* Icon shine effect */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent rounded-3xl" />
+                    {/* Main image container */}
+                    <div className={`relative rounded-3xl ${category.color} shadow-2xl group-hover:shadow-3xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 flex items-center justify-center overflow-hidden`} style={{ width: '125px', height: '106px' }}>
+                      {/* Image shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent rounded-3xl z-20" />
                       
-                      {/* Emoji */}
-                      <span className="text-4xl md:text-6xl relative z-10 transition-transform duration-500 group-hover:scale-110">{category.emoji}</span>
-                      
-                      {/* Floating particles effect */}
-                      <div className="absolute top-2 left-2 w-2 h-2 bg-white/60 rounded-full opacity-0 group-hover:opacity-100 animate-pulse-slow" style={{ animationDelay: '0.2s' }} />
-                      <div className="absolute bottom-2 right-2 w-1.5 h-1.5 bg-white/60 rounded-full opacity-0 group-hover:opacity-100 animate-pulse-slow" style={{ animationDelay: '0.4s' }} />
-                      <div className="absolute top-1/2 right-2 w-1 h-1 bg-white/60 rounded-full opacity-0 group-hover:opacity-100 animate-pulse-slow" style={{ animationDelay: '0.6s' }} />
+                      {/* Category Image */}
+                      <img src={category.image} alt={category.name} className="w-full h-full object-cover rounded-3xl transition-transform duration-500 group-hover:scale-110" />
                     </div>
                     
                     {/* Corner accent badges */}
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg">
+                    <div className="absolute rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg bg-gradient-to-br from-green-500 to-emerald-600" style={{ top: '-4px', right: '-4px', width: '16px', height: '16px' }}>
                       <CheckCircle className="w-full h-full text-white p-0.5" />
                     </div>
                   </div>
                   
                   {/* Category name */}
-                  <h3 className="mb-3 font-poppins text-lg md:text-2xl font-bold text-gray-900 group-hover:text-green-700 transition-colors duration-300 leading-tight">
+                  <h3 className="font-poppins text-lg md:text-2xl font-bold text-gray-900 group-hover:text-green-700 transition-colors duration-300 leading-tight" style={{ marginBottom: '10px' }}>
                     {category.name}
                   </h3>
                   
                   {/* Item count with enhanced styling */}
-                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200/50 group-hover:border-green-300 group-hover:from-green-100 group-hover:to-emerald-100 transition-all duration-300">
+                  <div className="inline-flex items-center bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200/50 group-hover:border-green-300 group-hover:from-green-100 group-hover:to-emerald-100 transition-all duration-300 rounded-full" style={{ gap: '8px', paddingLeft: '16px', paddingRight: '16px', paddingTop: '6px', paddingBottom: '6px' }}>
                     <Sprout className="h-3 w-3 text-green-600" />
                     <p className="text-gray-700 text-xs md:text-sm font-bold">{category.count}</p>
                   </div>
                 </CardContent>
                 
                 {/* Bottom accent line with glow */}
-                <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-green-500 via-emerald-500 to-green-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 shadow-lg shadow-green-500/50" />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-green-500 via-emerald-500 to-green-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 shadow-lg shadow-green-500/50" style={{ height: '6px' }} />
                 
                 {/* Side accent line on hover */}
-                <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-green-500 to-emerald-500 transform scale-y-0 group-hover:scale-y-100 transition-transform duration-500" />
+                <div className="absolute left-0 top-0 bottom-0 bg-gradient-to-b from-green-500 to-emerald-500 transform scale-y-0 group-hover:scale-y-100 transition-transform duration-500" style={{ width: '2px' }} />
               </Card>
             ))}
           </div>
+            </div>
           
           {/* Bottom CTA */}
-          <div className="mt-12 md:mt-16 text-center">
-            <Link to="/catalog" className="group inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 animate-fade-in">
+          <div className="text-center" style={{ marginTop: '28px' }}>
+            <Link to="/catalog" className="group inline-flex items-center text-white font-semibold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 animate-fade-in bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700" style={{ gap: '8px', paddingLeft: '32px', paddingRight: '32px', paddingTop: '16px', paddingBottom: '16px' }}>
               <Package className="h-5 w-5 group-hover:scale-110 transition-transform" />
               View All Products
               <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -367,35 +358,31 @@ const Index = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="py-10 md:py-12 bg-gradient-to-b from-background to-muted/30">
-        <div className="container mx-auto px-6 md:px-12">
-          <div className="text-center mb-8 md:mb-12">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-accent to-primary text-white px-5 py-2.5 rounded-full mb-4 font-semibold text-sm shadow-lg">
-              <Heart className="h-4 w-4" />
-              Success Stories
-            </div>
-            <h2 className="font-poppins text-3xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-green-700 to-emerald-700 bg-clip-text text-transparent">Trusted by Industry Leaders</h2>
+      <section className="bg-gradient-to-b from-background to-muted/30" style={{ paddingTop: '10px', paddingBottom: '28px' }}>
+        <div className="container mx-auto" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
+          <div className="text-center" style={{ marginBottom: '25px' }}>
+            <h2 className="font-poppins text-3xl md:text-5xl font-bold bg-gradient-to-r from-green-700 to-emerald-700 bg-clip-text text-transparent" style={{ marginBottom: '16px' }}>Trusted by Industry Leaders</h2>
             <p className="text-gray-600 text-base md:text-xl max-w-2xl mx-auto font-medium leading-relaxed">Real results from farmers and buyers transforming their businesses</p>
           </div>
-          <div className="grid gap-4 md:gap-6 md:grid-cols-2 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 max-w-5xl mx-auto" style={{ gap: '15px' }}>
             {testimonials.map((testimonial, index) => (
               <Card key={index} className="group relative overflow-hidden border-2 transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:border-accent/30 animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent via-primary to-secondary" />
-                <CardContent className="p-5 md:p-6">
-                  <Quote className="h-8 w-8 md:h-9 md:w-9 text-accent/20 mb-3" />
-                  <div className="flex gap-0.5 md:gap-1 mb-3">
+                <div className="absolute top-0 left-0 w-full bg-gradient-to-r from-accent via-primary to-secondary" style={{ height: '4px' }} />
+                <CardContent style={{ padding: '20px' }}>
+                  <Quote className="text-accent/20" style={{ marginBottom: '12px', width: '32px', height: '32px' }} />
+                  <div className="flex gap-2 md:gap-4" style={{ marginBottom: '12px' }}>
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>
-                  <p className="mb-4 text-sm md:text-base leading-relaxed text-foreground">"{testimonial.text}"</p>
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-base md:text-lg shadow-lg flex-shrink-0">
+                  <p className="text-sm md:text-base leading-relaxed text-foreground" style={{ marginBottom: '16px' }}>"{testimonial.text}"</p>
+                  <div className="flex items-center" style={{ gap: '12px' }}>
+                    <div className="rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold shadow-lg flex-shrink-0" style={{ width: '40px', height: '40px', fontSize: '16px' }}>
                       {testimonial.name.charAt(0)}
                     </div>
                     <div>
                       <p className="font-bold text-sm md:text-base">{testimonial.name}</p>
-                      <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-1">
+                      <p className="text-xs md:text-sm text-muted-foreground flex items-center" style={{ gap: '4px' }}>
                         <Award className="h-3 w-3" />
                         {testimonial.role}
                       </p>
@@ -409,45 +396,39 @@ const Index = () => {
       </section>
 
       {/* CTA */}
-      <section className="relative py-10 md:py-12 overflow-hidden">
+      <section className="relative overflow-hidden" style={{ paddingTop: '20px', paddingBottom: '28px' }}>
         <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-accent" />
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAgNHYyaC0ydjJoMnYtMmgydi0yaC0yek0zMiAzOHYtMmgtMnYyaDJ6bTAtNHYyaC0ydi0yaDJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
-        <div className="container mx-auto px-6 md:px-12 text-center relative">
+        <div className="container mx-auto text-center relative" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
           <div className="max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-5 py-2.5 rounded-full mb-4 font-semibold text-sm shadow-lg">
-              <Sparkles className="h-4 w-4" />
-              Start Today
-            </div>
-            <h2 className="mb-4 font-poppins text-3xl md:text-5xl font-bold text-white leading-tight">
+            <h2 className="font-poppins text-3xl md:text-5xl font-bold text-white leading-tight" style={{ marginBottom: '16px' }}>
               Ready to Transform Your Business?
             </h2>
-            <p className="mb-6 md:mb-8 text-base md:text-xl max-w-2xl mx-auto text-white/95 leading-relaxed">
-              Join Sri Lanka's premier marketplace connecting farmers with premium buyers
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            
+            <div className="flex flex-col sm:flex-row justify-center items-center" style={{ gap: '12px', marginBottom: '32px' }}>
               <Link to="/signup" className="w-full sm:w-auto">
-                <Button size="lg" variant="secondary" className="w-full group font-semibold text-sm md:text-base px-6 py-4 shadow-2xl hover:shadow-white/20 transition-all duration-300 hover:scale-105 rounded-xl">
+                <Button size="lg" variant="secondary" className="w-full group font-semibold text-sm md:text-base shadow-2xl hover:shadow-white/20 transition-all duration-300 hover:scale-105 rounded-xl" style={{ padding: '16px 24px' }}>
                   Start Your Journey
                   <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
               <Link to="/catalog" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full border-2 border-white bg-transparent text-white hover:bg-white hover:text-primary font-semibold text-sm md:text-base px-6 py-4 shadow-2xl transition-all duration-300 hover:scale-105 rounded-xl">
+                <Button size="lg" variant="outline" className="w-full border-2 border-white bg-transparent text-white hover:bg-white hover:text-primary font-semibold text-sm md:text-base shadow-2xl transition-all duration-300 hover:scale-105 rounded-xl" style={{ padding: '16px 24px' }}>
                   Browse Products
                 </Button>
               </Link>
             </div>
-            <div className="mt-6 md:mt-8 grid grid-cols-3 gap-4 sm:gap-6 text-white max-w-lg mx-auto">
+            <div className="grid grid-cols-3 text-white max-w-lg mx-auto" style={{ gap: '16px' }}>
               <div className="text-center">
-                <div className="text-xl sm:text-2xl md:text-3xl font-bold mb-0.5">500+</div>
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ marginBottom: '2px' }}>500+</div>
                 <div className="text-[10px] sm:text-xs md:text-sm text-white/80 leading-tight">Active Farmers</div>
               </div>
               <div className="text-center border-x border-white/20">
-                <div className="text-xl sm:text-2xl md:text-3xl font-bold mb-0.5">2000+</div>
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ marginBottom: '2px' }}>2000+</div>
                 <div className="text-[10px] sm:text-xs md:text-sm text-white/80 leading-tight">Happy Buyers</div>
               </div>
               <div className="text-center">
-                <div className="text-xl sm:text-2xl md:text-3xl font-bold mb-0.5">100%</div>
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ marginBottom: '2px' }}>100%</div>
                 <div className="text-[10px] sm:text-xs md:text-sm text-white/80 leading-tight">Organic</div>
               </div>
             </div>
