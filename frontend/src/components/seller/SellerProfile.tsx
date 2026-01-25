@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useAppSelector } from "@/store/hooks";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { RootState } from "@/store";
+import { updateUserProfile } from "@/store/authSlice";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,25 +22,47 @@ import {
   Shield,
   CheckCircle,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 
 export const SellerProfile = () => {
   const { t } = useTranslation();
-  const sellerId = useAppSelector((s: RootState) => s.auth.user?.id);
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state: RootState) => state.auth.user);
+  const isLoading = useAppSelector((state: RootState) => state.auth.loading);
   
-  const seller = useAppSelector((s: RootState) =>
-    s.users.sellers.find((sel) => sel.id === sellerId)
-  );
+  // Check if user exists and is a seller
+  const seller = user?.role === 'seller' ? user : null;
 
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({
     name: seller?.name || "",
     phone: seller?.phone || "",
     address: seller?.address || "",
+    district: seller?.district || "",
     farmName: seller?.farmName || "",
     bankName: seller?.bank?.bankName || "",
     branch: seller?.bank?.branch || "",
+    accountName: seller?.bank?.accountName || "",
+    accountNo: seller?.bank?.accountNo || "",
   });
+
+  // Update form when seller data changes
+  useEffect(() => {
+    if (seller) {
+      setForm({
+        name: seller.name || "",
+        phone: seller.phone || "",
+        address: seller.address || "",
+        district: seller.district || "",
+        farmName: seller.farmName || "",
+        bankName: seller.bank?.bankName || "",
+        branch: seller.bank?.branch || "",
+        accountName: seller.bank?.accountName || "",
+        accountNo: seller.bank?.accountNo || "",
+      });
+    }
+  }, [seller]);
 
   if (!seller) {
     return (
@@ -48,10 +72,10 @@ export const SellerProfile = () => {
             <User className="h-10 w-10 text-gray-400" />
           </div>
           <h3 className="text-lg font-semibold text-gray-700 mb-2">
-            {t("seller.profileNotFound")}
+            Seller Profile Not Available
           </h3>
           <p className="text-gray-500 max-w-md mx-auto">
-            {t("seller.profileNotFoundDesc")}
+            Please log in as a seller to view your profile information.
           </p>
         </CardContent>
       </Card>
@@ -62,45 +86,112 @@ export const SellerProfile = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
-    console.log("Updated seller data:", form);
+  const handleSave = async () => {
+    try {
+      // Validate required fields
+      if (!form.name.trim()) {
+        toast.error("Name is required");
+        return;
+      }
+      
+      // Only include fields that have actually changed
+      const updateData: any = {};
+      
+      if (form.name !== seller?.name) updateData.name = form.name;
+      if (form.phone !== seller?.phone) updateData.phone = form.phone;
+      if (form.address !== seller?.address) updateData.address = form.address;
+      if (form.district !== seller?.district) updateData.district = form.district;
+      if (form.farmName !== seller?.farmName) updateData.farmName = form.farmName;
+
+      // Handle bank fields - only send bank object if any bank field has changed
+      const bankChanged = 
+        form.bankName !== seller?.bank?.bankName ||
+        form.branch !== seller?.bank?.branch ||
+        form.accountName !== seller?.bank?.accountName ||
+        form.accountNo !== seller?.bank?.accountNo;
+
+      if (bankChanged) {
+        updateData.bank = {
+          bankName: form.bankName,
+          branch: form.branch,
+          accountName: form.accountName,
+          accountNo: form.accountNo,
+        };
+      }
+
+      // Only make API call if there are actual changes
+      if (Object.keys(updateData).length === 0) {
+        toast.info("No changes to save");
+        setEditMode(false);
+        return;
+      }
+
+      const result = await dispatch(updateUserProfile(updateData));
+      
+      if (updateUserProfile.fulfilled.match(result)) {
+        toast.success("Profile updated successfully!");
+        setEditMode(false);
+      } else {
+        throw new Error(result.payload as string);
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile. Please try again.');
+    }
+  };
+
+  const handleCancel = () => {
+    // Reset form to original values
+    if (seller) {
+      setForm({
+        name: seller.name || "",
+        phone: seller.phone || "",
+        address: seller.address || "",
+        district: seller.district || "",
+        farmName: seller.farmName || "",
+        bankName: seller.bank?.bankName || "",
+        branch: seller.bank?.branch || "",
+        accountName: seller.bank?.accountName || "",
+        accountNo: seller.bank?.accountNo || "",
+      });
+    }
     setEditMode(false);
   };
 
-  const getStatusConfig = (status: string) => {
+  const getStatusConfig = (status?: string) => {
     switch (status) {
       case "active":
         return {
           color: "bg-gradient-to-r from-green-50 to-emerald-50 border-green-200",
           textColor: "text-green-700",
           icon: <CheckCircle className="h-4 w-4" />,
-          label: t("seller.active"),
+          label: "Active",
         };
       case "pending":
         return {
           color: "bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200",
           textColor: "text-amber-700",
           icon: <AlertCircle className="h-4 w-4" />,
-          label: t("seller.pending"),
+          label: "Pending",
         };
       case "suspended":
         return {
           color: "bg-gradient-to-r from-red-50 to-rose-50 border-red-200",
           textColor: "text-red-700",
           icon: <Shield className="h-4 w-4" />,
-          label: t("seller.suspended"),
+          label: "Suspended",
         };
       default:
         return {
-          color: "bg-gray-50 border-gray-200",
-          textColor: "text-gray-700",
-          icon: null,
-          label: status,
+          color: "bg-gradient-to-r from-green-50 to-emerald-50 border-green-200",
+          textColor: "text-green-700",
+          icon: <CheckCircle className="h-4 w-4" />,
+          label: "Active",
         };
     }
   };
 
-  const statusConfig = getStatusConfig(seller.status);
+  const statusConfig = getStatusConfig((seller as any).status || "active");
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -115,10 +206,10 @@ export const SellerProfile = () => {
                 </div>
                 <div>
                   <CardTitle className="text-2xl font-bold">
-                    {t("seller.profile.title")}
+                    Seller Profile
                   </CardTitle>
                   <p className="text-blue-100 mt-1">
-                    {t("seller.profile.subtitlePremium")}
+                    Manage your seller information
                   </p>
                 </div>
               </div>
@@ -138,41 +229,49 @@ export const SellerProfile = () => {
             <div className="flex items-center gap-3 mb-6">
               <div className="h-10 w-1 bg-gradient-to-b from-blue-500 to-emerald-500 rounded-full"></div>
               <h3 className="text-lg font-bold text-gray-900">
-                {t("seller.profile.personalInfo")}
+                Personal Information
               </h3>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {[
                 {
-                  label: t("common.name"),
+                  label: "Full Name",
                   value: form.name,
                   name: "name",
                   icon: <User className="h-5 w-5 text-blue-500" />,
                   disabled: !editMode,
                 },
                 {
-                  label: t("seller.profile.farmName"),
+                  label: "Farm Name",
                   value: form.farmName,
                   name: "farmName",
                   icon: <Building className="h-5 w-5 text-emerald-500" />,
                   disabled: !editMode,
                 },
                 {
-                  label: t("common.email"),
+                  label: "Email",
                   value: seller.email,
+                  name: "email",
                   icon: <Mail className="h-5 w-5 text-purple-500" />,
                   disabled: true,
                 },
                 {
-                  label: t("common.phone"),
+                  label: "Phone Number",
                   value: form.phone,
                   name: "phone",
                   icon: <Phone className="h-5 w-5 text-amber-500" />,
                   disabled: !editMode,
                 },
                 {
-                  label: t("common.address"),
+                  label: "District",
+                  value: form.district,
+                  name: "district",
+                  icon: <MapPin className="h-5 w-5 text-green-500" />,
+                  disabled: !editMode,
+                },
+                {
+                  label: "Address",
                   value: form.address,
                   name: "address",
                   icon: <MapPin className="h-5 w-5 text-rose-500" />,
@@ -193,18 +292,16 @@ export const SellerProfile = () => {
                   <div className="relative">
                     <Input
                       name={field.name}
-                      value={field.value}
-                      onChange={handleChange}
-                      disabled={field.disabled}
-                      className={`pl-12 h-12 rounded-lg border-gray-300 ${
+                      value={field.value || ""}
+                      onChange={field.disabled ? undefined : handleChange}
+                      disabled={field.disabled || isLoading}
+                      readOnly={field.disabled}
+                      className={`h-12 rounded-lg border-gray-300 ${
                         field.disabled
                           ? "bg-gray-50 text-gray-600"
                           : "bg-white hover:border-blue-400 focus:border-blue-500"
-                      } ${editMode && field.name ? "ring-1 ring-blue-300" : ""}`}
+                      } ${editMode && field.name && !field.disabled ? "ring-1 ring-blue-300" : ""}`}
                     />
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                      {field.icon}
-                    </div>
                   </div>
                 </div>
               ))}
@@ -216,49 +313,55 @@ export const SellerProfile = () => {
             <div className="flex items-center gap-3 mb-6">
               <div className="h-10 w-1 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
               <h3 className="text-lg font-bold text-gray-900">
-                {t("seller.profile.bankDetails")}
+                Banking Information
               </h3>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {[
                 {
-                  label: t("seller.profile.bankName"),
+                  label: "Bank Name",
                   value: form.bankName,
                   name: "bankName",
                   disabled: !editMode,
                 },
                 {
-                  label: t("seller.profile.branch"),
+                  label: "Branch",
                   value: form.branch,
                   name: "branch",
                   disabled: !editMode,
                 },
                 {
-                  label: t("seller.profile.accountName"),
-                  value: seller.bank?.accountName || "",
-                  disabled: true,
+                  label: "Account Name",
+                  value: form.accountName,
+                  name: "accountName",
+                  disabled: !editMode,
                 },
                 {
-                  label: t("seller.profile.accountNumber"),
-                  value: seller.bank?.accountNo || "",
-                  disabled: true,
+                  label: "Account Number",
+                  value: form.accountNo,
+                  name: "accountNo",
+                  disabled: !editMode,
                 },
               ].map((field, index) => (
                 <div key={index}>
-                  <Label className="text-sm font-semibold text-gray-700 mb-2">
+                  <Label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <div className="p-1.5 bg-gray-100 rounded-lg">
+                      <Banknote className="h-4 w-4 text-amber-500" />
+                    </div>
                     {field.label}
                   </Label>
                   <Input
                     name={field.name}
-                    value={field.value}
-                    onChange={handleChange}
-                    disabled={field.disabled}
+                    value={field.value || ""}
+                    onChange={field.disabled ? undefined : handleChange}
+                    disabled={field.disabled || isLoading}
+                    placeholder={`Enter ${field.label.toLowerCase()}`}
                     className={`h-12 rounded-lg border-gray-300 ${
                       field.disabled
                         ? "bg-gray-50 text-gray-600"
                         : "bg-white hover:border-blue-400 focus:border-blue-500"
-                    } ${editMode && field.name ? "ring-1 ring-blue-300" : ""}`}
+                    } ${editMode && field.name && !field.disabled ? "ring-1 ring-blue-300" : ""}`}
                   />
                 </div>
               ))}
@@ -272,30 +375,40 @@ export const SellerProfile = () => {
                 <>
                   <Button
                     variant="outline"
-                    onClick={() => setEditMode(false)}
+                    onClick={handleCancel}
+                    disabled={isLoading}
                     className="h-12 px-6 rounded-lg border-gray-300 hover:border-gray-400 hover:bg-gray-50 flex items-center gap-2"
                   >
                     <X className="h-5 w-5" />
-                    <span className="font-medium">{t("common.cancel")}</span>
+                    <span className="font-medium">Cancel</span>
                   </Button>
                   <Button
                     onClick={handleSave}
+                    disabled={isLoading}
                     className="h-12 px-8 rounded-lg bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2"
                   >
-                    <Save className="h-5 w-5" />
-                    <span className="font-semibold">
-                      {t("common.saveChanges")}
-                    </span>
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span className="font-semibold">Updating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-5 w-5" />
+                        <span className="font-semibold">Save Changes</span>
+                      </>
+                    )}
                   </Button>
                 </>
               ) : (
                 <Button
                   onClick={() => setEditMode(true)}
+                  disabled={isLoading}
                   className="h-12 px-8 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow hover:shadow-md transition-all duration-300 flex items-center gap-2"
                 >
                   <Edit className="h-5 w-5" />
                   <span className="font-semibold">
-                    {t("seller.profile.editProfile")}
+                    Edit Profile
                   </span>
                 </Button>
               )}

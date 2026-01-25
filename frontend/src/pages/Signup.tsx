@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useAppDispatch } from "@/store/hooks";
+import { registerUser } from "@/store/authSlice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +37,8 @@ import Footer from "@/components/layout/Footer";
 const nicRegex = /^([0-9]{9}[vVxX]|[0-9]{12})$/;
 
 const buyerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
@@ -65,6 +68,7 @@ type SellerFormData = z.infer<typeof sellerSchema>;
 const Signup = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [activeTab, setActiveTab] = useState("buyer");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -78,22 +82,69 @@ const Signup = () => {
 
   const onBuyerSubmit = async (data: BuyerFormData) => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("Buyer signup:", data);
-    toast.success(t("auth.buyerAccountCreated"));
-    setIsLoading(false);
-    navigate("/login");
+    try {
+      const registerData = {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role: "buyer" as const,
+        phone: data.phone,
+        firstName: data.name.split(' ')[0],
+        lastName: data.name.split(' ').slice(1).join(' '),
+        nic: data.nic,
+        district: data.district,
+        address: data.address,
+      };
+
+      const result = await dispatch(registerUser(registerData));
+      
+      if (registerUser.fulfilled.match(result)) {
+        toast.success(t("auth.buyerAccountCreated"));
+        navigate("/login");
+      } else {
+        toast.error(result.payload as string || "Registration failed");
+      }
+    } catch (error) {
+      toast.error("Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const onSellerSubmit = async (data: SellerFormData) => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("Seller signup:", data);
-    toast.success(t("auth.sellerApplicationSubmitted"));
-    setIsLoading(false);
-    navigate("/login");
+    try {
+      const registerData = {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role: "seller" as const,
+        phone: data.phone,
+        nic: data.nic,
+        farmName: data.farmName,
+        district: data.district,
+        address: data.address,
+        bank: {
+          accountName: data.bankAccountName,
+          accountNo: data.bankAccountNo,
+          bankName: data.bankName,
+          branch: data.bankBranch,
+        },
+      };
+
+      const result = await dispatch(registerUser(registerData));
+      
+      if (registerUser.fulfilled.match(result)) {
+        toast.success(t("auth.sellerApplicationSubmitted"));
+        navigate("/login");
+      } else {
+        toast.error(result.payload as string || "Registration failed");
+      }
+    } catch (error) {
+      toast.error("Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -190,25 +241,48 @@ const Signup = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <Label
-                      htmlFor="buyer-name"
+                      htmlFor="buyer-firstName"
                       className="text-green-800 font-semibold"
                     >
-                      {t("profile.name")} *
+                      {t("profile.firstName")} *
                     </Label>
                     <Input
-                      id="buyer-name"
-                      {...buyerForm.register("name")}
-                      placeholder="John Doe"
+                      id="buyer-firstName"
+                      {...buyerForm.register("firstName")}
+                      placeholder="John"
                       className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
                       disabled={isLoading}
                     />
-                    {buyerForm.formState.errors.name && (
+                    {buyerForm.formState.errors.firstName && (
                       <p className="text-sm text-red-600 mt-1">
-                        {buyerForm.formState.errors.name.message}
+                        {buyerForm.formState.errors.firstName.message}
                       </p>
                     )}
                   </div>
 
+                  <div className="space-y-3">
+                    <Label
+                      htmlFor="buyer-lastName"
+                      className="text-green-800 font-semibold"
+                    >
+                      {t("profile.lastName")} *
+                    </Label>
+                    <Input
+                      id="buyer-lastName"
+                      {...buyerForm.register("lastName")}
+                      placeholder="Doe"
+                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
+                      disabled={isLoading}
+                    />
+                    {buyerForm.formState.errors.lastName && (
+                      <p className="text-sm text-red-600 mt-1">
+                        {buyerForm.formState.errors.lastName.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <Label
                       htmlFor="buyer-email"
@@ -230,9 +304,7 @@ const Signup = () => {
                       </p>
                     )}
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <Label
                       htmlFor="buyer-password"

@@ -5,7 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import type { RootState } from "@/store";
-import { addProduct, updateProduct, type Product } from "@/store/catalogSlice";
+import { addProduct, updateProduct, type Product, type Category } from "@/store/catalogSlice";
+import categoryAPI from "@/services/categoryService";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Image as ImageIcon, Upload, X, Handshake } from "lucide-react";
+import { Image as ImageIcon, Upload, X, Handshake, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 // Extend the schema to include image and negotiationEnabled
@@ -69,12 +70,15 @@ const SellerProductForms = ({
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const user = useAppSelector((state: RootState) => state.auth.user);
-  const categories = useAppSelector(
-    (state: RootState) => state.catalog.categories
-  );
+  
+  // Local state for categories fetched from backend
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [categoriesError, setCategoriesError] = useState<string | null>(null);
 
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -104,6 +108,26 @@ const SellerProductForms = ({
   const category = watch("category");
   const imageUrl = watch("imageUrl");
   const negotiationEnabled = watch("negotiationEnabled");
+
+  // Fetch categories from backend when component mounts
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoadingCategories(true);
+      setCategoriesError(null);
+      try {
+        const fetchedCategories = await categoryAPI.getCategories();
+        setCategories(fetchedCategories);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        setCategoriesError('Failed to load categories');
+        toast.error('Failed to load categories. Please refresh the page.');
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   // Reset form when dialogs close
   useEffect(() => {
@@ -139,47 +163,79 @@ const SellerProductForms = ({
 
 
 
-  const handleAddProduct = (data: ProductFormData) => {
-    const newProduct: Product = {
-      id: `prod-${Date.now()}`,
-      name: data.name,
-      category: data.category,
-      pricePerKg: data.pricePerKg,
-      supplyType: data.supplyType,
-      locationDistrict: data.locationDistrict,
-      stockQty: data.stockQty,
-      description: data.description,
-      expiresOn: data.expiresOn,
-      sellerId: user!.id,
-      sellerName: user!.name,
-      image:
-        data.imageUrl ||
-        "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400",
-      createdAt: new Date().toISOString(),
-      negotiationEnabled: data.negotiationEnabled,
-    };
+  const handleAddProduct = async (data: ProductFormData) => {
+    setIsSubmitting(true);
+    try {
+      const productData = {
+        name: data.name,
+        category: data.category,
+        pricePerKg: data.pricePerKg,
+        supplyType: data.supplyType,
+        locationDistrict: data.locationDistrict,
+        stockQty: data.stockQty,
+        description: data.description,
+        expiresOn: data.expiresOn,
+        image: data.imageUrl ||
+          "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400",
+        negotiationEnabled: data.negotiationEnabled,
+      };
 
-    dispatch(addProduct(newProduct));
-    onSuccess(t("seller.productAdded"));
-    onAddDialogChange(false);
-    reset();
-    setImagePreview("");
+      // Use Redux thunk which handles both API call and state update
+      const result = await dispatch(addProduct(productData));
+      
+      if (addProduct.fulfilled.match(result)) {
+        onSuccess(t("seller.productAdded"));
+        onAddDialogChange(false);
+        reset();
+        setImagePreview("");
+      } else {
+        throw new Error(result.payload as string);
+      }
+    } catch (error) {
+      console.error('Error creating product:', error);
+      toast.error('Failed to create product. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleEditProduct = (data: ProductFormData) => {
+  const handleEditProduct = async (data: ProductFormData) => {
     if (!selectedProduct) return;
+    
+    setIsSubmitting(true);
+    try {
+      const updateData = {
+        id: selectedProduct._id || selectedProduct.id,
+        _id: selectedProduct._id || selectedProduct.id,
+        name: data.name,
+        category: data.category,
+        pricePerKg: data.pricePerKg,
+        supplyType: data.supplyType,
+        locationDistrict: data.locationDistrict,
+        stockQty: data.stockQty,
+        description: data.description,
+        expiresOn: data.expiresOn,
+        image: data.imageUrl || selectedProduct.image,
+        negotiationEnabled: data.negotiationEnabled,
+      };
 
-    const updatedProduct = {
-      ...selectedProduct,
-      ...data,
-      image: data.imageUrl || selectedProduct.image,
-    };
-
-    dispatch(updateProduct(updatedProduct));
-    onSuccess(t("seller.productUpdated"));
-    onEditDialogChange(false);
-    reset();
-    setImagePreview("");
+      // Use Redux thunk which handles both API call and state update
+      const result = await dispatch(updateProduct(updateData));
+      
+      if (updateProduct.fulfilled.match(result)) {
+        onSuccess(t("seller.productUpdated"));
+        onEditDialogChange(false);
+        reset();
+        setImagePreview("");
+      } else {
+        throw new Error(result.payload as string);
+      }
+    } catch (error) {
+      console.error('Error updating product:', error);
+      toast.error('Failed to update product. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleImageUpload = async (
@@ -314,16 +370,39 @@ const SellerProductForms = ({
         <Select
           value={category}
           onValueChange={(value) => setValue("category", value)}
+          disabled={loadingCategories}
         >
           <SelectTrigger>
-            <SelectValue placeholder={t("seller.selectCategory")} />
+            <SelectValue 
+              placeholder={
+                loadingCategories 
+                  ? "Loading categories..." 
+                  : categoriesError 
+                    ? "Error loading categories"
+                    : t("seller.selectCategory")
+              } 
+            />
           </SelectTrigger>
           <SelectContent>
-            {categories.map((cat) => (
-              <SelectItem key={cat.id} value={cat.id}>
-                {cat.icon} {cat.name}
+            {loadingCategories ? (
+              <SelectItem value="" disabled>
+                Loading categories...
               </SelectItem>
-            ))}
+            ) : categoriesError ? (
+              <SelectItem value="" disabled>
+                Error loading categories
+              </SelectItem>
+            ) : categories.length === 0 ? (
+              <SelectItem value="" disabled>
+                No categories available
+              </SelectItem>
+            ) : (
+              categories.map((cat) => (
+                <SelectItem key={cat.id || cat._id} value={cat.id || cat._id || cat.slug}>
+                  {cat.icon} {cat.name}
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
         {errors.category && (
@@ -467,8 +546,18 @@ const SellerProductForms = ({
         >
           {t("common.cancel")}
         </Button>
-        <Button type="submit" disabled={isUploading}>
-          {isEdit ? t("seller.editProduct") : t("seller.addProduct")}
+        <Button 
+          type="submit" 
+          disabled={isUploading || loadingCategories || isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {isEdit ? "Updating..." : "Creating..."}
+            </>
+          ) : (
+            <>{isEdit ? t("seller.editProduct") : t("seller.addProduct")}</>
+          )}
         </Button>
       </DialogFooter>
     </form>

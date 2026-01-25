@@ -115,10 +115,56 @@ const getUserStats = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Add reward points to user
+// @route   PUT /api/users/:id/add-points
+// @access  Private/Admin
+const addRewardPoints = asyncHandler(async (req, res) => {
+  const { points } = req.body;
+  const user = await User.findById(req.params.id);
+
+  if (user) {
+    user.rewardPoints = (user.rewardPoints || 0) + points;
+    const updatedUser = await user.save();
+    res.json({ rewardPoints: updatedUser.rewardPoints });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
+// @desc    Redeem reward points from user
+// @route   PUT /api/users/:id/redeem-points
+// @access  Private/Admin or Self
+const redeemRewardPoints = asyncHandler(async (req, res) => {
+  const { points } = req.body;
+  const user = await User.findById(req.params.id);
+
+  if (user) {
+    if (req.user.role !== 'admin' && req.user._id.toString() !== req.params.id) {
+      res.status(403);
+      throw new Error('Not authorized to redeem points for this user');
+    }
+
+    if (user.rewardPoints < points) {
+      res.status(400);
+      throw new Error('Insufficient reward points');
+    }
+
+    user.rewardPoints = (user.rewardPoints || 0) - points;
+    const updatedUser = await user.save();
+    res.json({ rewardPoints: updatedUser.rewardPoints });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
 export {
   getUsers,
   getUserById,
   updateUser,
   deleteUser,
   getUserStats,
+  addRewardPoints,
+  redeemRewardPoints,
 };

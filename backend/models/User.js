@@ -9,7 +9,10 @@ const userSchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    required: true
+    required: function() {
+      // Name is only required for non-buyer roles
+      return this.role !== 'buyer';
+    }
   },
   email: {
     type: String,
@@ -53,6 +56,12 @@ const userSchema = new mongoose.Schema({
 
   // Admin specific fields
   permissions: [String],
+
+  // Reward points for buyers
+  rewardPoints: {
+    type: Number,
+    default: 0
+  },
 
   createdAt: {
     type: Date,

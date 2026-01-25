@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
-import { useAppSelector } from "@/store/hooks";
+import { useMemo, useState, useEffect } from "react";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import type { RootState } from "@/store";
+import { fetchSellerOrders } from '@/store/ordersSlice';
 import {
   Card,
   CardContent,
@@ -79,11 +80,18 @@ const getStatusConfig = (status: string, t: any) => {
 };
 
 const SellerOrders = () => {
+  const dispatch = useAppDispatch();
   const seller = useAppSelector((s: RootState) => s.auth.user);
   const orders = useAppSelector((s: RootState) => s.orders.orders);
+  const loading = useAppSelector((s: RootState) => s.orders.loading);
   const { t, i18n } = useTranslation();
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Fetch seller orders on component mount
+  useEffect(() => {
+    dispatch(fetchSellerOrders());
+  }, [dispatch]);
 
   const sellerOrders = useMemo(() => {
     if (!seller) return [];

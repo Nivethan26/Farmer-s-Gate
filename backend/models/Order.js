@@ -57,6 +57,14 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  redeemedPoints: {
+    type: Number,
+    default: 0
+  },
+  pointsEarned: {
+    type: Number,
+    default: 0
+  },
   status: {
     type: String,
     enum: ['pending', 'paid', 'processing', 'delivered', 'cancelled'],

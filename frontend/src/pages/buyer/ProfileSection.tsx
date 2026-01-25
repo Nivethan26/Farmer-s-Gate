@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAppDispatch } from '@/store/hooks';
-import { updateProfile } from '@/store/authSlice';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { updateUserProfile } from '@/store/authSlice';
+import type { RootState } from '@/store';
 import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { ProfileCardHeaderSection } from '@/pages/profile/ProfileCardHeaderSection';
@@ -17,10 +18,13 @@ interface ProfileSectionProps {
 }
 
 const profileSchema = z.object({
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
   email: z.string().email('Invalid email address'),
   phone: z.string().min(10, 'Phone number must be at least 10 digits').optional(),
   address: z.string().optional(),
   district: z.string().optional(),
+  nic: z.string().optional(),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -28,6 +32,7 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 export const ProfileSection = ({ user }: ProfileSectionProps) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const isLoading = useAppSelector((state: RootState) => state.auth.loading);
   const [isEditing, setIsEditing] = useState(false);
 
   const getFirstName = () => {
@@ -58,30 +63,62 @@ export const ProfileSection = ({ user }: ProfileSectionProps) => {
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
+      firstName: getFirstName(),
+      lastName: getLastName(),
       email: user?.email || '',
       phone: user?.phone || '',
       address: user?.address || '',
       district: user?.district || '',
+      nic: user?.nic || '',
     },
   });
 
   if (!user) return null;
 
-  const onSubmit = (data: ProfileFormData) => {
-    const updates: any = {
-      email: data.email,
-      phone: data.phone,
-      address: data.address,
-      district: data.district,
-    };
+  const onSubmit = async (data: ProfileFormData) => {
+    try {
+      // Only include fields that have actually changed
+      const updates: any = {};
+      
+      if (data.firstName !== getFirstName()) updates.firstName = data.firstName;
+      if (data.lastName !== getLastName()) updates.lastName = data.lastName;
+      if (data.email !== user.email) updates.email = data.email;
+      if (data.phone !== user.phone) updates.phone = data.phone;
+      if (data.address !== user.address) updates.address = data.address;
+      if (data.district !== user.district) updates.district = data.district;
+      if (data.nic !== user.nic) updates.nic = data.nic;
 
-    dispatch(updateProfile(updates));
-    toast.success(t('profile.updateSuccess'));
-    setIsEditing(false);
+      // Only make API call if there are actual changes
+      if (Object.keys(updates).length === 0) {
+        toast.info("No changes to save");
+        setIsEditing(false);
+        return;
+      }
+
+      const result = await dispatch(updateUserProfile(updates));
+      
+      if (updateUserProfile.fulfilled.match(result)) {
+        toast.success('Profile updated successfully!');
+        setIsEditing(false);
+      } else {
+        throw new Error(result.payload as string);
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile. Please try again.');
+    }
   };
 
   const handleCancel = () => {
-    reset();
+    reset({
+      firstName: getFirstName(),
+      lastName: getLastName(),
+      email: user?.email || '',
+      phone: user?.phone || '',
+      address: user?.address || '',
+      district: user?.district || '',
+      nic: user?.nic || '',
+    });
     setIsEditing(false);
   };
 
@@ -142,7 +179,11 @@ export const ProfileSection = ({ user }: ProfileSectionProps) => {
               sriLankaDistricts={sriLankaDistricts}
             />
 
-            <ProfileActionButtonsSection isEditing={isEditing} onCancel={handleCancel} />
+            <ProfileActionButtonsSection 
+              isEditing={isEditing} 
+              isLoading={isLoading}
+              onCancel={handleCancel} 
+            />
           </form>
         </CardContent>
       </Card>

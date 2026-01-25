@@ -5,6 +5,8 @@ import {
   updateUser,
   deleteUser,
   getUserStats,
+  addRewardPoints,
+  redeemRewardPoints,
 } from '../controllers/userController.js';
 import { protect, authorize } from '../middlewares/authMiddleware.js';
 
@@ -14,6 +16,10 @@ router.get('/stats', protect, authorize('admin'), getUserStats);
 router
   .route('/')
   .get(protect, authorize('admin'), getUsers);
+
+router.put('/:id/add-points', protect, authorize('admin'), addRewardPoints);
+router.put('/:id/redeem-points', protect, redeemRewardPoints);
+
 router
   .route('/:id')
   .get(protect, authorize('admin'), getUserById)

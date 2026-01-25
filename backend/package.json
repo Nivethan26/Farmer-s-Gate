@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "NODE_ENV=production node server.js"
+    "start": "NODE_ENV=production node server.js",
+    "seed": "node seed.js",
+    "seed:destroy": "node seed.js -d"
   },
   "author": "Promart Team <promartlk@gmail.com>",
   "license": "ISC",

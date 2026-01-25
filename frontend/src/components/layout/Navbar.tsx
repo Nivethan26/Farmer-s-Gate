@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 // import { NotificationBell } from "@/components/common/NotificationBell";
-import { NotificationCenter } from "../common/NotificationCenter";
+import { ProfessionalNotificationPanel } from "../common/ProfessionalNotificationPanel";
 
 
 export const Navbar = () => {
@@ -162,7 +162,7 @@ export const Navbar = () => {
 
             {user && (
               <>
-                <NotificationCenter />
+                <ProfessionalNotificationPanel />
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

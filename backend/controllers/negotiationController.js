@@ -1,6 +1,8 @@
 import asyncHandler from 'express-async-handler';
 import Negotiation from '../models/Negotiation.js';
 import Product from '../models/Product.js';
+import User from '../models/User.js';
+import { createNegotiationNotification } from './notificationController.js';
 
 // @desc    Create negotiation
 // @route   POST /api/negotiations
@@ -32,11 +34,16 @@ const createNegotiation = asyncHandler(async (req, res) => {
     throw new Error('You already have an active negotiation for this product');
   }
 
+  // Get buyer name based on role
+  const buyerName = req.user.role === 'buyer' 
+    ? `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email
+    : req.user.name;
+
   const negotiation = new Negotiation({
     productId: product._id,
     productName: product.name,
     buyerId: req.user._id,
-    buyerName: req.user.name,
+    buyerName,
     sellerId: product.sellerId,
     sellerName: product.sellerName,
     currentPrice: product.pricePerKg,
@@ -45,6 +52,19 @@ const createNegotiation = asyncHandler(async (req, res) => {
   });
 
   const createdNegotiation = await negotiation.save();
+
+  // Create notification for buyer
+  try {
+    await createNegotiationNotification(req.user._id, {
+      id: createdNegotiation._id,
+      productName: product.name,
+      productId: product._id
+    }, 'created');
+  } catch (notificationError) {
+    console.error('Failed to create notification:', notificationError);
+    // Don't fail the negotiation if notification fails
+  }
+
   res.status(201).json(createdNegotiation);
 });
 

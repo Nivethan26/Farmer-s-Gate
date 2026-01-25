@@ -11,7 +11,7 @@ const otpStore = new Map();
 // @route   POST /api/auth/register
 // @access  Public
 const register = asyncHandler(async (req, res) => {
-  const { role, name, email, password, phone, ...otherFields } = req.body;
+  const { role, name, email, password, phone, firstName, lastName, ...otherFields } = req.body;
 
   // Check if user exists
   const userExists = await User.findOne({ email });
@@ -20,19 +20,44 @@ const register = asyncHandler(async (req, res) => {
     throw new Error('User already exists');
   }
 
-  // Create user
-  const user = await User.create({
+  // Validation for buyers - require firstName and lastName instead of name
+  if (role === 'buyer') {
+    if (!firstName || !lastName) {
+      res.status(400);
+      throw new Error('First name and last name are required for buyers');
+    }
+  } else {
+    // For non-buyers, require name
+    if (!name) {
+      res.status(400);
+      throw new Error('Name is required for this role');
+    }
+  }
+
+  // Create user data
+  const userData = {
     role,
-    name,
     email,
     password,
     phone,
     ...otherFields
-  });
+  };
+
+  // Add name for non-buyers or firstName/lastName for buyers
+  if (role === 'buyer') {
+    userData.firstName = firstName;
+    userData.lastName = lastName;
+  } else {
+    userData.name = name;
+  }
+
+  // Create user
+  const user = await User.create(userData);
 
   if (user) {
     // Send welcome email
-    await sendWelcomeEmail(user.email, user.name);
+    const displayName = role === 'buyer' ? `${firstName} ${lastName}` : name;
+    await sendWelcomeEmail(user.email, displayName);
 
     res.status(201).json({
       _id: user._id,
@@ -40,6 +65,18 @@ const register = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      district: user.district,
+      address: user.address,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      nic: user.nic,
+      preferredCategories: user.preferredCategories,
+      farmName: user.farmName,
+      bank: user.bank,
+      regions: user.regions,
+      officeContact: user.officeContact,
+      permissions: user.permissions,
+      rewardPoints: user.rewardPoints,
       token: generateToken(user._id),
     });
   } else {
@@ -64,6 +101,18 @@ const login = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      district: user.district,
+      address: user.address,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      nic: user.nic,
+      preferredCategories: user.preferredCategories,
+      farmName: user.farmName,
+      bank: user.bank,
+      regions: user.regions,
+      officeContact: user.officeContact,
+      permissions: user.permissions,
+      rewardPoints: user.rewardPoints,
       token: generateToken(user._id),
     });
   } else {
@@ -146,24 +195,40 @@ const getProfile = asyncHandler(async (req, res) => {
 // @route   PUT /api/auth/profile
 // @access  Private
 const updateProfile = asyncHandler(async (req, res) => {
+  console.log('updateProfile called with req.user:', req.user);
+  
+  if (!req.user) {
+    res.status(401);
+    throw new Error('User not authenticated');
+  }
+
   const user = await User.findById(req.user._id);
 
   if (user) {
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
-    user.phone = req.body.phone || user.phone;
+    // Update basic fields only if provided
+    if (req.body.name !== undefined) user.name = req.body.name;
+    if (req.body.email !== undefined) user.email = req.body.email;
+    if (req.body.phone !== undefined) user.phone = req.body.phone;
+    if (req.body.district !== undefined) user.district = req.body.district;
+    if (req.body.address !== undefined) user.address = req.body.address;
 
-    // Update role-specific fields
-    if (req.body.firstName) user.firstName = req.body.firstName;
-    if (req.body.lastName) user.lastName = req.body.lastName;
-    if (req.body.nic) user.nic = req.body.nic;
-    if (req.body.district) user.district = req.body.district;
-    if (req.body.address) user.address = req.body.address;
-    if (req.body.preferredCategories) user.preferredCategories = req.body.preferredCategories;
-    if (req.body.farmName) user.farmName = req.body.farmName;
-    if (req.body.bank) user.bank = req.body.bank;
-    if (req.body.regions) user.regions = req.body.regions;
-    if (req.body.officeContact) user.officeContact = req.body.officeContact;
+    // Update role-specific fields only if provided
+    if (req.body.firstName !== undefined) user.firstName = req.body.firstName;
+    if (req.body.lastName !== undefined) user.lastName = req.body.lastName;
+    if (req.body.nic !== undefined) user.nic = req.body.nic;
+    if (req.body.preferredCategories !== undefined) user.preferredCategories = req.body.preferredCategories;
+    if (req.body.farmName !== undefined) user.farmName = req.body.farmName;
+    if (req.body.regions !== undefined) user.regions = req.body.regions;
+    if (req.body.officeContact !== undefined) user.officeContact = req.body.officeContact;
+
+    // Handle bank object properly - only update if provided
+    if (req.body.bank !== undefined) {
+      // If bank object is provided, merge with existing bank data
+      user.bank = {
+        ...user.bank,
+        ...req.body.bank
+      };
+    }
 
     const updatedUser = await user.save();
 
@@ -173,6 +238,18 @@ const updateProfile = asyncHandler(async (req, res) => {
       name: updatedUser.name,
       email: updatedUser.email,
       phone: updatedUser.phone,
+      district: updatedUser.district,
+      address: updatedUser.address,
+      firstName: updatedUser.firstName,
+      lastName: updatedUser.lastName,
+      nic: updatedUser.nic,
+      preferredCategories: updatedUser.preferredCategories,
+      farmName: updatedUser.farmName,
+      bank: updatedUser.bank,
+      regions: updatedUser.regions,
+      officeContact: updatedUser.officeContact,
+      permissions: updatedUser.permissions,
+      rewardPoints: updatedUser.rewardPoints,
       token: generateToken(updatedUser._id),
     });
   } else {

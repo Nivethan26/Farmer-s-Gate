@@ -12,16 +12,24 @@ const protect = asyncHandler(async (req, res, next) => {
     try {
       // Get token from header
       token = req.headers.authorization.split(' ')[1];
+      console.log('Token found:', token ? 'Yes' : 'No');
 
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log('Token decoded, user ID:', decoded.id);
 
       // Get user from the token
       req.user = await User.findById(decoded.id).select('-password');
+      console.log('User found:', req.user ? 'Yes' : 'No');
+
+      if (!req.user) {
+        res.status(401);
+        throw new Error('User not found');
+      }
 
       next();
     } catch (error) {
-      console.error(error);
+      console.error('Auth middleware error:', error);
       res.status(401);
       throw new Error('Not authorized, token failed');
     }

@@ -23,6 +23,7 @@ import RoleBasedDashboard from "./pages/RoleBasedDashboard";
 import AccountProfile from "./pages/AccountProfile";
 import SellerOrders from "./pages/SellerOrders";
 import BuyerOrders from "./pages/BuyerOrders";
+import { CartSyncProvider } from "./components/CartSyncProvider";
 
 const queryClient = new QueryClient();
 
@@ -30,9 +31,10 @@ const App = () => (
   <Provider store={store}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+        <CartSyncProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
@@ -107,6 +109,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+        </CartSyncProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </Provider>
