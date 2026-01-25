@@ -1,14 +1,15 @@
 import { TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, Users, Building, Package, ShoppingCart } from 'lucide-react';
+import { BarChart3, Users, Building, Package, ShoppingCart, UserCheck } from 'lucide-react';
 
 export const AdminTabNavigation = () => (
-  <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-auto gap-2 bg-transparent p-0">
+  <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 h-auto gap-2 bg-transparent p-0">
     {[
       { value: 'overview', label: 'Overview', icon: BarChart3 },
       { value: 'sellers', label: 'Sellers', icon: Users },
       { value: 'agents', label: 'Agents', icon: Building },
       { value: 'products', label: 'Products', icon: Package },
       { value: 'orders', label: 'Orders', icon: ShoppingCart },
+      { value: 'approvals', label: 'Approvals', icon: UserCheck },
     ].map(tab => (
       <TabsTrigger 
         key={tab.value}

@@ -159,6 +159,39 @@ const redeemRewardPoints = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Toggle seller status (active/inactive)
+// @route   PATCH /api/users/:id/toggle-status
+// @access  Private/Admin
+const toggleSellerStatus = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  if (user.role !== 'seller') {
+    res.status(400);
+    throw new Error('User is not a seller');
+  }
+
+  // Toggle between active and inactive
+  user.status = user.status === 'active' ? 'inactive' : 'active';
+  
+  const updatedUser = await user.save();
+
+  res.json({
+    success: true,
+    message: `Seller status updated to ${updatedUser.status}`,
+    data: {
+      _id: updatedUser._id,
+      status: updatedUser.status,
+      name: updatedUser.name,
+      email: updatedUser.email
+    }
+  });
+});
+
 export {
   getUsers,
   getUserById,
@@ -167,4 +200,5 @@ export {
   getUserStats,
   addRewardPoints,
   redeemRewardPoints,
+  toggleSellerStatus,
 };

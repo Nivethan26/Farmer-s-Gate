@@ -8,6 +8,7 @@ import { SellersTab } from '@/components/admin/tabs/SellersTab';
 import { AgentsTab } from '@/components/admin/tabs/AgentsTab';
 import { ProductsTab } from '@/components/admin/tabs/ProductsTab';
 import { OrdersTab } from '@/components/admin/tabs/OrdersTab';
+import { SellerApprovalTab } from '@/components/seller/SellerApprovalTab';
 import { useAdminData } from '@/hooks/useAdminData';
 
 const AdminDashboard = () => {
@@ -57,6 +58,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="orders" className="space-y-6">
             <OrdersTab orders={orders} isLoading={isLoading} />
+          </TabsContent>
+
+          <TabsContent value="approvals" className="space-y-6">
+            <SellerApprovalTab />
           </TabsContent>
         </Tabs>
       </main>

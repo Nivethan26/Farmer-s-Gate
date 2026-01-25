@@ -36,12 +36,14 @@ const Login = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
+  // Clear errors when component unmounts
   useEffect(() => {
-    if (error) {
-      toast.error(error);
-      dispatch(clearError());
-    }
-  }, [error, dispatch]);
+    return () => {
+      if (error) {
+        dispatch(clearError());
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +57,21 @@ const Login = () => {
     
     if (loginUser.fulfilled.match(result)) {
       toast.success(t("auth.loginSuccess"));
+    } else if (loginUser.rejected.match(result)) {
+      // Handle specific seller status errors
+      const errorMessage = result.payload as string || result.error.message || 'Login failed';
+      
+      if (errorMessage.includes('EMAIL_NOT_VERIFIED')) {
+        toast.error('Please verify your email address first. Check your inbox for the OTP.', { duration: 5000 });
+      } else if (errorMessage.includes('PENDING_APPROVAL')) {
+        toast.error('Your account is pending admin approval. You will receive an email once approved.', { duration: 5000 });
+      } else if (errorMessage.includes('ACCOUNT_REJECTED')) {
+        toast.error('Your seller application was rejected. Please contact support for more information.', { duration: 5000 });
+      } else if (errorMessage.includes('ACCOUNT_INACTIVE')) {
+        toast.error('Your account has been deactivated. Please contact support.', { duration: 5000 });
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 
@@ -189,7 +206,7 @@ const Login = () => {
           </div>
 
           {/* Sign Up Link */}
-          <div className="text-center pt-4 border-t border-green-100">
+          <div className="text-center pt-4 border-t border-green-100 space-y-2">
             <p className="text-green-700 text-sm">
               Don't have an account?{" "}
               <Link
@@ -197,6 +214,15 @@ const Login = () => {
                 className="text-emerald-600 hover:text-emerald-800 font-bold underline-offset-4 hover:underline transition-all duration-300"
               >
                 Join Our Farm Community
+              </Link>
+            </p>
+            <p className="text-green-700 text-sm">
+              Want to sell your produce?{" "}
+              <Link
+                to="/seller-registration"
+                className="text-green-600 hover:text-green-800 font-bold underline-offset-4 hover:underline transition-all duration-300"
+              >
+                Register as Seller
               </Link>
             </p>
           </div>

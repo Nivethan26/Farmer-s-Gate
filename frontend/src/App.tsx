@@ -1,4 +1,3 @@
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -23,6 +22,7 @@ import RoleBasedDashboard from "./pages/RoleBasedDashboard";
 import AccountProfile from "./pages/AccountProfile";
 import SellerOrders from "./pages/SellerOrders";
 import BuyerOrders from "./pages/BuyerOrders";
+import { SellerRegistrationPage } from "./pages/SellerRegistration";
 import { CartSyncProvider } from "./components/CartSyncProvider";
 
 const queryClient = new QueryClient();
@@ -32,13 +32,13 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <CartSyncProvider>
-          <Toaster />
           <Sonner />
           <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/seller-registration" element={<SellerRegistrationPage />} />
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/about" element={<About />} />

@@ -58,6 +58,10 @@ export const userAPI = {
 
   async redeemRewardPoints(id: string, points: number): Promise<{ rewardPoints: number }> {
     return apiClient.put(`/users/${id}/redeem-points`, { points });
+  },
+
+  async toggleSellerStatus(id: string): Promise<{ success: boolean; message: string; data: { _id: string; status: string; name: string; email: string } }> {
+    return apiClient.patch(`/users/${id}/toggle-status`, {});
   }
 };
 

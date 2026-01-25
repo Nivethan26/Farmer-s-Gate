@@ -2,13 +2,17 @@ import { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { MapPin, Star } from 'lucide-react';
 import { FilterBar } from '../ui/FilterBar';
 import { StatusBadge } from '../ui/StatusBadge';
 import { TableSkeleton } from '../ui/TableSkeleton';
 import { exportToCSV } from '@/utils/adminUtils';
+import { userAPI } from '@/services/userService';
 import type { Seller } from '@/types/admin';
 import { toast } from 'sonner';
+import { useAppDispatch } from '@/store/hooks';
+import { fetchUsers } from '@/store/usersSlice';
 
 interface SellersTabProps {
   sellers: Seller[];
@@ -16,8 +20,11 @@ interface SellersTabProps {
 }
 
 export const SellersTab = ({ sellers, isLoading }: SellersTabProps) => {
+  const dispatch = useAppDispatch();
   const [sellerSearch, setSellerSearch] = useState('');
   const [districtFilter, setDistrictFilter] = useState('all');
+  const [updatingSellers, setUpdatingSellers] = useState<Set<string>>(new Set());
+  const [deletingSellers, setDeletingSellers] = useState<Set<string>>(new Set());
 
   // Get unique districts
   const districts = useMemo(() => 
@@ -43,9 +50,46 @@ export const SellersTab = ({ sellers, isLoading }: SellersTabProps) => {
     exportToCSV(filteredSellers, 'sellers');
   };
 
-  const handleDeleteSeller = (sellerId: string) => {
-    if (!confirm("Are you sure you want to delete this seller?")) return;
-    toast.success('Seller deleted successfully');
+  const handleDeleteSeller = async (sellerId: string) => {
+    if (!confirm("Are you sure you want to delete this seller? This action cannot be undone.")) return;
+    
+    setDeletingSellers(prev => new Set(prev).add(sellerId));
+    
+    try {
+      const response = await userAPI.deleteUser(sellerId);
+      toast.success(response.message || 'Seller deleted successfully');
+      
+      // Refresh sellers list
+      await dispatch(fetchUsers({}));
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to delete seller');
+    } finally {
+      setDeletingSellers(prev => {
+        const next = new Set(prev);
+        next.delete(sellerId);
+        return next;
+      });
+    }
+  };
+
+  const handleToggleStatus = async (sellerId: string, currentStatus: string) => {
+    setUpdatingSellers(prev => new Set(prev).add(sellerId));
+    
+    try {
+      const response = await userAPI.toggleSellerStatus(sellerId);
+      toast.success(response.message || 'Seller status updated successfully');
+      
+      // Refresh sellers list from Redux
+      await dispatch(fetchUsers({}));
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to update seller status');
+    } finally {
+      setUpdatingSellers(prev => {
+        const next = new Set(prev);
+        next.delete(sellerId);
+        return next;
+      });
+    }
   };
 
   const districtOptions = [
@@ -83,13 +127,14 @@ export const SellersTab = ({ sellers, isLoading }: SellersTabProps) => {
                       <TableHead>District</TableHead>
                       <TableHead>Rating</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Active</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredSellers.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                           No sellers found
                         </TableCell>
                       </TableRow>
@@ -111,13 +156,26 @@ export const SellersTab = ({ sellers, isLoading }: SellersTabProps) => {
                           <TableCell>
                             <StatusBadge status={seller.status || 'active'} />
                           </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                checked={seller.status === 'active'}
+                                onCheckedChange={() => handleToggleStatus(seller._id || seller.id, seller.status || 'active')}
+                                disabled={updatingSellers.has(seller._id || seller.id)}
+                              />
+                              <span className="text-sm text-muted-foreground">
+                                {seller.status === 'active' ? 'Active' : 'Inactive'}
+                              </span>
+                            </div>
+                          </TableCell>
                           <TableCell className="text-right">
                             <Button 
                               variant="destructive"
                               size="sm"
                               onClick={() => handleDeleteSeller(seller._id || seller.id)}
+                              disabled={deletingSellers.has(seller._id || seller.id)}
                             >
-                              Delete
+                              {deletingSellers.has(seller._id || seller.id) ? 'Deleting...' : 'Delete'}
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -152,12 +210,26 @@ export const SellersTab = ({ sellers, isLoading }: SellersTabProps) => {
                       <div className="flex items-center gap-1 text-sm">
                         <span className="text-muted-foreground">No Rating</span>
                       </div>
+                      <div className="flex items-center justify-between py-2 border-t">
+                        <span className="text-sm font-medium">Status:</span>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={seller.status === 'active'}
+                            onCheckedChange={() => handleToggleStatus(seller._id || seller.id, seller.status || 'active')}
+                            disabled={updatingSellers.has(seller._id || seller.id)}
+                          />
+                          <span className="text-sm text-muted-foreground">
+                            {seller.status === 'active' ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                      </div>
                       <Button 
                         className="w-full mt-2"
                         variant="destructive"
                         onClick={() => handleDeleteSeller(seller._id || seller.id)}
+                        disabled={deletingSellers.has(seller._id || seller.id)}
                       >
-                        Delete Seller
+                        {deletingSellers.has(seller._id || seller.id) ? 'Deleting...' : 'Delete Seller'}
                       </Button>
                     </div>
                   ))

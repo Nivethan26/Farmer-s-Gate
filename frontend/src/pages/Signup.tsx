@@ -435,6 +435,39 @@ const Signup = () => {
 
             {/* Seller Signup */}
             <TabsContent value="seller" className="space-y-6 animate-fade-in">
+              {/* Redirect to new seller registration */}
+              <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg mb-6">
+                <div className="text-center space-y-4">
+                  <div className="flex justify-center">
+                    <div className="rounded-full bg-green-100 p-4">
+                      <BadgeCheck className="h-8 w-8 text-green-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-green-800 mb-2">
+                      Enhanced Seller Registration
+                    </h3>
+                    <p className="text-green-700 mb-4">
+                      We've upgraded our seller registration process! New features include:
+                    </p>
+                    <ul className="text-sm text-green-600 space-y-1 mb-4">
+                      <li>✓ Email verification with OTP</li>
+                      <li>✓ Admin approval process for quality assurance</li>
+                      <li>✓ Secure bank account setup</li>
+                      <li>✓ Email notifications at every step</li>
+                    </ul>
+                  </div>
+                  <Button
+                    type="button"
+                    size="lg"
+                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+                    onClick={() => navigate('/seller-registration')}
+                  >
+                    Proceed to Seller Registration
+                  </Button>
+                </div>
+              </div>
+
               <div className="text-center mb-6">
                 <div className="flex justify-center mb-3">
                   <div className="rounded-full bg-green-100 p-3">

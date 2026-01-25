@@ -7,6 +7,7 @@ import {
   getUserStats,
   addRewardPoints,
   redeemRewardPoints,
+  toggleSellerStatus,
 } from '../controllers/userController.js';
 import { protect, authorize } from '../middlewares/authMiddleware.js';
 
@@ -19,6 +20,7 @@ router
 
 router.put('/:id/add-points', protect, authorize('admin'), addRewardPoints);
 router.put('/:id/redeem-points', protect, redeemRewardPoints);
+router.patch('/:id/toggle-status', protect, authorize('admin'), toggleSellerStatus);
 
 router
   .route('/:id')

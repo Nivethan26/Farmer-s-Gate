@@ -30,8 +30,14 @@ const userSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['active', 'pending', 'inactive'],
-    default: 'active'
+    enum: ['unverified', 'otp_verified', 'pending', 'active', 'inactive', 'rejected'],
+    default: function() {
+      return this.role === 'seller' ? 'unverified' : 'active';
+    }
+  },
+  isEmailVerified: {
+    type: Boolean,
+    default: false
   },
   // Buyer specific fields
   firstName: String,
@@ -62,6 +68,19 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+
+  // Admin action tracking for sellers
+  rejectionReason: String,
+  approvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  approvedAt: Date,
+  rejectedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  rejectedAt: Date,
 
   createdAt: {
     type: Date,
