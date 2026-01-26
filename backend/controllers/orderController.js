@@ -15,12 +15,15 @@ const createOrder = asyncHandler(async (req, res) => {
   
   let { items, address, deliveryFee, redeemedPoints = 0 } = req.body;
   
-  // Handle file upload - for now just check if file exists
+  // Handle file upload
   let receiptUrl = null;
   if (req.files && req.files.length > 0) {
     console.log('File received:', req.files[0]);
-    // For now, just set a dummy URL since we're using memory storage
-    receiptUrl = `http://localhost:4000/uploads/receipts/temp-${Date.now()}.jpg`;
+    // Get the first uploaded file
+    const file = req.files[0];
+    // Create the URL to access the file
+    receiptUrl = `/uploads/receipts/${file.filename}`;
+    console.log('Receipt saved as:', receiptUrl);
   }
   
   // Parse JSON fields from FormData (when file is uploaded, all fields come as strings)

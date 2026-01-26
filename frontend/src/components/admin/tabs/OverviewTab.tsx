@@ -5,16 +5,17 @@ import { RevenueChart } from '../charts/RevenueChart';
 import { OrderStatusGrid } from '../charts/OrderStatusGrid';
 import { DollarSign, ShoppingCart, Users, Package } from 'lucide-react';
 import { formatCurrency, exportToCSV } from '@/utils/adminUtils';
-import type { Order, Seller, Product } from '@/types/admin';
+import type { Order, Seller, Product, Category } from '@/types/admin';
 
 interface OverviewTabProps {
   orders: Order[];
   sellers: Seller[];
   products: Product[];
+  categories: Category[];
   isLoading: boolean;
 }
 
-export const OverviewTab = ({ orders, sellers, products, isLoading }: OverviewTabProps) => {
+export const OverviewTab = ({ orders, sellers, products, categories, isLoading }: OverviewTabProps) => {
   const now = new Date();
   
   // Calculate sales metrics
@@ -56,21 +57,36 @@ export const OverviewTab = ({ orders, sellers, products, isLoading }: OverviewTa
     delivered: orders.filter(o => o.status === 'delivered').length,
   }), [orders]);
 
-  // Chart data for products
+  // Chart data - calculate actual sales from orders
   const categoryChartData = useMemo(() => {
-    const categoryTotals = products.reduce((acc, product) => {
-      acc[product.category] = (acc[product.category] || 0) + (product.stockQty || 0);
-      return acc;
-    }, {} as Record<string, number>);
+    const categoryData: Record<string, { sold: number; revenue: number }> = {};
     
-    return Object.entries(categoryTotals).map(([name, sold]) => ({
+    // Process all order items to calculate actual sales by category
+    orders.forEach(order => {
+      order.items.forEach(item => {
+        // Find the product to get its category
+        const product = products.find(p => p._id === item.productId);
+        if (product) {
+          const categoryId = product.category;
+          // Find the category name from categories array
+          const category = categories.find(c => c._id === categoryId || c.slug === categoryId || c.name === categoryId);
+          const categoryName = category ? category.name : categoryId;
+          
+          if (!categoryData[categoryName]) {
+            categoryData[categoryName] = { sold: 0, revenue: 0 };
+          }
+          categoryData[categoryName].sold += item.qty;
+          categoryData[categoryName].revenue += item.qty * item.pricePerKg;
+        }
+      });
+    });
+    
+    return Object.entries(categoryData).map(([name, data]) => ({
       name,
-      sold,
-      revenue: products
-        .filter(p => p.category === name)
-        .reduce((sum, p) => sum + (p.stockQty * p.pricePerKg), 0) / 1000,
+      sold: data.sold,
+      revenue: data.revenue / 1000, // Convert to thousands for display
     }));
-  }, [products]);
+  }, [orders, products, categories]);
 
   const handleExportChartData = () => {
     exportToCSV(categoryChartData, 'category_analytics');

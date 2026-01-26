@@ -1,13 +1,16 @@
 import { useState, useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Eye, Check } from 'lucide-react';
+import { Eye, RefreshCw } from 'lucide-react';
 import { FilterBar } from '../ui/FilterBar';
 import { StatusBadge } from '../ui/StatusBadge';
 import { TableSkeleton } from '../ui/TableSkeleton';
-import { formatCurrency, formatDate, exportToCSV, getStatusColor } from '@/utils/adminUtils';
+import { formatCurrency, formatDate, exportToCSV } from '@/utils/adminUtils';
+import { OrderDetailsDialog } from '../dialogs/OrderDetailsDialog';
 import type { Order } from '@/types/admin';
+import { useAppDispatch } from '@/store/hooks';
+import { fetchOrders } from '@/store/ordersSlice';
 import { toast } from 'sonner';
 
 interface OrdersTabProps {
@@ -16,8 +19,12 @@ interface OrdersTabProps {
 }
 
 export const OrdersTab = ({ orders, isLoading }: OrdersTabProps) => {
+  const dispatch = useAppDispatch();
   const [orderSearch, setOrderSearch] = useState('');
   const [orderStatusFilter, setOrderStatusFilter] = useState('all');
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Filtered orders
   const filteredOrders = useMemo(() => {
@@ -42,8 +49,22 @@ export const OrdersTab = ({ orders, isLoading }: OrdersTabProps) => {
     exportToCSV(filteredOrders, 'orders');
   };
 
-  const handleMarkOrderPaid = (orderId: string) => {
-    toast.success(`Order ${orderId} marked as paid`);
+  const handleViewOrder = (order: Order) => {
+    setSelectedOrder(order);
+    setIsDialogOpen(true);
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await dispatch(fetchOrders({})).unwrap();
+      toast.success('Orders refreshed successfully');
+    } catch (error) {
+      toast.error('Failed to refresh orders');
+      console.error(error);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const statusOptions = [
@@ -56,6 +77,24 @@ export const OrdersTab = ({ orders, isLoading }: OrdersTabProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Header with Refresh Button */}
+      <Card className="dashboard-card">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Orders Management</CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
+
       <FilterBar
         searchValue={orderSearch}
         onSearchChange={setOrderSearch}
@@ -107,7 +146,7 @@ export const OrdersTab = ({ orders, isLoading }: OrdersTabProps) => {
                       <TableHead>Amount</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Date</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -137,21 +176,14 @@ export const OrdersTab = ({ orders, isLoading }: OrdersTabProps) => {
                             {formatDate(order.createdAt)}
                           </TableCell>
                           <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                              <Button variant="ghost" size="sm">
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              {order.status === "pending" && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleMarkOrderPaid(order._id)}
-                                >
-                                  <Check className="h-4 w-4 mr-1" />
-                                  Mark Paid
-                                </Button>
-                              )}
-                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleViewOrder(order)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))
@@ -186,20 +218,15 @@ export const OrdersTab = ({ orders, isLoading }: OrdersTabProps) => {
                       <div className="text-sm text-muted-foreground">
                         {formatDate(order.createdAt)}
                       </div>
-                      <div className="flex gap-2 pt-2">
-                        <Button variant="ghost" size="sm" className="flex-1">
-                          <Eye className="h-4 w-4 mr-1" /> View
+                      <div className="pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleViewOrder(order)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" /> View Details
                         </Button>
-                        {order.status === "pending" && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1"
-                            onClick={() => handleMarkOrderPaid(order._id)}
-                          >
-                            <Check className="h-4 w-4 mr-1" /> Mark Paid
-                          </Button>
-                        )}
                       </div>
                     </div>
                   ))
@@ -209,6 +236,13 @@ export const OrdersTab = ({ orders, isLoading }: OrdersTabProps) => {
           )}
         </CardContent>
       </Card>
+
+      {/* Order Details Dialog */}
+      <OrderDetailsDialog
+        order={selectedOrder}
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+      />
     </div>
   );
 };

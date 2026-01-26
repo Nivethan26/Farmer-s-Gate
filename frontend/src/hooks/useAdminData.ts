@@ -78,6 +78,22 @@ export const useAdminData = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const refreshData = async () => {
+    setIsLoading(true);
+    try {
+      await Promise.all([
+        dispatch(fetchUsers({})),
+        dispatch(fetchOrders({})),
+        dispatch(fetchProducts({})),
+        dispatch(fetchCategories())
+      ]);
+    } catch (error) {
+      console.error('Error refreshing admin data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     users: users ? users.map(u => ({ ...u })) : [],
     sellers: sellers ? sellers.map(s => ({ ...s })) : [],
@@ -86,5 +102,6 @@ export const useAdminData = () => {
     orders: orders ? orders.map(deepCloneOrder) : [],
     categories: categories ? categories.map(deepCloneCategory) : [],
     isLoading: isLoading || loading,
+    refreshData,
   };
 };

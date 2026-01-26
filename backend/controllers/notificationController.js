@@ -230,8 +230,12 @@ const createNegotiationNotification = async (userId, negotiationData, type = 'cr
       title: 'Negotiation Request Submitted',
       message: `Your negotiation request for "${negotiationData.productName}" has been submitted successfully.`
     },
+    new_request: {
+      title: 'New Negotiation Request',
+      message: `${negotiationData.buyerName} requested a negotiation for "${negotiationData.productName}" at LKR ${negotiationData.requestedPrice}/kg.`
+    },
     countered: {
-      title: 'Negotiation Counter Offer',
+      title: 'Counter Offer Received',
       message: `The seller has made a counter offer for "${negotiationData.productName}".`
     },
     accepted: {
@@ -241,6 +245,10 @@ const createNegotiationNotification = async (userId, negotiationData, type = 'cr
     rejected: {
       title: 'Negotiation Rejected',
       message: `Your negotiation for "${negotiationData.productName}" has been rejected.`
+    },
+    buyer_accepted: {
+      title: 'Counter Offer Accepted',
+      message: `${negotiationData.buyerName} accepted your counter offer for "${negotiationData.productName}" at LKR ${negotiationData.agreedPrice}/kg!`
     }
   };
 
@@ -256,7 +264,7 @@ const createNegotiationNotification = async (userId, negotiationData, type = 'cr
       productId: negotiationData.productId,
       actionUrl: '/dashboard?tab=negotiations'
     },
-    priority: type === 'accepted' ? 'high' : 'medium'
+    priority: (type === 'accepted' || type === 'new_request' || type === 'buyer_accepted') ? 'high' : 'medium'
   });
 };
 

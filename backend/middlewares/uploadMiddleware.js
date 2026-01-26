@@ -19,12 +19,31 @@ if (!fs.existsSync(receiptDir)) {
     fs.mkdirSync(receiptDir, { recursive: true });
 }
 
-// Simple multer configuration with memory storage for testing
+// Configure disk storage for receipts
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, receiptDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(file.originalname);
+        cb(null, 'receipt-' + uniqueSuffix + ext);
+    }
+});
+
+// Multer configuration with disk storage
 const upload = multer({
-    storage: multer.memoryStorage(), // Use memory storage for now
+    storage: storage,
     limits: {
         fileSize: 5 * 1024 * 1024, // 5MB limit
     },
+    fileFilter: function (req, file, cb) {
+        // Accept images only
+        if (!file.mimetype.startsWith('image/')) {
+            return cb(new Error('Only image files are allowed!'), false);
+        }
+        cb(null, true);
+    }
 });
 
 // Simple middleware that processes any multipart form

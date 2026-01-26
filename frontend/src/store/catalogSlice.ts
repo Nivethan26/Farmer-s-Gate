@@ -109,6 +109,30 @@ export const fetchNegotiations = createAsyncThunk(
   }
 );
 
+export const fetchSellerNegotiations = createAsyncThunk(
+  'catalog/fetchSellerNegotiations',
+  async (_, { rejectWithValue }) => {
+    try {
+      const negotiations = await negotiationAPI.getSellerNegotiations();
+      return { negotiations };
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch seller negotiations');
+    }
+  }
+);
+
+export const fetchBuyerNegotiations = createAsyncThunk(
+  'catalog/fetchBuyerNegotiations',
+  async (_, { rejectWithValue }) => {
+    try {
+      const negotiations = await negotiationAPI.getBuyerNegotiations();
+      return { negotiations };
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch buyer negotiations');
+    }
+  }
+);
+
 export const createProduct = createAsyncThunk(
   'catalog/createProduct',
   async (productData: any, { rejectWithValue }) => {
@@ -236,6 +260,20 @@ const catalogSlice = createSlice({
         state.negotiations = action.payload.negotiations?.map(n => ({ ...n, id: n._id })) || [];
       })
       .addCase(fetchNegotiations.rejected, (state, action) => {
+        state.error = action.payload as string;
+      })
+      // Fetch seller negotiations
+      .addCase(fetchSellerNegotiations.fulfilled, (state, action) => {
+        state.negotiations = action.payload.negotiations?.map(n => ({ ...n, id: n._id })) || [];
+      })
+      .addCase(fetchSellerNegotiations.rejected, (state, action) => {
+        state.error = action.payload as string;
+      })
+      // Fetch buyer negotiations
+      .addCase(fetchBuyerNegotiations.fulfilled, (state, action) => {
+        state.negotiations = action.payload.negotiations?.map(n => ({ ...n, id: n._id })) || [];
+      })
+      .addCase(fetchBuyerNegotiations.rejected, (state, action) => {
         state.error = action.payload as string;
       })
       // Create product

@@ -61,8 +61,20 @@ const createNegotiation = asyncHandler(async (req, res) => {
       productId: product._id
     }, 'created');
   } catch (notificationError) {
-    console.error('Failed to create notification:', notificationError);
-    // Don't fail the negotiation if notification fails
+    console.error('Failed to create buyer notification:', notificationError);
+  }
+
+  // Create notification for seller
+  try {
+    await createNegotiationNotification(product.sellerId, {
+      id: createdNegotiation._id,
+      productName: product.name,
+      productId: product._id,
+      buyerName,
+      requestedPrice
+    }, 'new_request');
+  } catch (notificationError) {
+    console.error('Failed to create seller notification:', notificationError);
   }
 
   res.status(201).json(createdNegotiation);
@@ -141,6 +153,24 @@ const updateNegotiation = asyncHandler(async (req, res) => {
   }
 
   const updatedNegotiation = await negotiation.save();
+
+  // Notify buyer about seller's action
+  try {
+    let notificationType = 'countered';
+    if (status === 'agreed') notificationType = 'accepted';
+    if (status === 'rejected') notificationType = 'rejected';
+    
+    await createNegotiationNotification(negotiation.buyerId, {
+      id: updatedNegotiation._id,
+      productName: negotiation.productName,
+      productId: negotiation.productId,
+      counterPrice,
+      agreedPrice
+    }, notificationType);
+  } catch (notificationError) {
+    console.error('Failed to create buyer notification:', notificationError);
+  }
+
   res.json(updatedNegotiation);
 });
 
@@ -169,6 +199,20 @@ const acceptCounter = asyncHandler(async (req, res) => {
   negotiation.agreedPrice = negotiation.counterPrice;
 
   const updatedNegotiation = await negotiation.save();
+
+  // Notify seller that buyer accepted counter offer
+  try {
+    await createNegotiationNotification(negotiation.sellerId, {
+      id: updatedNegotiation._id,
+      productName: negotiation.productName,
+      productId: negotiation.productId,
+      buyerName: negotiation.buyerName,
+      agreedPrice: negotiation.agreedPrice
+    }, 'buyer_accepted');
+  } catch (notificationError) {
+    console.error('Failed to create seller notification:', notificationError);
+  }
+
   res.json(updatedNegotiation);
 });
 

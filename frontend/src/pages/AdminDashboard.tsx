@@ -35,7 +35,8 @@ const AdminDashboard = () => {
             <OverviewTab 
               orders={orders} 
               sellers={sellers} 
-              products={products} 
+              products={products}
+              categories={categories}
               isLoading={isLoading} 
             />
           </TabsContent>
