@@ -28,6 +28,12 @@ const orderItemSchema = new mongoose.Schema({
 });
 
 const orderSchema = new mongoose.Schema({
+  publicId: {
+    type: String,
+    unique: true,
+    index: true,
+    sparse: true
+  },
   buyerId: {
     type: String,
     required: true

@@ -4,8 +4,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { AdminTabNavigation } from '@/components/admin/AdminTabNavigation';
 import { OverviewTab } from '@/components/admin/tabs/OverviewTab';
-import { SellersTab } from '@/components/admin/tabs/SellersTab';
-import { AgentsTab } from '@/components/admin/tabs/AgentsTab';
+import { UsersTab } from '@/components/admin/tabs/UsersTab';
 import { ProductsTab } from '@/components/admin/tabs/ProductsTab';
 import { OrdersTab } from '@/components/admin/tabs/OrdersTab';
 import { SellerApprovalTab } from '@/components/seller/SellerApprovalTab';
@@ -15,12 +14,20 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const {
     sellers,
+    buyers,
     agents,
     products,
     orders,
     categories,
     isLoading,
+    refreshData,
   } = useAdminData();
+
+  const handleTabChange = async (value: string) => {
+    setActiveTab(value);
+    // Refresh data when tab changes
+    await refreshData();
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -28,8 +35,8 @@ const AdminDashboard = () => {
       <AdminHeader />
       
       <main className="container px-4 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <AdminTabNavigation />
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+          <AdminTabNavigation activeTab={activeTab} />
 
           <TabsContent value="overview" className="space-y-6">
             <OverviewTab 
@@ -37,28 +44,32 @@ const AdminDashboard = () => {
               sellers={sellers} 
               products={products}
               categories={categories}
-              isLoading={isLoading} 
+              isLoading={isLoading}
+              onRefresh={refreshData}
             />
           </TabsContent>
 
-          <TabsContent value="sellers" className="space-y-6">
-            <SellersTab sellers={sellers} isLoading={isLoading} />
-          </TabsContent>
-
-          <TabsContent value="agents" className="space-y-6">
-            <AgentsTab agents={agents} isLoading={isLoading} />
+          <TabsContent value="users" className="space-y-6">
+            <UsersTab 
+              sellers={sellers} 
+              buyers={buyers} 
+              agents={agents} 
+              isLoading={isLoading}
+              onRefresh={refreshData}
+            />
           </TabsContent>
 
           <TabsContent value="products" className="space-y-6">
             <ProductsTab 
               products={products} 
               categories={categories} 
-              isLoading={isLoading} 
+              isLoading={isLoading}
+              onRefresh={refreshData}
             />
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-6">
-            <OrdersTab orders={orders} isLoading={isLoading} />
+            <OrdersTab orders={orders} isLoading={isLoading} onRefresh={refreshData} />
           </TabsContent>
 
           <TabsContent value="approvals" className="space-y-6">

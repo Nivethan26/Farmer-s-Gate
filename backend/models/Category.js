@@ -1,6 +1,12 @@
 import mongoose from 'mongoose';
 
 const categorySchema = new mongoose.Schema({
+  publicId: {
+    type: String,
+    unique: true,
+    index: true,
+    sparse: true
+  },
   name: {
     type: String,
     required: true

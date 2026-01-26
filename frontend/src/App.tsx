@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "@/store";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { SocketProvider } from "@/contexts/SocketContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -31,9 +32,10 @@ const App = () => (
   <Provider store={store}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <CartSyncProvider>
-          <Sonner />
-          <BrowserRouter>
+        <SocketProvider>
+          <CartSyncProvider>
+            <Sonner />
+            <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
@@ -109,7 +111,8 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-        </CartSyncProvider>
+          </CartSyncProvider>
+        </SocketProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </Provider>

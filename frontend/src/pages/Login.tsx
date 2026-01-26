@@ -213,7 +213,7 @@ const Login = () => {
                 to="/signup"
                 className="text-emerald-600 hover:text-emerald-800 font-bold underline-offset-4 hover:underline transition-all duration-300"
               >
-                Join Our Farm Community
+                Register as Buyer
               </Link>
             </p>
             <p className="text-green-700 text-sm">

@@ -45,13 +45,6 @@ export const ProfessionalNotificationPanel = () => {
     if (user) {
       // Initial unread count fetch when component mounts
       dispatch(fetchUnreadCount());
-      
-      // Poll for unread count every 15 seconds for more responsive updates
-      const unreadCountInterval = setInterval(() => {
-        dispatch(fetchUnreadCount());
-      }, 15000);
-      
-      return () => clearInterval(unreadCountInterval);
     }
   }, [dispatch, user]);
 
@@ -61,16 +54,6 @@ export const ProfessionalNotificationPanel = () => {
       dispatch(fetchNotifications({ page: 1, limit: 10 }));
     }
   }, [dispatch, user, isOpen]);
-
-  // Auto-refresh notifications every 30 seconds
-  useEffect(() => {
-    if (user) {
-      const interval = setInterval(() => {
-        dispatch(fetchUnreadCount());
-      }, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [dispatch, user]);
 
   const handleNotificationClick = async (notification: Notification) => {
     // Mark as read if unread

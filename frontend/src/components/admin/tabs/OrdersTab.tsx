@@ -16,9 +16,10 @@ import { toast } from 'sonner';
 interface OrdersTabProps {
   orders: Order[];
   isLoading: boolean;
+  onRefresh?: () => Promise<void>;
 }
 
-export const OrdersTab = ({ orders, isLoading }: OrdersTabProps) => {
+export const OrdersTab = ({ orders, isLoading, onRefresh }: OrdersTabProps) => {
   const dispatch = useAppDispatch();
   const [orderSearch, setOrderSearch] = useState('');
   const [orderStatusFilter, setOrderStatusFilter] = useState('all');
@@ -57,7 +58,11 @@ export const OrdersTab = ({ orders, isLoading }: OrdersTabProps) => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await dispatch(fetchOrders({})).unwrap();
+      if (onRefresh) {
+        await onRefresh();
+      } else {
+        await dispatch(fetchOrders({})).unwrap();
+      }
       toast.success('Orders refreshed successfully');
     } catch (error) {
       toast.error('Failed to refresh orders');

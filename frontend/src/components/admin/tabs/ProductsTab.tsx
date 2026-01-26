@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Package } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Package, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
 import { FilterBar } from '../ui/FilterBar';
 import { formatCurrency } from '@/utils/adminUtils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,10 +13,25 @@ interface ProductsTabProps {
   products: Product[];
   categories: Category[];
   isLoading: boolean;
+  onRefresh?: () => Promise<void>;
 }
 
-export const ProductsTab = ({ products, categories, isLoading }: ProductsTabProps) => {
+export const ProductsTab = ({ products, categories, isLoading, onRefresh }: ProductsTabProps) => {
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (!onRefresh) return;
+    setIsRefreshing(true);
+    try {
+      await onRefresh();
+      toast.success('Products refreshed successfully');
+    } catch (error) {
+      toast.error('Failed to refresh products');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Filtered products
   const filteredProducts = useMemo(() => {
@@ -30,6 +47,24 @@ export const ProductsTab = ({ products, categories, isLoading }: ProductsTabProp
 
   return (
     <div className="space-y-6">
+      {/* Header with Refresh Button */}
+      <Card className="dashboard-card">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Products Management</CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing || isLoading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
+
       <FilterBar
         filterValue={categoryFilter}
         onFilterChange={setCategoryFilter}

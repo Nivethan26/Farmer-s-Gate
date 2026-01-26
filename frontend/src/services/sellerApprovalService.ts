@@ -11,29 +11,31 @@ import type {
 export interface RegistrationResponse {
   success: boolean;
   message: string;
-  data: {
-    userId: string;
-    email: string;
-    otpSent: boolean;
-  };
+  email: string;
 }
 
 export interface OTPVerificationResponse {
-  success: boolean;
   message: string;
-  data: {
-    userId: string;
-    status: string;
+  _id: string;
+  publicId?: string;
+  role: string;
+  name: string;
+  email: string;
+  phone?: string;
+  token: string;
+  status?: string;
+  farmName?: string;
+  bank?: {
+    accountName: string;
+    accountNo: string;
+    bankName: string;
+    branch: string;
   };
 }
 
 export interface ResendOTPResponse {
   success: boolean;
   message: string;
-  data: {
-    cooldownSeconds: number;
-    attemptsRemaining: number;
-  };
 }
 
 export interface PendingRequestsResponse {
@@ -54,19 +56,22 @@ export interface ApprovalResponse {
 }
 
 export const sellerApprovalAPI = {
-  // Register new seller
+  // Register new seller (use new OTP flow)
   async registerSeller(data: SellerRegistration): Promise<RegistrationResponse> {
-    return apiClient.post<RegistrationResponse>('/auth/register/seller', data);
+    return apiClient.post<RegistrationResponse>('/auth/register/initiate', {
+      ...data,
+      role: 'seller'
+    });
   },
 
-  // Verify OTP
+  // Verify OTP (use new route)
   async verifyOTP(data: OTPVerification): Promise<OTPVerificationResponse> {
-    return apiClient.post<OTPVerificationResponse>('/auth/verify-otp', data);
+    return apiClient.post<OTPVerificationResponse>('/auth/register/verify', data);
   },
 
-  // Resend OTP
+  // Resend OTP (use new route)
   async resendOTP(data: ResendOTPRequest): Promise<ResendOTPResponse> {
-    return apiClient.post<ResendOTPResponse>('/auth/resend-otp', data);
+    return apiClient.post<ResendOTPResponse>('/auth/register/resend-otp', data);
   },
 
   // Get pending seller approval requests (Admin only)

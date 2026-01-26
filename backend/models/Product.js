@@ -1,6 +1,12 @@
 import mongoose from 'mongoose';
 
 const productSchema = new mongoose.Schema({
+  publicId: {
+    type: String,
+    unique: true,
+    index: true,
+    sparse: true
+  },
   name: {
     type: String,
     required: true
@@ -45,6 +51,11 @@ const productSchema = new mongoose.Schema({
   negotiationEnabled: {
     type: Boolean,
     default: false
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+    index: true
   },
   expiresOn: {
     type: Date,

@@ -10,10 +10,14 @@ const createOrder = asyncHandler(async (req, res) => {
   console.log('=== ORDER CREATE REQUEST ===');
   console.log('req.body:', req.body);
   console.log('req.files:', req.files);
+  console.log('req.user:', { id: req.user?._id, email: req.user?.email, firstName: req.user?.firstName, lastName: req.user?.lastName });
   console.log('typeof req.body.items:', typeof req.body.items);
   console.log('req.body.items value:', req.body.items);
   
-  let { items, address, deliveryFee, redeemedPoints = 0 } = req.body;
+  let { items, address, deliveryFee, redeemedPoints = 0, subtotal: clientSubtotal, total: clientTotal } = req.body;
+  
+  console.log('Client sent subtotal:', clientSubtotal);
+  console.log('Client sent total:', clientTotal);
   
   // Handle file upload
   let receiptUrl = null;
@@ -29,7 +33,13 @@ const createOrder = asyncHandler(async (req, res) => {
   // Parse JSON fields from FormData (when file is uploaded, all fields come as strings)
   if (typeof items === 'string') {
     console.log('Parsing items from string:', items);
-    items = JSON.parse(items);
+    try {
+      items = JSON.parse(items);
+    } catch (error) {
+      console.error('Failed to parse items:', error);
+      res.status(400);
+      throw new Error('Invalid items format');
+    }
   }
   if (typeof deliveryFee === 'string') {
     deliveryFee = Number(deliveryFee);
@@ -42,16 +52,37 @@ const createOrder = asyncHandler(async (req, res) => {
   console.log('Processed deliveryFee:', deliveryFee);
   console.log('Processed redeemedPoints:', redeemedPoints);
   console.log('Receipt URL:', receiptUrl);
+  console.log('Address:', address);
 
   if (!items || items.length === 0) {
     res.status(400);
     throw new Error('No order items');
   }
 
+  if (!address) {
+    res.status(400);
+    throw new Error('Delivery address is required');
+  }
+
+  if (isNaN(deliveryFee) || deliveryFee < 0) {
+    res.status(400);
+    throw new Error('Invalid delivery fee');
+  }
+
+  if (!Array.isArray(items)) {
+    res.status(400);
+    throw new Error('Items must be an array');
+  }
+
   let subtotal = 0;
   const orderItems = [];
 
   for (const item of items) {
+    if (!item.productId || !item.qty) {
+      res.status(400);
+      throw new Error('Invalid item: productId and qty are required');
+    }
+
     const product = await Product.findById(item.productId);
 
     if (!product) {
@@ -85,9 +116,23 @@ const createOrder = asyncHandler(async (req, res) => {
   const pointsEarned = Math.floor(totalBeforeDiscount / 100); // 1 point per Rs. 100 spent
   const total = totalBeforeDiscount - redeemedPoints;
 
+  console.log('Order calculation:', { subtotal, deliveryFee, totalBeforeDiscount, redeemedPoints, total, pointsEarned });
+
+  // Validate buyer info
+  if (!req.user.email) {
+    res.status(400);
+    throw new Error('User email is required');
+  }
+
+  const buyerName = req.user.firstName && req.user.lastName 
+    ? `${req.user.firstName} ${req.user.lastName}`.trim()
+    : req.user.name || req.user.email;
+
+  console.log('Buyer name:', buyerName);
+
   const order = new Order({
     buyerId: req.user._id,
-    buyerName: `${req.user.firstName} ${req.user.lastName}`.trim(),
+    buyerName,
     buyerEmail: req.user.email,
     address,
     items: orderItems,
@@ -98,6 +143,8 @@ const createOrder = asyncHandler(async (req, res) => {
     pointsEarned,
     receiptUrl,
   });
+
+  console.log('Creating order:', order);
 
   const createdOrder = await order.save();
   

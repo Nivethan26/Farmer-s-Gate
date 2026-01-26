@@ -41,6 +41,7 @@ export const SellersTab = ({ sellers, isLoading }: SellersTabProps) => {
       const matchesDistrict = districtFilter === 'all' || seller.district === districtFilter;
       const matchesSearch = sellerSearch === '' || 
         seller._id.toLowerCase().includes(sellerSearch.toLowerCase()) ||
+        (seller.publicId && seller.publicId.toLowerCase().includes(sellerSearch.toLowerCase())) ||
         (seller.name && seller.name.toLowerCase().includes(sellerSearch.toLowerCase()));
       return matchesDistrict && matchesSearch;
     });
@@ -125,7 +126,7 @@ export const SellersTab = ({ sellers, isLoading }: SellersTabProps) => {
                       <TableHead>Name</TableHead>
                       <TableHead>Farm</TableHead>
                       <TableHead>District</TableHead>
-                      <TableHead>Rating</TableHead>
+                      {/* <TableHead>Rating</TableHead> */}
                       <TableHead>Status</TableHead>
                       <TableHead>Active</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -141,7 +142,7 @@ export const SellersTab = ({ sellers, isLoading }: SellersTabProps) => {
                     ) : (
                       filteredSellers.map(seller => (
                         <TableRow key={seller.id || seller._id}>
-                          <TableCell className="font-mono text-sm">{seller._id}</TableCell>
+                          <TableCell className="font-mono text-sm">{seller.publicId }</TableCell>
                           <TableCell className="font-medium">{seller.name || 'N/A'}</TableCell>
                           <TableCell>{seller.farmName || 'N/A'}</TableCell>
                           <TableCell>
@@ -150,9 +151,9 @@ export const SellersTab = ({ sellers, isLoading }: SellersTabProps) => {
                               {seller.district || 'N/A'}
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <span className="text-muted-foreground">N/A</span>
-                          </TableCell>
+                          {/* <TableCell>
+                            <span className="text-muted-foreground">{seller.rewardPoints}</span>
+                          </TableCell> */}
                           <TableCell>
                             <StatusBadge status={seller.status || 'active'} />
                           </TableCell>
@@ -163,9 +164,9 @@ export const SellersTab = ({ sellers, isLoading }: SellersTabProps) => {
                                 onCheckedChange={() => handleToggleStatus(seller._id || seller.id, seller.status || 'active')}
                                 disabled={updatingSellers.has(seller._id || seller.id)}
                               />
-                              <span className="text-sm text-muted-foreground">
+                              {/* <span className="text-sm text-muted-foreground">
                                 {seller.status === 'active' ? 'Active' : 'Inactive'}
-                              </span>
+                              </span> */}
                             </div>
                           </TableCell>
                           <TableCell className="text-right">
@@ -196,7 +197,7 @@ export const SellersTab = ({ sellers, isLoading }: SellersTabProps) => {
                       className="border rounded-lg p-4 space-y-2 bg-white shadow-sm"
                     >
                       <div className="flex justify-between">
-                        <span className="font-mono text-sm font-bold">#{seller._id}</span>
+                        <span className="font-mono text-sm font-bold">{seller.publicId}</span>
                         <StatusBadge status={seller.status || 'active'} />
                       </div>
                       <div>

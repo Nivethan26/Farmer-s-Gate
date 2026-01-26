@@ -1,6 +1,12 @@
 import mongoose from 'mongoose';
 
 const sellerApprovalRequestSchema = new mongoose.Schema({
+  publicId: {
+    type: String,
+    unique: true,
+    index: true,
+    sparse: true
+  },
   sellerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

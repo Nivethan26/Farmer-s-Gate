@@ -16,6 +16,7 @@ interface OverviewSectionProps {
   user: AuthUser | null;
   getStatusIcon: (status: string) => JSX.Element;
   getOrderStatusColor: (status: string) => string;
+  onViewAllOrders: () => void;
 }
 
 export const OverviewSection = ({
@@ -26,6 +27,7 @@ export const OverviewSection = ({
   user,
   getStatusIcon,
   getOrderStatusColor,
+  onViewAllOrders,
 }: OverviewSectionProps) => {
   return (
     <div className="space-y-6">
@@ -169,23 +171,24 @@ export const OverviewSection = ({
             <Button
               variant="ghost"
               size="sm"
-              asChild
-              className="hidden sm:flex"
+              onClick={onViewAllOrders}
+              className="hidden sm:flex text-green-600 hover:text-green-700 cursor-pointer"
             >
-              <Link to="#orders" className="text-green-600 hover:text-green-700 flex items-center">
-                {t('buyer.viewAll')}
-                <ArrowRight className="h-4 w-4 ml-1" />
-              </Link>
+              {t('buyer.viewAll')}
+              <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
 
           {/* View All – Mobile ONLY (below heading) */}
           <div className="sm:hidden">
-            <Button variant="ghost" size="sm" asChild className="px-0">
-              <Link to="#orders" className="text-green-600 hover:text-green-700 flex items-center">
-                {t('buyer.viewAll')}
-                <ArrowRight className="h-4 w-4 ml-1" />
-              </Link>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onViewAllOrders}
+              className="px-0 text-green-600 hover:text-green-700 cursor-pointer"
+            >
+              {t('buyer.viewAll')}
+              <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
         </CardHeader>

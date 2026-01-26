@@ -65,6 +65,71 @@ export interface ResetPasswordRequest {
   newPassword: string;
 }
 
+export interface InitiateRegistrationRequest {
+  role: 'buyer' | 'seller';
+  email: string;
+  password: string;
+  phone: string;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  nic?: string;
+  district?: string;
+  address?: string;
+  farmName?: string;
+  bank?: {
+    accountName: string;
+    accountNo: string;
+    bankName: string;
+    branch: string;
+  };
+}
+
+export interface InitiateRegistrationResponse {
+  success: boolean;
+  message: string;
+  email: string;
+}
+
+export interface VerifyOTPRequest {
+  email: string;
+  otp: string;
+}
+
+export interface VerifyOTPResponse {
+  success?: boolean;
+  message: string;
+  _id: string;
+  publicId?: string;
+  role: UserRole;
+  name: string;
+  email: string;
+  phone?: string;
+  token: string;
+  firstName?: string;
+  lastName?: string;
+  nic?: string;
+  district?: string;
+  address?: string;
+  status?: string;
+  farmName?: string;
+  bank?: {
+    accountName: string;
+    accountNo: string;
+    bankName: string;
+    branch: string;
+  };
+}
+
+export interface ResendOTPRequest {
+  email: string;
+}
+
+export interface ResendOTPResponse {
+  success: boolean;
+  message: string;
+}
+
 export const authAPI = {
   async login(credentials: LoginRequest): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
@@ -78,6 +143,24 @@ export const authAPI = {
     // Set token for future requests
     apiClient.setToken(response.token);
     return response;
+  },
+
+  // New OTP-based registration flow
+  async initiateRegistration(userData: InitiateRegistrationRequest): Promise<InitiateRegistrationResponse> {
+    return apiClient.post<InitiateRegistrationResponse>('/auth/register/initiate', userData);
+  },
+
+  async verifyRegistrationOTP(data: VerifyOTPRequest): Promise<VerifyOTPResponse> {
+    const response = await apiClient.post<VerifyOTPResponse>('/auth/register/verify', data);
+    // Set token for future requests
+    if (response.token) {
+      apiClient.setToken(response.token);
+    }
+    return response;
+  },
+
+  async resendRegistrationOTP(data: ResendOTPRequest): Promise<ResendOTPResponse> {
+    return apiClient.post<ResendOTPResponse>('/auth/register/resend-otp', data);
   },
 
   async getProfile(): Promise<User> {

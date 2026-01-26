@@ -31,7 +31,7 @@ export const FilterBar = ({
 }: FilterBarProps) => (
   <Card className="dashboard-card">
     <CardContent className="pt-6">
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-row gap-2">
         {onSearchChange && (
           <div className="flex-1">
             <Label htmlFor="filter-search" className="sr-only">{searchPlaceholder}</Label>
@@ -49,11 +49,13 @@ export const FilterBar = ({
         )}
         
         {filterOptions.length > 0 && onFilterChange && (
-          <div className="w-full sm:w-48">
+          <div>
             <Select value={filterValue} onValueChange={onFilterChange}>
-              <SelectTrigger>
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder={filterPlaceholder} />
+              <SelectTrigger className="w-[50px] lg:w-[180px] px-3">
+                <Filter className="h-4 w-4 flex-shrink-0" />
+                <span className="ml-2 hidden lg:inline truncate">
+                  <SelectValue placeholder={filterPlaceholder} />
+                </span>
               </SelectTrigger>
               <SelectContent>
                 {filterOptions.map(option => (
@@ -69,9 +71,9 @@ export const FilterBar = ({
         {children}
         
         {onExport && (
-          <Button variant="outline" onClick={onExport}>
-            <Download className="h-4 w-4 mr-2" />
-            Export
+          <Button variant="outline" onClick={onExport} className="w-[50px] lg:w-auto px-3 lg:px-4">
+            <Download className="h-4 w-4 flex-shrink-0" />
+            <span className="ml-2 hidden lg:inline">Export</span>
           </Button>
         )}
       </div>

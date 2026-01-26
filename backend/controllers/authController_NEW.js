@@ -1,10 +1,9 @@
 import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
 import OTPVerification from '../models/OTPVerification.js';
-import SellerApprovalRequest from '../models/SellerApprovalRequest.js';
 import { generateToken } from '../utils/jwt.js';
-import { generateOTP } from '../utils/otp.js';
-import { sendOTPEmail, sendWelcomeEmail, sendRegistrationPendingEmail } from '../services/emailService.js';
+import { generateOTP, isOTPValid } from '../utils/otp.js';
+import { sendOTPEmail, sendWelcomeEmail } from '../services/emailService.js';
 import { createWithPublicId } from '../utils/createWithPublicId.js';
 
 // Temporary user data storage (pending OTP verification)
@@ -47,17 +46,14 @@ const initiateRegistration = asyncHandler(async (req, res) => {
     email,
     password, // Will be hashed when user is created
     phone,
-    isEmailVerified: true, // Will be verified via OTP before user creation
     ...otherFields
   };
 
   if (role === 'buyer') {
     registrationData.firstName = firstName;
     registrationData.lastName = lastName;
-    registrationData.status = 'active'; // Buyers are active immediately after OTP verification
   } else {
     registrationData.name = name;
-    registrationData.status = role === 'seller' ? 'pending' : 'active'; // Sellers need admin approval
   }
 
   // Store pending registration
@@ -137,36 +133,11 @@ const verifyRegistrationOTP = asyncHandler(async (req, res) => {
   // Clean up pending registration
   pendingRegistrations.delete(email);
 
-  // If seller, create approval request for admin dashboard
-  if (userData.role === 'seller') {
-    await createWithPublicId(
-      SellerApprovalRequest,
-      {
-        sellerId: user._id,
-        status: 'pending',
-        sellerDetails: {
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          farmName: user.farmName,
-          bank: user.bank,
-          district: user.district,
-          address: user.address
-        }
-      },
-      'R', // R for Request
-      user.name
-    );
-
-    // Send registration pending email
-    await sendRegistrationPendingEmail(user.email, user.name);
-  }
-
-  // Send welcome email for buyers
-  if (userData.role === 'buyer') {
-    const displayName = `${userData.firstName} ${userData.lastName}`;
-    await sendWelcomeEmail(user.email, displayName);
-  }
+  // Send welcome email
+  const displayName = userData.role === 'buyer' 
+    ? `${userData.firstName} ${userData.lastName}` 
+    : userData.name;
+  await sendWelcomeEmail(user.email, displayName);
 
   res.status(201).json({
     _id: user._id,
@@ -229,6 +200,7 @@ const resendRegistrationOTP = asyncHandler(async (req, res) => {
 // @route   POST /api/auth/register
 // @access  Public
 const register = asyncHandler(async (req, res) => {
+  // This maintains backward compatibility but should be updated to use new flow
   const { role, name, email, password, phone, firstName, lastName, ...otherFields } = req.body;
 
   // Check if user exists
@@ -238,21 +210,19 @@ const register = asyncHandler(async (req, res) => {
     throw new Error('User already exists');
   }
 
-  // Validation for buyers - require firstName and lastName instead of name
+  // Validation
   if (role === 'buyer') {
     if (!firstName || !lastName) {
       res.status(400);
       throw new Error('First name and last name are required for buyers');
     }
   } else {
-    // For non-buyers, require name
     if (!name) {
       res.status(400);
       throw new Error('Name is required for this role');
     }
   }
 
-  // Create user data
   const userData = {
     role,
     email,
@@ -261,7 +231,6 @@ const register = asyncHandler(async (req, res) => {
     ...otherFields
   };
 
-  // Add name for non-buyers or firstName/lastName for buyers
   if (role === 'buyer') {
     userData.firstName = firstName;
     userData.lastName = lastName;
@@ -273,12 +242,12 @@ const register = asyncHandler(async (req, res) => {
   const user = await User.create(userData);
 
   if (user) {
-    // Send welcome email
     const displayName = role === 'buyer' ? `${firstName} ${lastName}` : name;
     await sendWelcomeEmail(user.email, displayName);
 
     res.status(201).json({
       _id: user._id,
+      publicId: user.publicId,
       role: user.role,
       name: user.name,
       email: user.email,
@@ -309,13 +278,12 @@ const register = asyncHandler(async (req, res) => {
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  // Check for user email
   const user = await User.findOne({ email });
 
-  // Check if user exists, is not deleted, and password is correct
   if (user && !user.isDeleted && (await user.comparePassword(password))) {
     res.json({
       _id: user._id,
+      publicId: user.publicId,
       role: user.role,
       name: user.name,
       email: user.email,
@@ -332,6 +300,7 @@ const login = asyncHandler(async (req, res) => {
       officeContact: user.officeContact,
       permissions: user.permissions,
       rewardPoints: user.rewardPoints,
+      status: user.status,
       token: generateToken(user._id),
     });
   } else {
@@ -353,9 +322,15 @@ const forgotPassword = asyncHandler(async (req, res) => {
   }
 
   const otp = generateOTP();
-  const expiryTime = Date.now() + 10 * 60 * 1000; // 10 minutes
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-  otpStore.set(email, { otp, expiryTime });
+  await OTPVerification.create({
+    userId: user._id,
+    email,
+    otp,
+    purpose: 'password_reset',
+    expiresAt
+  });
 
   await sendOTPEmail(email, otp);
 
@@ -368,10 +343,21 @@ const forgotPassword = asyncHandler(async (req, res) => {
 const resetPassword = asyncHandler(async (req, res) => {
   const { email, otp, newPassword } = req.body;
 
-  const storedOTP = otpStore.get(email);
-  if (!storedOTP || !isOTPValid(otp, storedOTP.otp, storedOTP.expiryTime)) {
+  const otpRecord = await OTPVerification.findOne({
+    email,
+    purpose: 'password_reset',
+    isUsed: false
+  }).sort({ createdAt: -1 });
+
+  if (!otpRecord || !otpRecord.isValid()) {
     res.status(400);
     throw new Error('Invalid or expired OTP');
+  }
+
+  if (otpRecord.otp !== otp) {
+    await otpRecord.incrementAttempts();
+    res.status(400);
+    throw new Error('Invalid OTP');
   }
 
   const user = await User.findOne({ email });
@@ -383,7 +369,8 @@ const resetPassword = asyncHandler(async (req, res) => {
   user.password = newPassword;
   await user.save();
 
-  otpStore.delete(email);
+  otpRecord.isUsed = true;
+  await otpRecord.save();
 
   res.json({ message: 'Password reset successfully' });
 });
@@ -397,6 +384,7 @@ const getProfile = asyncHandler(async (req, res) => {
   if (user) {
     res.json({
       _id: user._id,
+      publicId: user.publicId,
       role: user.role,
       name: user.name,
       email: user.email,
@@ -414,8 +402,6 @@ const getProfile = asyncHandler(async (req, res) => {
 // @route   PUT /api/auth/profile
 // @access  Private
 const updateProfile = asyncHandler(async (req, res) => {
-  console.log('updateProfile called with req.user:', req.user);
-  
   if (!req.user) {
     res.status(401);
     throw new Error('User not authenticated');
@@ -424,14 +410,11 @@ const updateProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
   if (user) {
-    // Update basic fields only if provided
     if (req.body.name !== undefined) user.name = req.body.name;
     if (req.body.email !== undefined) user.email = req.body.email;
     if (req.body.phone !== undefined) user.phone = req.body.phone;
     if (req.body.district !== undefined) user.district = req.body.district;
     if (req.body.address !== undefined) user.address = req.body.address;
-
-    // Update role-specific fields only if provided
     if (req.body.firstName !== undefined) user.firstName = req.body.firstName;
     if (req.body.lastName !== undefined) user.lastName = req.body.lastName;
     if (req.body.nic !== undefined) user.nic = req.body.nic;
@@ -440,9 +423,7 @@ const updateProfile = asyncHandler(async (req, res) => {
     if (req.body.regions !== undefined) user.regions = req.body.regions;
     if (req.body.officeContact !== undefined) user.officeContact = req.body.officeContact;
 
-    // Handle bank object properly - only update if provided
     if (req.body.bank !== undefined) {
-      // If bank object is provided, merge with existing bank data
       user.bank = {
         ...user.bank,
         ...req.body.bank
@@ -453,6 +434,7 @@ const updateProfile = asyncHandler(async (req, res) => {
 
     res.json({
       _id: updatedUser._id,
+      publicId: updatedUser.publicId,
       role: updatedUser.role,
       name: updatedUser.name,
       email: updatedUser.email,

@@ -1,9 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { StatsCard } from '../ui/StatsCard';
 import { CategoryChart } from '../charts/CategoryChart';
 import { RevenueChart } from '../charts/RevenueChart';
 import { OrderStatusGrid } from '../charts/OrderStatusGrid';
-import { DollarSign, ShoppingCart, Users, Package } from 'lucide-react';
+import { DollarSign, ShoppingCart, Users, Package, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
 import { formatCurrency, exportToCSV } from '@/utils/adminUtils';
 import type { Order, Seller, Product, Category } from '@/types/admin';
 
@@ -13,10 +16,25 @@ interface OverviewTabProps {
   products: Product[];
   categories: Category[];
   isLoading: boolean;
+  onRefresh?: () => Promise<void>;
 }
 
-export const OverviewTab = ({ orders, sellers, products, categories, isLoading }: OverviewTabProps) => {
+export const OverviewTab = ({ orders, sellers, products, categories, isLoading, onRefresh }: OverviewTabProps) => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const now = new Date();
+
+  const handleRefresh = async () => {
+    if (!onRefresh) return;
+    setIsRefreshing(true);
+    try {
+      await onRefresh();
+      toast.success('Overview refreshed successfully');
+    } catch (error) {
+      toast.error('Failed to refresh overview');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
   
   // Calculate sales metrics
   const { last24HoursSales, previous24HoursSales, salesTrend } = useMemo(() => {
@@ -94,6 +112,24 @@ export const OverviewTab = ({ orders, sellers, products, categories, isLoading }
 
   return (
     <div className="space-y-6">
+      {/* Header with Refresh Button */}
+      <Card className="dashboard-card">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Dashboard Overview</CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing || isLoading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
+
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard

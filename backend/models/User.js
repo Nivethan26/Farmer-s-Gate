@@ -2,6 +2,12 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
+  publicId: {
+    type: String,
+    unique: true,
+    index: true,
+    sparse: true
+  },
   role: {
     type: String,
     enum: ['buyer', 'seller', 'agent', 'admin'],
@@ -35,6 +41,12 @@ const userSchema = new mongoose.Schema({
       return this.role === 'seller' ? 'unverified' : 'active';
     }
   },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
+  deletedAt: Date,
   isEmailVerified: {
     type: Boolean,
     default: false

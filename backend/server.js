@@ -6,8 +6,10 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import { createServer } from "http";
 
 import connectDB from "./config/db.js";
+import { initializeSocket } from "./services/socketService.js";
 
 // Routes
 import authRoutes from "./routes/authRoutes.js";
@@ -76,6 +78,14 @@ app.use((req, res) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
+
+// Create HTTP server for Socket.IO
+const server = createServer(app);
+
+// Initialize Socket.IO
+initializeSocket(server);
+
+server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📡 WebSocket server ready`);
 });

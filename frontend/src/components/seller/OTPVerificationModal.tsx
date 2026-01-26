@@ -71,20 +71,11 @@ export const OTPVerificationModal = ({ open, onClose, email, onSuccess }: OTPVer
       const response = await sellerApprovalAPI.resendOTP({ email });
       toast.success(response.message);
       setCanResend(false);
-      setResendCooldown(response.data.cooldownSeconds);
-      setAttemptsRemaining(response.data.attemptsRemaining);
+      setResendCooldown(60); // Default 60 seconds cooldown
       setOtp('');
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.message || 'Failed to resend OTP';
       toast.error(errorMessage);
-      
-      // Handle cooldown error
-      if (errorMessage.includes('wait')) {
-        const match = errorMessage.match(/(\d+) seconds/);
-        if (match) {
-          setResendCooldown(parseInt(match[1]));
-        }
-      }
     } finally {
       setIsResending(false);
     }

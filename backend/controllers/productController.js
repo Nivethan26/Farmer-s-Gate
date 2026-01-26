@@ -12,7 +12,7 @@ const getProducts = asyncHandler(async (req, res) => {
   const supplyType = req.query.supplyType;
   const search = req.query.search;
 
-  let query = {};
+  let query = { isActive: true };
 
   if (category) {
     query.category = category;
@@ -48,7 +48,7 @@ const getProducts = asyncHandler(async (req, res) => {
 // @route   GET /api/products/:id
 // @access  Public
 const getProductById = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id);
+  const product = await Product.findOne({ _id: req.params.id, isActive: true });
 
   if (product) {
     res.json(product);
@@ -149,7 +149,10 @@ const deleteProduct = asyncHandler(async (req, res) => {
 // @route   GET /api/products/seller/:sellerId
 // @access  Public
 const getProductsBySeller = asyncHandler(async (req, res) => {
-  const products = await Product.find({ sellerId: req.params.sellerId }).sort({ createdAt: -1 });
+  const products = await Product.find({ 
+    sellerId: req.params.sellerId,
+    isActive: true 
+  }).sort({ createdAt: -1 });
   res.json(products);
 });
 

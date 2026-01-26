@@ -41,6 +41,7 @@ export const useAdminData = () => {
   // Redux state
   const users = useAppSelector((state: RootState) => state.users.users);
   const sellers = useAppSelector((state: RootState) => state.users.sellers);
+  const buyers = useAppSelector((state: RootState) => state.users.buyers);
   const agents = useAppSelector((state: RootState) => state.users.agents);
   const products = useAppSelector((state: RootState) => state.catalog.products);
   const orders = useAppSelector((state: RootState) => state.orders.orders);
@@ -97,6 +98,7 @@ export const useAdminData = () => {
   return {
     users: users ? users.map(u => ({ ...u })) : [],
     sellers: sellers ? sellers.map(s => ({ ...s })) : [],
+    buyers: buyers ? buyers.map(b => ({ ...b })) : [],
     agents: agents ? agents.map(a => ({ ...a })) : [],
     products: products ? products.map(deepCloneProduct) : [],
     orders: orders ? orders.map(deepCloneOrder) : [],

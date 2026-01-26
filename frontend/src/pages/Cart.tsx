@@ -216,7 +216,7 @@ const Cart = () => {
         qty: item.qty,
         pricePerKg: item.pricePerKg,
       })),
-      address: user!.address,
+      address: user!.address || 'Default Address - Please update in profile', // Provide fallback address
       subtotal: cart.subtotal,
       deliveryFee: cart.deliveryFee,
       total: cart.total,
@@ -362,7 +362,7 @@ const Cart = () => {
           referenceNumber: "",
           amount: "0.00",
         });
-        navigate("/buyer/orders");
+        navigate("/buyer?tab=orders");
         
       } else {
         // Order creation failed

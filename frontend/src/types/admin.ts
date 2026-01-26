@@ -2,6 +2,7 @@ import type { User } from '@/store/authSlice';
 
 export interface Product {
   _id: string;
+  publicId?: string;
   name: string;
   description: string;
   pricePerKg: number;
@@ -20,6 +21,7 @@ export interface Product {
 
 export interface Category {
   _id: string;
+  publicId?: string;
   name: string;
   slug: string;
   icon: string;
@@ -29,6 +31,7 @@ export interface Category {
 
 export interface Order {
   _id: string;
+  publicId?: string;
   buyerId: string;
   buyerName: string;
   buyerEmail: string;

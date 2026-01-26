@@ -7,6 +7,7 @@ export type UserRole = 'buyer' | 'seller' | 'admin' | 'agent';
 export interface User {
   _id?: string;
   id: string;
+  publicId?: string;
   email: string;
   name?: string; // Optional, only for sellers/agents/admin
   firstName?: string;

@@ -2,6 +2,7 @@ import asyncHandler from 'express-async-handler';
 import mongoose from 'mongoose';
 import Notification from '../models/Notification.js';
 import User from '../models/User.js';
+import { emitNotificationToUser } from '../services/socketService.js';
 
 // @desc    Create notification (HTTP handler)
 // @route   POST /api/notifications
@@ -109,6 +110,15 @@ const createNotification = async (notificationData) => {
   try {
     const notification = new Notification(notificationData);
     await notification.save();
+    
+    // Emit real-time notification via WebSocket
+    try {
+      emitNotificationToUser(notification.userId, notification);
+    } catch (socketError) {
+      console.warn('Failed to emit socket notification:', socketError.message);
+      // Don't fail the notification creation if socket emit fails
+    }
+    
     return notification;
   } catch (error) {
     console.error('Error creating notification:', error);

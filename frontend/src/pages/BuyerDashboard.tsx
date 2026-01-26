@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { selectUserOrders, selectUserNegotiations } from '@/store/selectors';
 import { fetchMyOrders } from '@/store/ordersSlice';
@@ -20,13 +20,25 @@ import { ProfileSection } from './buyer/ProfileSection';
 const BuyerDashboard = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const [searchParams] = useSearchParams();
   const user = useAppSelector((state: RootState) => state.auth.user);
   const cartItems = useAppSelector((state: RootState) => state.cart.items);
   const orders = useAppSelector(selectUserOrders);
   const negotiations = useAppSelector(selectUserNegotiations);
+  
+  // Get the tab from URL params or default to 'home'
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'home');
 
   // Watch for order status changes and show notifications
   useOrderNotifications();
+
+  // Update active tab when URL params change
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   // Fetch notifications and unread count on component mount
   useEffect(() => {
@@ -132,7 +144,7 @@ const BuyerDashboard = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="home" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="flex flex-wrap w-full bg-transparent border-none shadow-none h-auto p-0">
             <TabsTrigger 
               value="home" 
@@ -171,6 +183,7 @@ const BuyerDashboard = () => {
               user={user}
               getStatusIcon={getStatusIcon}
               getOrderStatusColor={getOrderStatusColor}
+              onViewAllOrders={() => setActiveTab('orders')}
             />
             </div>
           </TabsContent>

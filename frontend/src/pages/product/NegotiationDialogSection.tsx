@@ -260,13 +260,19 @@ export const NegotiationDialogSection = ({
             <Label className="text-sm sm:text-base font-semibold mb-2 block">Additional Notes *</Label>
             <Textarea
               value={negotiationNotes}
-              onChange={(e) => setNegotiationNotes(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Only allow text (letters, spaces, and punctuation), no numbers
+                if (/^[a-zA-Z\s.,!?;:()\-'"\n]*$/.test(value) || value === '') {
+                  setNegotiationNotes(value);
+                }
+              }}
               placeholder="Please explain your negotiation request (e.g., bulk order, long-term partnership, etc.)"
               className="min-h-[80px] text-sm sm:text-base resize-none"
               maxLength={500}
             />
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              {negotiationNotes.length}/500 characters
+              {negotiationNotes.length}/500 characters (text only, no numbers)
             </p>
           </div>
 
