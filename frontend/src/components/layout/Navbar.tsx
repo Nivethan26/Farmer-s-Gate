@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 // import { NotificationBell } from "@/components/common/NotificationBell";
-import { NotificationCenter } from "../common/NotificationCenter";
+import { ProfessionalNotificationPanel } from "../common/ProfessionalNotificationPanel";
 
 
 export const Navbar = () => {
@@ -162,7 +162,7 @@ export const Navbar = () => {
 
             {user && (
               <>
-                <NotificationCenter />
+                <ProfessionalNotificationPanel />
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -258,13 +258,9 @@ export const Navbar = () => {
               </div>
             )}
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-all"
-            >
+            <div className="flex-shrink-0">
               <LanguageSwitcher />
-            </Button>
+            </div>
 
             <button
               className="h-9 w-9 rounded-lg bg-green-50 hover:bg-green-100 text-green-700 transition-all border border-green-200 flex items-center justify-center"

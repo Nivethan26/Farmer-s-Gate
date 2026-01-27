@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useAppSelector } from "@/store/hooks";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import type { RootState } from "@/store";
 import { selectSellerProducts } from "@/store/selectors";
+import { fetchProducts } from "@/store/catalogSlice";
 import { Navbar } from "@/components/layout/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
@@ -16,12 +17,18 @@ import { SellerProfile } from "@/components/seller/SellerProfile";
 
 const SellerDashboard = () => {
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
   const user = useAppSelector((state: RootState) => state.auth.user);
   const products = useAppSelector(selectSellerProducts);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+
+  // Fetch products on component mount
+  useEffect(() => {
+    dispatch(fetchProducts({}));
+  }, [dispatch]);
 
   const openEditDialog = (product: any) => {
     setSelectedProduct(product);

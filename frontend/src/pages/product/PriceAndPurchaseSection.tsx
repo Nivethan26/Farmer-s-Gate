@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/store/hooks';
-import { addToCart } from '@/store/cartSlice';
+import { addToCart, addToCartAPI } from '@/store/cartSlice';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { LogIn, ShoppingCart, Scale, CreditCard, ArrowRight, Shield, MessageCircle, Zap, Plus, Minus, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import apiClient from '@/lib/api';
 import type { Product } from '@/store/catalogSlice';
 import type { User } from '@/store/authSlice';
 
@@ -47,17 +48,23 @@ export const PriceAndPurchaseSection = ({
       return;
     }
 
-    dispatch(
-      addToCart({
-        productId: product.id,
-        productName: product.name,
-        pricePerKg: product.pricePerKg,
-        qty,
-        image: product.image,
-        sellerId: product.sellerId,
-        sellerName: product.sellerName,
-      })
-    );
+    const cartItem = {
+      productId: product.id,
+      productName: product.name,
+      pricePerKg: product.pricePerKg,
+      qty,
+      image: product.image,
+      sellerId: product.sellerId,
+      sellerName: product.sellerName,
+    };
+
+    // Use API version for authenticated users, local version for optimistic update
+    dispatch(addToCart(cartItem)); // Optimistic update for better UX
+    apiClient.refreshToken(); // Ensure we have the latest token
+    dispatch(addToCartAPI(cartItem)).catch(() => {
+      // If API fails, the local update is already done
+      toast.error('Failed to sync cart to server, but item added locally');
+    });
 
     // Custom toast with loading animation
     toast.custom(

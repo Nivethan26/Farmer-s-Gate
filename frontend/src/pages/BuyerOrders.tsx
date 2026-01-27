@@ -1,5 +1,7 @@
-import { useAppSelector } from '@/store/hooks';
+import { useEffect } from 'react';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { selectUserOrders } from '@/store/selectors';
+import { fetchMyOrders } from '@/store/ordersSlice';
 import { useOrderNotifications } from '@/hooks/useOrderNotifications';
 import { Navbar } from '@/components/layout/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,10 +18,17 @@ import {
 import { Package, Eye } from 'lucide-react';
 
 const BuyerOrders = () => {
+  const dispatch = useAppDispatch();
   const orders = useAppSelector(selectUserOrders);
+  const loading = useAppSelector((state) => state.orders.loading);
   
   // Watch for order status changes and show notifications
   useOrderNotifications();
+
+  // Fetch orders on component mount
+  useEffect(() => {
+    dispatch(fetchMyOrders());
+  }, [dispatch]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

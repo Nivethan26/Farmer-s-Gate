@@ -28,6 +28,12 @@ const orderItemSchema = new mongoose.Schema({
 });
 
 const orderSchema = new mongoose.Schema({
+  publicId: {
+    type: String,
+    unique: true,
+    index: true,
+    sparse: true
+  },
   buyerId: {
     type: String,
     required: true
@@ -56,6 +62,14 @@ const orderSchema = new mongoose.Schema({
   total: {
     type: Number,
     required: true
+  },
+  redeemedPoints: {
+    type: Number,
+    default: 0
+  },
+  pointsEarned: {
+    type: Number,
+    default: 0
   },
   status: {
     type: String,

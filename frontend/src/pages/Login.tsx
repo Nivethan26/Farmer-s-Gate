@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import type { RootState } from "@/store";
-import { login } from "@/store/authSlice";
+import { loginUser, clearError } from "@/store/authSlice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Sprout, Sun, Leaf, Wheat } from "lucide-react";
+import { Sprout, Sun, Leaf, Wheat, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Navbar } from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -23,13 +23,12 @@ const Login = () => {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const isAuthenticated = useAppSelector(
-    (state: RootState) => state.auth.isAuthenticated
+  
+  const { isAuthenticated, user, loading, error } = useAppSelector(
+    (state: RootState) => state.auth
   );
-  const user = useAppSelector((state: RootState) => state.auth.user);
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -37,22 +36,43 @@ const Login = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
+  // Clear errors when component unmounts
+  useEffect(() => {
+    return () => {
+      if (error) {
+        dispatch(clearError());
+      }
+    };
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    
+    if (!email || !password) {
+      toast.error("Please enter both email and password");
+      return;
+    }
 
-    const stateBefore = isAuthenticated;
-    dispatch(login({ email, password }));
-
-    setTimeout(() => {
-      const stateAfter = isAuthenticated;
-      if (!stateBefore && stateAfter) {
-        toast.success(t("auth.loginSuccess"));
-      } else if (!stateAfter) {
-        toast.error(t("auth.invalidCredentials"));
+    const result = await dispatch(loginUser({ email, password }));
+    
+    if (loginUser.fulfilled.match(result)) {
+      toast.success(t("auth.loginSuccess"));
+    } else if (loginUser.rejected.match(result)) {
+      // Handle specific seller status errors
+      const errorMessage = result.payload as string || result.error.message || 'Login failed';
+      
+      if (errorMessage.includes('EMAIL_NOT_VERIFIED')) {
+        toast.error('Please verify your email address first. Check your inbox for the OTP.', { duration: 5000 });
+      } else if (errorMessage.includes('PENDING_APPROVAL')) {
+        toast.error('Your account is pending admin approval. You will receive an email once approved.', { duration: 5000 });
+      } else if (errorMessage.includes('ACCOUNT_REJECTED')) {
+        toast.error('Your seller application was rejected. Please contact support for more information.', { duration: 5000 });
+      } else if (errorMessage.includes('ACCOUNT_INACTIVE')) {
+        toast.error('Your account has been deactivated. Please contact support.', { duration: 5000 });
+      } else {
+        toast.error(errorMessage);
       }
-      setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -118,7 +138,7 @@ const Login = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300 py-3 bg-white/50"
-                disabled={isLoading}
+                disabled={loading}
               />
             </div>
 
@@ -138,7 +158,7 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300 py-3 bg-white/50"
-                disabled={isLoading}
+                disabled={loading}
               />
             </div>
 
@@ -146,11 +166,11 @@ const Login = () => {
             <Button
               type="submit"
               className="w-full bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-semibold py-3 rounded-lg transform hover:scale-[1.02] transition-all duration-300 shadow-lg border-0"
-              disabled={isLoading}
+              disabled={loading}
             >
-              {isLoading ? (
+              {loading ? (
                 <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   <span>Signing in...</span>
                 </div>
               ) : (
@@ -186,14 +206,23 @@ const Login = () => {
           </div>
 
           {/* Sign Up Link */}
-          <div className="text-center pt-4 border-t border-green-100">
+          <div className="text-center pt-4 border-t border-green-100 space-y-2">
             <p className="text-green-700 text-sm">
               Don't have an account?{" "}
               <Link
                 to="/signup"
                 className="text-emerald-600 hover:text-emerald-800 font-bold underline-offset-4 hover:underline transition-all duration-300"
               >
-                Join Our Farm Community
+                Register as Buyer
+              </Link>
+            </p>
+            <p className="text-green-700 text-sm">
+              Want to sell your produce?{" "}
+              <Link
+                to="/seller-registration"
+                className="text-green-600 hover:text-green-800 font-bold underline-offset-4 hover:underline transition-all duration-300"
+              >
+                Register as Seller
               </Link>
             </p>
           </div>

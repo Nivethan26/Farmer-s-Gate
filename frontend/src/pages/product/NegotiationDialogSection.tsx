@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch } from '@/store/hooks';
-import { createNegotiation } from '@/store/catalogSlice';
-import { addNotification } from '@/store/uiSlice';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { useNegotiationSubmission } from '@/hooks/useNegotiationSubmission';
+import { fetchNotifications } from '@/store/notificationSlice';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Scale, Plus, Minus, CheckCircle2, MessageCircle } from 'lucide-react';
+import { Scale, Plus, Minus, CheckCircle2, MessageCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Product } from '@/store/catalogSlice';
 import type { Category } from '@/store/catalogSlice';
@@ -53,6 +53,9 @@ export const NegotiationDialogSection = ({
 }: NegotiationDialogSectionProps) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const currentUser = useAppSelector((state) => state.auth.user);
+  const { submitNegotiation, isSubmitting } = useNegotiationSubmission();
+  
   const [negotiationQty, setNegotiationQty] = useState(10);
   const [negotiationPrice, setNegotiationPrice] = useState('');
   const [negotiationNotes, setNegotiationNotes] = useState('');
@@ -68,8 +71,8 @@ export const NegotiationDialogSection = ({
     };
   });
 
-  const handleNegotiate = () => {
-    if (!user || user.role !== 'buyer') {
+  const handleNegotiate = async () => {
+    if (!currentUser || currentUser.role !== 'buyer') {
       toast.error('Please sign in as a buyer to negotiate');
       navigate('/login');
       return;
@@ -85,52 +88,33 @@ export const NegotiationDialogSection = ({
       return;
     }
 
-    if (!deliveryDate) {
-      toast.error('Please select a preferred delivery date');
+    if (!negotiationNotes.trim()) {
+      toast.error('Please add a note explaining your negotiation');
       return;
     }
 
-    const negotiation = {
-      id: `neg-${Date.now()}`,
-      productId: product.id,
-      productName: product.name,
-      buyerId: user.id,
-      buyerName: user.name,
-      sellerId: product.sellerId,
-      sellerName: product.sellerName,
-      currentPrice: product.pricePerKg,
-      requestedPrice: Number(negotiationPrice),
-      requestedQty: negotiationQty,
-      deliveryDate: deliveryDate,
-      notes: negotiationNotes,
-      status: 'open' as const,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    try {
+      const negotiationData = {
+        productId: product.id,
+        requestedPrice: Number(negotiationPrice),
+        notes: `Requested quantity: ${negotiationQty}kg. Delivery date: ${deliveryDate || 'Flexible'}. ${negotiationNotes}`
+      };
 
-    dispatch(createNegotiation(negotiation));
+      await submitNegotiation(negotiationData);
+      
+      // Refresh notifications to show the new one
+      dispatch(fetchNotifications({ page: 1, limit: 10 }));
 
-    // Add notification to header
-    dispatch(addNotification({
-      title: 'Negotiation Requested',
-      message: `Your offer of Rs. ${negotiationPrice}/kg for ${product.name} has been sent to ${product.sellerName}. Status: Pending`,
-      type: 'neutral', // Neutral/Info for Pending
-      category: 'message',
-      role: 'buyer',
-      link: '/buyer?tab=negotiations',
-      metadata: negotiation,
-      sender: {
-        id: 'system',
-        name: 'System',
-        role: 'admin'
-      }
-    }));
-
-    toast.success('Negotiation request sent successfully!');
-    onOpenChange(false);
-    setNegotiationPrice('');
-    setNegotiationNotes('');
-    setDeliveryDate('');
+      // Reset form and close dialog
+      onOpenChange(false);
+      setNegotiationPrice('');
+      setNegotiationNotes('');
+      setDeliveryDate('');
+      setNegotiationQty(10);
+    } catch (error) {
+      // Error is already handled in the hook
+      console.error('Negotiation submission failed:', error);
+    }
   };
 
   if (!product.negotiationEnabled) {
@@ -256,7 +240,7 @@ export const NegotiationDialogSection = ({
 
           {/* Delivery Date */}
           <div>
-            <Label className="text-sm sm:text-base font-semibold mb-2 block">Preferred Delivery Date *</Label>
+            <Label className="text-sm sm:text-base font-semibold mb-2 block">Preferred Delivery Date (Optional)</Label>
             <Select value={deliveryDate} onValueChange={setDeliveryDate}>
               <SelectTrigger className="w-full text-sm sm:text-base">
                 <SelectValue placeholder="Select delivery date" />
@@ -271,7 +255,26 @@ export const NegotiationDialogSection = ({
             </Select>
           </div>
 
-
+          {/* Additional Notes */}
+          <div>
+            <Label className="text-sm sm:text-base font-semibold mb-2 block">Additional Notes *</Label>
+            <Textarea
+              value={negotiationNotes}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Only allow text (letters, spaces, and punctuation), no numbers
+                if (/^[a-zA-Z\s.,!?;:()\-'"\n]*$/.test(value) || value === '') {
+                  setNegotiationNotes(value);
+                }
+              }}
+              placeholder="Please explain your negotiation request (e.g., bulk order, long-term partnership, etc.)"
+              className="min-h-[80px] text-sm sm:text-base resize-none"
+              maxLength={500}
+            />
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              {negotiationNotes.length}/500 characters (text only, no numbers)
+            </p>
+          </div>
 
           {/* Seller Information (Readonly) */}
           <div>
@@ -327,10 +330,25 @@ export const NegotiationDialogSection = ({
           <Button
             onClick={handleNegotiate}
             className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm sm:text-base"
-            disabled={!negotiationPrice || !deliveryDate}
+            disabled={
+              !negotiationPrice || 
+              Number(negotiationPrice) <= 0 || 
+              !negotiationNotes.trim() || 
+              negotiationQty < 10 || 
+              isSubmitting
+            }
           >
-            <CheckCircle2 className="mr-2 h-4 w-4" />
-            Submit Negotiation Request
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                Submit Negotiation Request
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

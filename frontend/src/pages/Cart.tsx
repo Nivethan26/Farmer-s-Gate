@@ -8,11 +8,16 @@ import {
   updateQty,
   clearCart,
   setRedeemedPoints,
+  removeFromCartAPI,
+  updateCartItemAPI,
+  clearCartAPI,
+  updateRedeemedPointsAPI,
 } from "@/store/cartSlice";
 import { createOrder } from "@/store/ordersSlice";
-import { redeemRewardPoints, addRewardPoints } from "@/store/authSlice";
+import { redeemRewardPoints, addRewardPoints, fetchUserProfile } from "@/store/authSlice";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
+import apiClient from "@/lib/api";
 import {
   Card,
   CardContent,
@@ -55,7 +60,8 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
-import { addNotification } from "@/store/uiSlice";
+import { notificationAPI } from "@/services/notificationService";
+import { addNotification, fetchUnreadCount } from "@/store/notificationSlice";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 // Bank details interface
@@ -77,7 +83,7 @@ const Cart = () => {
   const cart = useAppSelector((state: RootState) => state.cart);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
-  const [pointsToRedeem, setPointsToRedeem] = useState(0);
+  // Remove local pointsToRedeem state - use cart.redeemedPoints directly
   const [selectedBank, setSelectedBank] = useState<string>("boc");
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [showBankDetails, setShowBankDetails] = useState(false);
@@ -115,9 +121,25 @@ const Cart = () => {
 
   const handleUpdateQty = (productId: string, newQty: number) => {
     if (newQty <= 0) {
+      // Optimistic update for immediate UI feedback
       dispatch(removeFromCart(productId));
+      // API call to sync with backend
+      if (user) {
+        apiClient.refreshToken();
+        dispatch(removeFromCartAPI(productId)).catch(() => {
+          toast.error('Failed to sync removal to server');
+        });
+      }
     } else {
+      // Optimistic update for immediate UI feedback
       dispatch(updateQty({ productId, qty: newQty }));
+      // API call to sync with backend
+      if (user) {
+        apiClient.refreshToken();
+        dispatch(updateCartItemAPI({ productId, qty: newQty })).catch(() => {
+          toast.error('Failed to sync quantity update to server');
+        });
+      }
     }
   };
 
@@ -145,7 +167,7 @@ const Cart = () => {
     }));
   };
 
-  const handleSubmitOrder = () => {
+  const handleSubmitOrder = async () => {
     // Validate payment form
     if (!paymentForm.accountHolderName.trim()) {
       toast.error("Please enter account holder name");
@@ -185,12 +207,7 @@ const Cart = () => {
       dispatch(redeemRewardPoints(redeemedPoints));
     }
 
-    const order = {
-      id: `order-${Date.now()}`,
-      buyerId: user!.id,
-      buyerName: user!.name,
-      address: user!.address,
-      buyerEmail: user!.email,
+    const orderData = {
       items: cart.items.map((item) => ({
         productId: item.productId,
         productName: item.productName,
@@ -199,90 +216,170 @@ const Cart = () => {
         qty: item.qty,
         pricePerKg: item.pricePerKg,
       })),
+      address: user!.address || 'Default Address - Please update in profile', // Provide fallback address
       subtotal: cart.subtotal,
       deliveryFee: cart.deliveryFee,
       total: cart.total,
-      status: "processing" as const,
-      receiptUrl: `receipt-${Date.now()}.jpg`,
-      paymentDetails: {
-        ...paymentForm,
-        selectedBank: selectedBankDetail?.name || "",
-      },
-      createdAt: new Date().toISOString(),
-      paidAt: null,
-      deliveredAt: null,
       redeemedPoints: redeemedPoints > 0 ? redeemedPoints : undefined,
-      pointsEarned: pointsEarned > 0 ? pointsEarned : undefined,
+      receiptFile: receiptFile, // Pass the actual file for upload
     };
 
-    dispatch(createOrder(order));
-
-    // Send notifications
-    Object.entries(itemsBySeller).forEach(([sellerId, items]) => {
-      // Create a simplified order object for the seller metadata containing only their items
-      const sellerOrderMetadata = {
-        ...order,
-        items: items, // Only show items relevant to this seller
-        total: items.reduce((sum, item) => sum + (item.pricePerKg * item.qty), 0) // Recalculate total for this seller
-      };
-
-      dispatch(
-        addNotification({
-          title: "New Order Received",
-          message: `${user!.name} placed an order with ${items.length
-            } item(s).`,
-          type: "info",
-          category: "order",
-          role: "seller",
-          sellerId: sellerId,
+    try {
+      // Create the order and wait for success
+      const result = await dispatch(createOrder(orderData));
+      
+      if (createOrder.fulfilled.match(result)) {
+        // Order was successfully created
+        const createdOrder = result.payload;
+        
+        // Create a simplified order object for notifications using the actual order ID
+        const orderNotificationData = {
+          id: createdOrder._id || `order-${Date.now()}`,
           buyerId: user!.id,
-          link: `/seller/orders/`,
-          metadata: sellerOrderMetadata,
-        })
-      );
-    });
+          buyerName: `${user!.firstName} ${user!.lastName}`.trim(),
+          address: user!.address,
+          buyerEmail: user!.email,
+          items: orderData.items,
+          subtotal: orderData.subtotal,
+          deliveryFee: orderData.deliveryFee,
+          total: orderData.total,
+          status: "processing" as const,
+          createdAt: new Date().toISOString(),
+          redeemedPoints: redeemedPoints > 0 ? redeemedPoints : undefined,
+          pointsEarned: pointsEarned > 0 ? pointsEarned : undefined,
+        };
 
-    dispatch(
-      addNotification({
-        title: "Order Placed",
-        message: `Your order #${order.id} is under processing.`,
-        type: "success",
-        category: "order",
-        role: "buyer",
-        buyerId: user!.id,
-        link: `/buyer/orders/`,
-        metadata: order,
-      })
-    );
+        // Send notifications to sellers (non-blocking)
+        Object.entries(itemsBySeller).forEach(async ([sellerId, items]) => {
+          try {
+            // Create notification via API for seller
+            await notificationAPI.createNotification({
+              title: "New Order Received",
+              message: `${user!.firstName} ${user!.lastName} placed an order with ${items.length} item(s).`,
+              type: "order",
+              priority: "high",
+              data: {
+                orderId: createdOrder._id,
+                actionUrl: `/seller/orders/${createdOrder._id}`
+              },
+              userId: sellerId // This will be converted to ObjectId in backend
+            });
+            console.log(`Notification sent successfully to seller ${sellerId}`);
+          } catch (error) {
+            console.warn(`Failed to send seller notification to ${sellerId}:`, error);
+            // Don't fail the order process if notifications fail
+          }
+        });
 
-    // Show order status notification
-    toast.info("Order Under Processing", {
-      description: `Order #${order.id} has been placed and is now being processed.`,
-      duration: 5000,
-    });
+        // Send notification to buyer via API (persist in database)
+        try {
+          await notificationAPI.createNotification({
+            title: "Order Placed Successfully",
+            message: `Your order #${orderNotificationData.id} has been confirmed and is now processing.`,
+            type: "order",
+            priority: "high",
+            data: {
+              orderId: createdOrder._id,
+              actionUrl: `/buyer/orders/${createdOrder._id}`
+            },
+            userId: user!.id // Use the buyer's actual MongoDB ObjectId (stored as 'id' in frontend)
+          });
+          console.log(`Order confirmation notification sent to buyer ${user!.id}`);
+          
+          // Update unread count in Redux state immediately
+          dispatch(fetchUnreadCount());
+        } catch (error) {
+          console.warn(`Failed to send buyer notification:`, error);
+          // Fallback: add to local state if API fails
+          dispatch(
+            addNotification({
+              _id: `order-notification-${Date.now()}`,
+              userId: user!.id,
+              title: "Order Placed Successfully",
+              message: `Your order #${orderNotificationData.id} has been confirmed and is now processing.`,
+              type: "order",
+              priority: "high",
+              isRead: false,
+              createdAt: new Date().toISOString(),
+              data: {
+                orderId: createdOrder._id,
+                actionUrl: `/buyer/orders/${createdOrder._id}`
+              }
+            })
+          );
+        }
 
-    // Add reward points
-    if (pointsEarned > 0 && user) {
-      dispatch(addRewardPoints(pointsEarned));
-      toast.success(`Order placed! You earned ${pointsEarned} reward points!`);
-    } else {
-      toast.success("Order placed successfully!");
+        // Show success toast with order status color
+        toast.success("Order Placed Successfully!", {
+          description: `Order #${createdOrder._id || orderNotificationData.id} is now being processed.`,
+          duration: 5000,
+        });
+
+        // Refresh user profile to sync points from backend
+        if (user) {
+          try {
+            await dispatch(fetchUserProfile());
+            
+            // Show points notification if any were earned
+            if (pointsEarned > 0) {
+              toast.success(`You earned ${pointsEarned} reward points!`, {
+                description: "Points have been added to your account.",
+                duration: 3000,
+              });
+            }
+          } catch (error) {
+            console.error('Failed to refresh user profile:', error);
+            // Fallback to local state updates if profile fetch fails
+            if (pointsEarned > 0) {
+              dispatch(addRewardPoints(pointsEarned));
+              toast.success(`You earned ${pointsEarned} reward points!`, {
+                description: "Points have been added to your account.",
+                duration: 3000,
+              });
+            }
+            if (redeemedPoints > 0) {
+              dispatch(redeemRewardPoints(redeemedPoints));
+            }
+          }
+        }
+
+        // Reset everything
+        dispatch(clearCart());
+        if (user) {
+          apiClient.refreshToken();
+          dispatch(clearCartAPI()).catch(() => {
+            console.warn('Failed to clear cart on server after order');
+          });
+        }
+        setCheckoutOpen(false);
+        setReceiptFile(null);
+        // Points are reset via clearCart
+        setShowBankDetails(false);
+        setPaymentForm({
+          accountHolderName: "",
+          bankName: "",
+          accountNumber: "",
+          referenceNumber: "",
+          amount: "0.00",
+        });
+        navigate("/buyer?tab=orders");
+        
+      } else {
+        // Order creation failed
+        const error = result.payload as string;
+        toast.error("Order Failed", {
+          description: error || "Unable to place your order. Please try again.",
+          duration: 5000,
+        });
+      }
+    } catch (error) {
+      // Handle any other errors
+      console.error('Order creation error:', error);
+      toast.error("Order Failed", {
+        description: "An unexpected error occurred. Please try again.",
+        duration: 5000,
+      });
     }
-
-    // Reset everything
-    dispatch(clearCart());
-    setCheckoutOpen(false);
-    setReceiptFile(null);
-    setPointsToRedeem(0);
-    setShowBankDetails(false);
-    setPaymentForm({
-      accountHolderName: "",
-      bankName: "",
-      accountNumber: "",
-      referenceNumber: "",
-      amount: "0.00",
-    });
-    navigate("/buyer/orders");
   };
 
   if (cart.items.length === 0) {
@@ -352,6 +449,12 @@ const Cart = () => {
               variant="outline"
               onClick={() => {
                 dispatch(clearCart());
+                if (user) {
+                  apiClient.refreshToken();
+                  dispatch(clearCartAPI()).catch(() => {
+                    toast.error('Failed to sync cart clear to server');
+                  });
+                }
                 // Custom toast with green styling
                 toast.custom(
                   () => (
@@ -481,9 +584,15 @@ const Cart = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() =>
-                              dispatch(removeFromCart(item.productId))
-                            }
+                            onClick={() => {
+                              dispatch(removeFromCart(item.productId));
+                              if (user) {
+                                apiClient.refreshToken();
+                                dispatch(removeFromCartAPI(item.productId)).catch(() => {
+                                  toast.error('Failed to sync item removal to server');
+                                });
+                              }
+                            }}
                             className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg"
                             aria-label="Remove item"
                           >
@@ -562,7 +671,7 @@ const Cart = () => {
                             user.rewardPoints,
                             cart.subtotal + cart.deliveryFee
                           )}
-                          value={pointsToRedeem}
+                          value={cart.redeemedPoints || 0}
                           onChange={(e) => {
                             const value = Math.max(
                               0,
@@ -574,8 +683,13 @@ const Cart = () => {
                                 )
                               )
                             );
-                            setPointsToRedeem(value);
                             dispatch(setRedeemedPoints(value));
+                            if (user) {
+                              apiClient.refreshToken();
+                              dispatch(updateRedeemedPointsAPI(value)).catch(() => {
+                                toast.error('Failed to sync redeemed points to server');
+                              });
+                            }
                           }}
                           className="flex-1 border-2 focus:border-green-400"
                           placeholder="Points"
@@ -588,8 +702,13 @@ const Cart = () => {
                               user!.rewardPoints || 0,
                               cart.subtotal + cart.deliveryFee
                             );
-                            setPointsToRedeem(maxRedeem);
                             dispatch(setRedeemedPoints(maxRedeem));
+                            if (user) {
+                              apiClient.refreshToken();
+                              dispatch(updateRedeemedPointsAPI(maxRedeem)).catch(() => {
+                                toast.error('Failed to sync redeemed points to server');
+                              });
+                            }
                           }}
                           className="border-2 hover:bg-green-50 hover:border-green-400"
                         >

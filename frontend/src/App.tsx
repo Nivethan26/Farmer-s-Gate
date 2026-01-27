@@ -1,4 +1,3 @@
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -6,6 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "@/store";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { SocketProvider } from "@/contexts/SocketContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -23,6 +23,8 @@ import RoleBasedDashboard from "./pages/RoleBasedDashboard";
 import AccountProfile from "./pages/AccountProfile";
 import SellerOrders from "./pages/SellerOrders";
 import BuyerOrders from "./pages/BuyerOrders";
+import { SellerRegistrationPage } from "./pages/SellerRegistration";
+import { CartSyncProvider } from "./components/CartSyncProvider";
 
 const queryClient = new QueryClient();
 
@@ -30,13 +32,15 @@ const App = () => (
   <Provider store={store}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+        <SocketProvider>
+          <CartSyncProvider>
+            <Sonner />
+            <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/seller-registration" element={<SellerRegistrationPage />} />
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/about" element={<About />} />
@@ -107,6 +111,8 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+          </CartSyncProvider>
+        </SocketProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </Provider>

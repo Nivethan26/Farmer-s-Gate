@@ -1,6 +1,6 @@
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { RootState } from "@/store";
-import { updateNegotiationStatus } from "@/store/catalogSlice";
+import { updateNegotiationStatus, fetchSellerNegotiations } from "@/store/catalogSlice";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   MessageSquare,
   Clock,
@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
 const SellerNegotiationsTab = () => {
@@ -47,6 +48,15 @@ const SellerNegotiationsTab = () => {
   const [counterPrice, setCounterPrice] = useState("");
   const [counterNotes, setCounterNotes] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [loading, setLoading] = useState(false);
+
+  // Fetch seller negotiations on mount
+  useEffect(() => {
+    if (user?.role === 'seller') {
+      setLoading(true);
+      dispatch(fetchSellerNegotiations()).finally(() => setLoading(false));
+    }
+  }, [dispatch, user]);
 
   // Filter negotiations based on status
   const negotiations = allNegotiations.filter((n) => {
@@ -108,56 +118,97 @@ const SellerNegotiationsTab = () => {
     setOpenDialog(true);
   };
 
-  const sendCounterOffer = () => {
+  const sendCounterOffer = async () => {
     if (!counterPrice || Number(counterPrice) <= 0) {
-      alert("Please enter a valid counter price");
+      toast.error("Please enter a valid counter price");
       return;
     }
 
     if (!selected) return;
 
-    dispatch(
-      updateNegotiationStatus({
-        id: selected.id,
-        status: "countered",
-        counterPrice: Number(counterPrice),
-        counterNotes,
-      })
-    );
-    setOpenDialog(false);
-    setSelected(null);
-    setCounterPrice("");
-    setCounterNotes("");
+    try {
+      await dispatch(
+        updateNegotiationStatus({
+          id: selected.id,
+          status: "countered",
+          counterPrice: Number(counterPrice),
+          counterNotes,
+        })
+      ).unwrap();
+      
+      toast.success("Counter offer sent successfully!");
+      
+      // Refresh negotiations after update
+      dispatch(fetchSellerNegotiations());
+      
+      setOpenDialog(false);
+      setSelected(null);
+      setCounterPrice("");
+      setCounterNotes("");
+    } catch (error) {
+      toast.error("Failed to send counter offer");
+      console.error(error);
+    }
   };
 
-  const acceptDeal = (n: any) => {
-    dispatch(
-      updateNegotiationStatus({
-        id: n.id,
-        status: "agreed",
-        agreedPrice: n.requestedPrice,
-      })
-    );
-  };
-
-  const rejectDeal = (n: any) => {
-    dispatch(
-      updateNegotiationStatus({
-        id: n.id,
-        status: "rejected",
-      })
-    );
-  };
-
-  const acceptCounter = (n: any) => {
-    if (n.counterPrice) {
-      dispatch(
+  const acceptDeal = async (n: any) => {
+    try {
+      await dispatch(
         updateNegotiationStatus({
           id: n.id,
           status: "agreed",
-          agreedPrice: n.counterPrice,
+          agreedPrice: n.requestedPrice,
         })
-      );
+      ).unwrap();
+      
+      toast.success("Negotiation accepted!");
+      
+      // Refresh negotiations after update
+      dispatch(fetchSellerNegotiations());
+    } catch (error) {
+      toast.error("Failed to accept negotiation");
+      console.error(error);
+    }
+  };
+
+  const rejectDeal = async (n: any) => {
+    try {
+      await dispatch(
+        updateNegotiationStatus({
+          id: n.id,
+          status: "rejected",
+        })
+      ).unwrap();
+      
+      toast.success("Negotiation rejected");
+      
+      // Refresh negotiations after update
+      dispatch(fetchSellerNegotiations());
+    } catch (error) {
+      toast.error("Failed to reject negotiation");
+      console.error(error);
+    }
+  };
+
+  const acceptCounter = async (n: any) => {
+    if (n.counterPrice) {
+      try {
+        await dispatch(
+          updateNegotiationStatus({
+            id: n.id,
+            status: "agreed",
+            agreedPrice: n.counterPrice,
+          })
+        ).unwrap();
+        
+        toast.success("Counter offer accepted!");
+        
+        // Refresh negotiations after update
+        dispatch(fetchSellerNegotiations());
+      } catch (error) {
+        toast.error("Failed to accept counter offer");
+        console.error(error);
+      }
     }
   };
 

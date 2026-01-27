@@ -1,6 +1,12 @@
 import mongoose from 'mongoose';
 
 const negotiationSchema = new mongoose.Schema({
+  publicId: {
+    type: String,
+    unique: true,
+    index: true,
+    sparse: true
+  },
   productId: {
     type: String,
     required: true

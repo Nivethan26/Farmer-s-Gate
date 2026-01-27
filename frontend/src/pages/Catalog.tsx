@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import type { RootState } from '@/store';
 import { selectFilteredProducts } from '@/store/selectors';
-import { setFilters } from '@/store/catalogSlice';
+import { setFilters, fetchProducts, fetchCategories } from '@/store/catalogSlice';
 import { addToCart } from '@/store/cartSlice';
 import { Navbar } from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -37,7 +37,26 @@ const Catalog = () => {
   const user = useAppSelector((state: RootState) => state.auth.user);
   const filteredProducts = useAppSelector(selectFilteredProducts);
   const filters = useAppSelector((state: RootState) => state.catalog.filters);
+  const loading = useAppSelector((state: RootState) => state.catalog.loading);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  // Fetch data on component mount
+  useEffect(() => {
+    dispatch(fetchProducts({}));
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  // Fetch products when filters change
+  useEffect(() => {
+    const filtersPayload = {
+      category: filters.categories.length > 0 ? filters.categories[0] : undefined,
+      district: filters.districts.length > 0 ? filters.districts[0] : undefined,
+      supplyType: filters.supplyTypes.length > 0 ? filters.supplyTypes[0] : undefined,
+      search: filters.search || undefined,
+    };
+    
+    dispatch(fetchProducts(filtersPayload));
+  }, [dispatch, filters]);
 
   const handleAddToCart = (product: Product) => {
     // Redirect to login if user is not logged in

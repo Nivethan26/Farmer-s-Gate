@@ -1,5 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
+import Product from '../models/Product.js';
 
 // @desc    Get all users
 // @route   GET /api/users
@@ -9,7 +10,7 @@ const getUsers = asyncHandler(async (req, res) => {
   const page = Number(req.query.pageNumber) || 1;
   const role = req.query.role;
 
-  let query = {};
+  let query = { isDeleted: { $ne: true } };
   if (role) {
     query.role = role;
   }
@@ -77,18 +78,46 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Delete user
+// @desc    Delete user (soft delete)
 // @route   DELETE /api/users/:id
 // @access  Private/Admin
 const deleteUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
 
-  if (user) {
-    await User.deleteOne({ _id: req.params.id });
-    res.json({ message: 'User removed' });
-  } else {
+  if (!user) {
     res.status(404);
     throw new Error('User not found');
+  }
+
+  if (user.isDeleted) {
+    res.status(400);
+    throw new Error('User is already deleted');
+  }
+
+  // Soft delete the user
+  user.isDeleted = true;
+  user.deletedAt = new Date();
+  user.status = 'inactive';
+  await user.save();
+
+  // If user is a seller, deactivate all their products
+  if (user.role === 'seller') {
+    const result = await Product.updateMany(
+      { sellerId: user._id.toString() },
+      { 
+        $set: { 
+          isActive: false,
+          updatedAt: new Date()
+        } 
+      }
+    );
+    
+    res.json({ 
+      message: 'User deleted successfully',
+      productsDeactivated: result.modifiedCount
+    });
+  } else {
+    res.json({ message: 'User deleted successfully' });
   }
 });
 
@@ -96,13 +125,14 @@ const deleteUser = asyncHandler(async (req, res) => {
 // @route   GET /api/users/stats
 // @access  Private/Admin
 const getUserStats = asyncHandler(async (req, res) => {
-  const totalUsers = await User.countDocuments();
-  const buyers = await User.countDocuments({ role: 'buyer' });
-  const sellers = await User.countDocuments({ role: 'seller' });
-  const agents = await User.countDocuments({ role: 'agent' });
-  const admins = await User.countDocuments({ role: 'admin' });
-  const activeUsers = await User.countDocuments({ status: 'active' });
-  const pendingUsers = await User.countDocuments({ status: 'pending' });
+  const query = { isDeleted: { $ne: true } };
+  const totalUsers = await User.countDocuments(query);
+  const buyers = await User.countDocuments({ ...query, role: 'buyer' });
+  const sellers = await User.countDocuments({ ...query, role: 'seller' });
+  const agents = await User.countDocuments({ ...query, role: 'agent' });
+  const admins = await User.countDocuments({ ...query, role: 'admin' });
+  const activeUsers = await User.countDocuments({ ...query, status: 'active' });
+  const pendingUsers = await User.countDocuments({ ...query, status: 'pending' });
 
   res.json({
     totalUsers,
@@ -115,10 +145,108 @@ const getUserStats = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Add reward points to user
+// @route   PUT /api/users/:id/add-points
+// @access  Private/Admin
+const addRewardPoints = asyncHandler(async (req, res) => {
+  const { points } = req.body;
+  const user = await User.findById(req.params.id);
+
+  if (user) {
+    user.rewardPoints = (user.rewardPoints || 0) + points;
+    const updatedUser = await user.save();
+    res.json({ rewardPoints: updatedUser.rewardPoints });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
+// @desc    Redeem reward points from user
+// @route   PUT /api/users/:id/redeem-points
+// @access  Private/Admin or Self
+const redeemRewardPoints = asyncHandler(async (req, res) => {
+  const { points } = req.body;
+  const user = await User.findById(req.params.id);
+
+  if (user) {
+    if (req.user.role !== 'admin' && req.user._id.toString() !== req.params.id) {
+      res.status(403);
+      throw new Error('Not authorized to redeem points for this user');
+    }
+
+    if (user.rewardPoints < points) {
+      res.status(400);
+      throw new Error('Insufficient reward points');
+    }
+
+    user.rewardPoints = (user.rewardPoints || 0) - points;
+    const updatedUser = await user.save();
+    res.json({ rewardPoints: updatedUser.rewardPoints });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
+// @desc    Toggle seller status (active/inactive)
+// @route   PATCH /api/users/:id/toggle-status
+// @access  Private/Admin
+const toggleSellerStatus = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  if (user.isDeleted) {
+    res.status(400);
+    throw new Error('Cannot modify deleted user');
+  }
+
+  if (user.role !== 'seller') {
+    res.status(400);
+    throw new Error('User is not a seller');
+  }
+
+  // Toggle between active and inactive
+  const newStatus = user.status === 'active' ? 'inactive' : 'active';
+  user.status = newStatus;
+  
+  const updatedUser = await user.save();
+
+  // Cascade status change to all seller's products
+  const productUpdate = await Product.updateMany(
+    { sellerId: user._id.toString() },
+    { 
+      $set: { 
+        isActive: newStatus === 'active',
+        updatedAt: new Date()
+      } 
+    }
+  );
+
+  res.json({
+    success: true,
+    message: `Seller status updated to ${updatedUser.status}`,
+    data: {
+      _id: updatedUser._id,
+      status: updatedUser.status,
+      name: updatedUser.name,
+      email: updatedUser.email
+    },
+    productsUpdated: productUpdate.modifiedCount
+  });
+});
+
 export {
   getUsers,
   getUserById,
   updateUser,
   deleteUser,
   getUserStats,
+  addRewardPoints,
+  redeemRewardPoints,
+  toggleSellerStatus,
 };

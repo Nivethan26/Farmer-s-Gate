@@ -1,8 +1,12 @@
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAppSelector } from '@/store/hooks';
+import { useEffect, useState } from 'react';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { selectUserOrders, selectUserNegotiations } from '@/store/selectors';
+import { fetchMyOrders } from '@/store/ordersSlice';
 import { useOrderNotifications } from '@/hooks/useOrderNotifications';
+import { fetchNotifications, fetchUnreadCount } from '@/store/notificationSlice';
+import { negotiationAPI } from '@/services/negotiationService';
 import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,13 +19,35 @@ import { ProfileSection } from './buyer/ProfileSection';
 
 const BuyerDashboard = () => {
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
+  const [searchParams] = useSearchParams();
   const user = useAppSelector((state: RootState) => state.auth.user);
   const cartItems = useAppSelector((state: RootState) => state.cart.items);
   const orders = useAppSelector(selectUserOrders);
   const negotiations = useAppSelector(selectUserNegotiations);
+  
+  // Get the tab from URL params or default to 'home'
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'home');
 
   // Watch for order status changes and show notifications
   useOrderNotifications();
+
+  // Update active tab when URL params change
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
+  // Fetch notifications and unread count on component mount
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchMyOrders());
+      dispatch(fetchNotifications({ page: 1, limit: 10 }));
+      dispatch(fetchUnreadCount());
+    }
+  }, [dispatch, user]);
 
   const pendingOrders = orders.filter((o) => o.status === 'pending' || o.status === 'processing').length;
 
@@ -83,7 +109,12 @@ const BuyerDashboard = () => {
                 {t('buyer.dashboard')}
               </h1>
               <p className="text-sm sm:text-base text-muted-foreground">
-                {t('buyer.welcomeBack')}, <span className="font-semibold text-gray-900">{user?.name}</span>! 👋
+                {t('buyer.welcomeBack')}, <span className="font-semibold text-gray-900">
+                  {user?.role === 'buyer' 
+                    ? `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email
+                    : user?.name
+                  }
+                </span>! 👋
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -113,7 +144,7 @@ const BuyerDashboard = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="home" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="flex flex-wrap w-full bg-transparent border-none shadow-none h-auto p-0">
             <TabsTrigger 
               value="home" 
@@ -152,6 +183,7 @@ const BuyerDashboard = () => {
               user={user}
               getStatusIcon={getStatusIcon}
               getOrderStatusColor={getOrderStatusColor}
+              onViewAllOrders={() => setActiveTab('orders')}
             />
             </div>
           </TabsContent>
@@ -172,10 +204,9 @@ const BuyerDashboard = () => {
           <TabsContent value="negotiations" className="space-y-4">
             <div className="border border-gray-100 rounded-lg bg-white p-4">
               <NegotiationsSection
-              t={t}
-              negotiations={negotiations}
-              getNegotiationStatusColor={getNegotiationStatusColor}
-            />
+                t={t}
+                getNegotiationStatusColor={getNegotiationStatusColor}
+              />
             </div>
           </TabsContent>
 

@@ -1,12 +1,15 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import usersData from '@/data/users.json';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { authAPI, type LoginRequest, type RegisterRequest, type AuthResponse } from '@/services/authService';
+import apiClient from '@/lib/api';
 
 export type UserRole = 'buyer' | 'seller' | 'admin' | 'agent';
 
 export interface User {
+  _id?: string;
   id: string;
+  publicId?: string;
   email: string;
-  name: string;
+  name?: string; // Optional, only for sellers/agents/admin
   firstName?: string;
   lastName?: string;
   nic?: string;
@@ -26,98 +29,297 @@ export interface User {
   officeContact?: string;
   permissions?: string[];
   rewardPoints?: number;
+  status?: 'active' | 'pending' | 'inactive';
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
+  token: string | null;
+  loading: boolean;
+  error: string | null;
 }
 
-// Dummy credentials
-const dummyCredentials = [
-  { email: 'buyer@agrilink.lk', password: 'buyer123', role: 'buyer' as UserRole, userId: 'buyer-1' },
-  { email: 'seller@agrilink.lk', password: 'seller123', role: 'seller' as UserRole, userId: 'seller-1' },
-  { email: 'admin@agrilink.lk', password: 'admin123', role: 'admin' as UserRole, userId: 'admin-1' },
-  { email: 'agent@agrilink.lk', password: 'agent123', role: 'agent' as UserRole, userId: 'agent-1' },
-];
+// Async thunks for API calls
+export const loginUser = createAsyncThunk(
+  'auth/login',
+  async (credentials: LoginRequest, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.login(credentials);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Login failed');
+    }
+  }
+);
+
+export const registerUser = createAsyncThunk(
+  'auth/register',
+  async (userData: RegisterRequest, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.register(userData);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Registration failed');
+    }
+  }
+);
+
+export const updateUserProfile = createAsyncThunk(
+  'auth/updateProfile',
+  async (userData: Partial<User>, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.updateProfile(userData);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Profile update failed');
+    }
+  }
+);
+
+export const fetchUserProfile = createAsyncThunk(
+  'auth/fetchProfile',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.getProfile();
+      return response;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch profile');
+    }
+  }
+);
 
 // Load initial state from localStorage
-const loadAuthState = (): AuthState => {
+const loadAuthState = (): Pick<AuthState, 'isAuthenticated' | 'user' | 'token'> => {
   try {
     const storedAuth = localStorage.getItem('agrilink_auth');
     if (storedAuth) {
-      return JSON.parse(storedAuth);
+      const authData = JSON.parse(storedAuth);
+      if (authData.token) {
+        apiClient.setToken(authData.token);
+      }
+      return {
+        isAuthenticated: !!authData.token,
+        user: authData.user || null,
+        token: authData.token || null,
+      };
     }
   } catch (error) {
     console.error('Error loading auth state:', error);
   }
-  return { isAuthenticated: false, user: null };
+  return { isAuthenticated: false, user: null, token: null };
 };
 
-const initialState: AuthState = loadAuthState();
+const savedState = loadAuthState();
+const initialState: AuthState = {
+  ...savedState,
+  loading: false,
+  error: null,
+};
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    login: (state, action: PayloadAction<{ email: string; password: string }>) => {
-      const { email, password } = action.payload;
-      const credentials = dummyCredentials.find(
-        (c) => c.email === email && c.password === password
-      );
-
-      if (credentials) {
-        let userData: User | null = null;
-
-        // Find user data based on role
-        switch (credentials.role) {
-          case 'buyer':
-            userData = usersData.buyers.find((u) => u.id === credentials.userId) as unknown as User;
-            break;
-          case 'seller':
-            userData = usersData.sellers.find((u) => u.id === credentials.userId) as unknown as User;
-            break;
-          case 'agent':
-            userData = usersData.agents.find((u) => u.id === credentials.userId) as unknown as User;
-            break;
-          case 'admin':
-            userData = usersData.admins.find((u) => u.id === credentials.userId) as unknown as User;
-            break;
-        }
-
-        if (userData) {
-          state.isAuthenticated = true;
-          state.user = { ...userData, role: credentials.role, rewardPoints: (userData as any).rewardPoints || 0 };
-          localStorage.setItem('agrilink_auth', JSON.stringify(state));
-        }
-      }
-    },
     logout: (state) => {
       state.isAuthenticated = false;
       state.user = null;
+      state.token = null;
+      state.loading = false;
+      state.error = null;
       localStorage.removeItem('agrilink_auth');
-      localStorage.removeItem('agrilink_cart');
+      // Don't clear cart on logout - it will be synced when user logs back in
+      authAPI.logout();
     },
-    updateProfile: (state, action: PayloadAction<Partial<User>>) => {
-      if (state.user) {
-        state.user = { ...state.user, ...action.payload };
-        localStorage.setItem('agrilink_auth', JSON.stringify(state));
-      }
+    clearError: (state) => {
+      state.error = null;
     },
     addRewardPoints: (state, action: PayloadAction<number>) => {
       if (state.user) {
         state.user.rewardPoints = (state.user.rewardPoints || 0) + action.payload;
-        localStorage.setItem('agrilink_auth', JSON.stringify(state));
+        localStorage.setItem('agrilink_auth', JSON.stringify({
+          token: state.token,
+          user: state.user,
+        }));
       }
     },
     redeemRewardPoints: (state, action: PayloadAction<number>) => {
       if (state.user && state.user.rewardPoints) {
         state.user.rewardPoints = Math.max(0, state.user.rewardPoints - action.payload);
-        localStorage.setItem('agrilink_auth', JSON.stringify(state));
+        localStorage.setItem('agrilink_auth', JSON.stringify({
+          token: state.token,
+          user: state.user,
+        }));
       }
     },
   },
+  extraReducers: (builder) => {
+    builder
+      // Login
+      .addCase(loginUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = {
+          id: action.payload._id,
+          email: action.payload.email,
+          name: action.payload.name,
+          role: action.payload.role,
+          phone: action.payload.phone,
+          district: action.payload.district,
+          address: action.payload.address,
+          firstName: action.payload.firstName,
+          lastName: action.payload.lastName,
+          nic: action.payload.nic,
+          preferredCategories: action.payload.preferredCategories,
+          farmName: action.payload.farmName,
+          bank: action.payload.bank,
+          regions: action.payload.regions,
+          officeContact: action.payload.officeContact,
+          permissions: action.payload.permissions,
+          rewardPoints: action.payload.rewardPoints || 0,
+        };
+        state.token = action.payload.token;
+        apiClient.setToken(action.payload.token);
+        localStorage.setItem('agrilink_auth', JSON.stringify({
+          token: state.token,
+          user: state.user,
+        }));
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Register
+      .addCase(registerUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = {
+          id: action.payload._id,
+          email: action.payload.email,
+          name: action.payload.name,
+          role: action.payload.role,
+          phone: action.payload.phone,
+          district: action.payload.district,
+          address: action.payload.address,
+          firstName: action.payload.firstName,
+          lastName: action.payload.lastName,
+          nic: action.payload.nic,
+          preferredCategories: action.payload.preferredCategories,
+          farmName: action.payload.farmName,
+          bank: action.payload.bank,
+          regions: action.payload.regions,
+          officeContact: action.payload.officeContact,
+          permissions: action.payload.permissions,
+          rewardPoints: action.payload.rewardPoints || 0,
+        };
+        state.token = action.payload.token;
+        apiClient.setToken(action.payload.token);
+        localStorage.setItem('agrilink_auth', JSON.stringify({
+          token: state.token,
+          user: state.user,
+        }));
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Update Profile
+      .addCase(updateUserProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = {
+          id: action.payload._id,
+          email: action.payload.email,
+          name: action.payload.name,
+          role: action.payload.role,
+          phone: action.payload.phone,
+          district: action.payload.district,
+          address: action.payload.address,
+          firstName: action.payload.firstName,
+          lastName: action.payload.lastName,
+          nic: action.payload.nic,
+          preferredCategories: action.payload.preferredCategories,
+          farmName: action.payload.farmName,
+          bank: action.payload.bank,
+          regions: action.payload.regions,
+          officeContact: action.payload.officeContact,
+          permissions: action.payload.permissions,
+          rewardPoints: action.payload.rewardPoints || 0,
+        };
+        state.token = action.payload.token;
+        apiClient.setToken(action.payload.token);
+        localStorage.setItem('agrilink_auth', JSON.stringify({
+          token: state.token,
+          user: state.user,
+        }));
+      })
+      .addCase(updateUserProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch user profile
+      .addCase(fetchUserProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        if (state.user) {
+          state.user = {
+            id: (action.payload as any)._id || action.payload.id,
+            email: action.payload.email,
+            name: action.payload.name,
+            role: action.payload.role,
+            phone: action.payload.phone,
+            district: action.payload.district,
+            address: action.payload.address,
+            firstName: action.payload.firstName,
+            lastName: action.payload.lastName,
+            nic: action.payload.nic,
+            preferredCategories: action.payload.preferredCategories,
+            farmName: action.payload.farmName,
+            bank: action.payload.bank,
+            regions: action.payload.regions,
+            officeContact: action.payload.officeContact,
+            permissions: action.payload.permissions,
+            rewardPoints: action.payload.rewardPoints || 0,
+          };
+          localStorage.setItem('agrilink_auth', JSON.stringify({
+            token: state.token,
+            user: state.user,
+          }));
+        }
+      })
+      .addCase(fetchUserProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+  },
 });
 
-export const { login, logout, updateProfile, addRewardPoints, redeemRewardPoints } = authSlice.actions;
+export const { logout, clearError, addRewardPoints, redeemRewardPoints } = authSlice.actions;
+
+// Legacy action for backward compatibility
+export const login = (credentials: { email: string; password: string }) => {
+  return loginUser(credentials);
+};
+
+// Legacy action for backward compatibility  
+export const updateProfile = (userData: Partial<User>) => {
+  return updateUserProfile(userData);
+};
+
 export default authSlice.reducer;

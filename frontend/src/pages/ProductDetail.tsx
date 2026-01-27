@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import type { RootState } from '@/store';
-import { addToCart } from '@/store/cartSlice';
+import { addToCart, addToCartAPI } from '@/store/cartSlice';
 import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, MessageCircle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import apiClient from '@/lib/api';
 import { ProductCard } from '@/components/catalog/ProductCard';
 import { Product } from '@/store/catalogSlice';
 import { ProductImageSection } from './product/ProductImageSection';
@@ -103,17 +104,22 @@ const ProductDetail = () => {
       return;
     }
 
-    dispatch(
-      addToCart({
-        productId: relatedProduct.id,
-        productName: relatedProduct.name,
-        pricePerKg: relatedProduct.pricePerKg,
-        qty: 1,
-        image: relatedProduct.image,
-        sellerId: relatedProduct.sellerId,
-        sellerName: relatedProduct.sellerName,
-      })
-    );
+    const cartItem = {
+      productId: relatedProduct.id,
+      productName: relatedProduct.name,
+      pricePerKg: relatedProduct.pricePerKg,
+      qty: 1,
+      image: relatedProduct.image,
+      sellerId: relatedProduct.sellerId,
+      sellerName: relatedProduct.sellerName,
+    };
+
+    // Use API version for authenticated users, local version for offline capability
+    apiClient.refreshToken(); // Ensure we have the latest token
+    const actionPromise = dispatch(addToCartAPI(cartItem));
+    
+    // Add optimistic update for better UX
+    dispatch(addToCart(cartItem));
 
     // Custom toast with loading animation
     toast.custom(

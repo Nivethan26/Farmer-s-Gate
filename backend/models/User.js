@@ -2,6 +2,12 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
+  publicId: {
+    type: String,
+    unique: true,
+    index: true,
+    sparse: true
+  },
   role: {
     type: String,
     enum: ['buyer', 'seller', 'agent', 'admin'],
@@ -9,7 +15,10 @@ const userSchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    required: true
+    required: function() {
+      // Name is only required for non-buyer roles
+      return this.role !== 'buyer';
+    }
   },
   email: {
     type: String,
@@ -27,8 +36,20 @@ const userSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['active', 'pending', 'inactive'],
-    default: 'active'
+    enum: ['unverified', 'otp_verified', 'pending', 'active', 'inactive', 'rejected'],
+    default: function() {
+      return this.role === 'seller' ? 'unverified' : 'active';
+    }
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
+  deletedAt: Date,
+  isEmailVerified: {
+    type: Boolean,
+    default: false
   },
   // Buyer specific fields
   firstName: String,
@@ -53,6 +74,25 @@ const userSchema = new mongoose.Schema({
 
   // Admin specific fields
   permissions: [String],
+
+  // Reward points for buyers
+  rewardPoints: {
+    type: Number,
+    default: 0
+  },
+
+  // Admin action tracking for sellers
+  rejectionReason: String,
+  approvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  approvedAt: Date,
+  rejectedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  rejectedAt: Date,
 
   createdAt: {
     type: Date,

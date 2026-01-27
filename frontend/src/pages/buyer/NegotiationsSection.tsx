@@ -1,20 +1,101 @@
 import { Link } from 'react-router-dom';
 import { TFunction } from 'i18next';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, AlertCircle, Scale } from 'lucide-react';
+import { MessageSquare, AlertCircle, Scale, Loader2, RefreshCw } from 'lucide-react';
+import { negotiationAPI } from '@/services/negotiationService';
+import { toast } from 'sonner';
 import type { Negotiation } from '@/store/catalogSlice';
 
 interface NegotiationsSectionProps {
   t: TFunction;
-  negotiations: Negotiation[];
   getNegotiationStatusColor: (status: string) => string;
 }
 
-export const NegotiationsSection = ({ t, negotiations, getNegotiationStatusColor }: NegotiationsSectionProps) => {
+export const NegotiationsSection = ({ t, getNegotiationStatusColor }: NegotiationsSectionProps) => {
+  const [negotiations, setNegotiations] = useState<Negotiation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch buyer negotiations
+  const fetchNegotiations = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await negotiationAPI.getBuyerNegotiations();
+      setNegotiations(data);
+    } catch (err) {
+      console.error('Failed to fetch negotiations:', err);
+      setError('Failed to load negotiations');
+      toast.error('Failed to load your negotiations');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNegotiations();
+    
+    // Set up polling to refresh negotiations every 30 seconds
+    const interval = setInterval(() => {
+      fetchNegotiations();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <Card className="border-0 shadow-lg">
+          <CardContent className="py-16 text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-green-600 mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading negotiations...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <Card className="border-0 shadow-lg">
+          <CardContent className="py-16 text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Negotiations</h3>
+            <p className="text-muted-foreground">{error}</p>
+            <Button 
+              onClick={() => window.location.reload()} 
+              className="mt-4"
+              variant="outline"
+            >
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   return (
     <div className="space-y-4">
+      {/* Header with refresh button */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-gray-900">Your Negotiations</h3>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={fetchNegotiations}
+          disabled={loading}
+          className="gap-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
+      </div>
+      
       {negotiations.length === 0 ? (
         <Card className="border-0 shadow-lg">
           <CardContent className="py-16 text-center">

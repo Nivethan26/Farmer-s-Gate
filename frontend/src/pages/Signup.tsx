@@ -4,9 +4,11 @@ import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { authAPI } from "@/services/authService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -14,18 +16,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Sprout,
   Sun,
   Leaf,
   Wheat,
   User,
-  Users,
-  Shield,
   BadgeCheck,
   Fingerprint,
+  Mail,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Navbar } from "@/components/layout/Navbar";
@@ -35,65 +42,96 @@ import Footer from "@/components/layout/Footer";
 const nicRegex = /^([0-9]{9}[vVxX]|[0-9]{12})$/;
 
 const buyerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
   nic: z.string().regex(nicRegex, "Please enter a valid NIC (9 digits with V/X or 12 digits)"),
   district: z.string().min(1, "District is required"),
   address: z.string().min(5, "Address is required"),
-});
-
-const sellerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  nic: z.string().regex(nicRegex, "Please enter a valid NIC (9 digits with V/X or 12 digits)"),
-  farmName: z.string().min(2, "Farm name is required"),
-  district: z.string().min(1, "District is required"),
-  address: z.string().min(5, "Address is required"),
-  bankAccountName: z.string().min(2, "Account name is required"),
-  bankAccountNo: z.string().min(5, "Account number is required"),
-  bankName: z.string().min(2, "Bank name is required"),
-  bankBranch: z.string().min(2, "Branch is required"),
 });
 
 type BuyerFormData = z.infer<typeof buyerSchema>;
-type SellerFormData = z.infer<typeof sellerSchema>;
 
 const Signup = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("buyer");
   const [isLoading, setIsLoading] = useState(false);
+  const [showOTPModal, setShowOTPModal] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [otpError, setOtpError] = useState("");
 
   const buyerForm = useForm<BuyerFormData>({
     resolver: zodResolver(buyerSchema),
   });
 
-  const sellerForm = useForm<SellerFormData>({
-    resolver: zodResolver(sellerSchema),
-  });
-
   const onBuyerSubmit = async (data: BuyerFormData) => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("Buyer signup:", data);
-    toast.success(t("auth.buyerAccountCreated"));
-    setIsLoading(false);
-    navigate("/login");
+    try {
+      // Initiate registration - sends OTP
+      await authAPI.initiateRegistration({
+        role: "buyer",
+        email: data.email,
+        password: data.password,
+        phone: data.phone,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        nic: data.nic,
+        district: data.district,
+        address: data.address,
+      });
+
+      setUserEmail(data.email);
+      setShowOTPModal(true);
+      toast.success("OTP sent to your email. Please verify to complete registration.");
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || "Registration failed";
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const onSellerSubmit = async (data: SellerFormData) => {
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("Seller signup:", data);
-    toast.success(t("auth.sellerApplicationSubmitted"));
-    setIsLoading(false);
-    navigate("/login");
+  const handleVerifyOTP = async () => {
+    if (otp.length !== 6) {
+      setOtpError("Please enter the complete 6-digit OTP");
+      return;
+    }
+
+    setIsVerifying(true);
+    setOtpError("");
+
+    try {
+      const response = await authAPI.verifyRegistrationOTP({
+        email: userEmail,
+        otp: otp,
+      });
+
+      toast.success("Registration successful! You can now log in.");
+      setShowOTPModal(false);
+      navigate("/login");
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || "Invalid OTP";
+      setOtpError(errorMessage);
+      setOtp("");
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    try {
+      await authAPI.resendRegistrationOTP({ email: userEmail });
+      toast.success("OTP resent to your email");
+      setOtp("");
+      setOtpError("");
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || "Failed to resend OTP";
+      toast.error(errorMessage);
+    }
   };
 
   return (
@@ -145,43 +183,32 @@ const Signup = () => {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-2 mb-8 bg-green-100 p-1 rounded-xl border border-green-200">
-              <TabsTrigger
-                value="buyer"
-                className="flex items-center space-x-2 data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-green-200 rounded-lg transition-all duration-300"
-              >
-                <User className="h-4 w-4" />
-                <span>{t("auth.buyer")}</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="seller"
-                className="flex items-center space-x-2 data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-green-200 rounded-lg transition-all duration-300"
-              >
-                <Users className="h-4 w-4" />
-                <span>{t("auth.farmerSeller")}</span>
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Buyer Signup */}
-            <TabsContent value="buyer" className="space-y-6 animate-fade-in">
-              <div className="text-center mb-6">
-                <div className="flex justify-center mb-3">
-                  <div className="rounded-full bg-blue-100 p-3">
-                    <User className="h-6 w-6 text-green-600" />
-                  </div>
+          {/* Buyer Registration Form */}
+          <div className="space-y-6 animate-fade-in">
+            <div className="text-center mb-6">
+              <div className="flex justify-center mb-3">
+                <div className="rounded-full bg-blue-100 p-3">
+                  <User className="h-6 w-6 text-green-600" />
                 </div>
-                <h3 className="text-xl font-semibold text-green-800">
-                  Join as a Buyer
-                </h3>
-                <p className="text-green-600">
-                  Purchase fresh produce directly from local farmers
+              </div>
+              <h3 className="text-xl font-semibold text-green-800">
+                Join as a Buyer
+              </h3>
+              <p className="text-green-600">
+                Purchase fresh produce directly from local farmers
+              </p>
+              <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                <p className="text-sm text-green-700">
+                  Want to sell your produce?{" "}
+                  <button
+                    onClick={() => navigate('/seller-registration')}
+                    className="font-bold text-green-600 hover:text-green-800 underline"
+                  >
+                    Register as Seller
+                  </button>
                 </p>
               </div>
+            </div>
 
               <form
                 onSubmit={buyerForm.handleSubmit(onBuyerSubmit)}
@@ -190,25 +217,48 @@ const Signup = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <Label
-                      htmlFor="buyer-name"
+                      htmlFor="buyer-firstName"
                       className="text-green-800 font-semibold"
                     >
-                      {t("profile.name")} *
+                      {t("profile.firstName")} *
                     </Label>
                     <Input
-                      id="buyer-name"
-                      {...buyerForm.register("name")}
-                      placeholder="John Doe"
+                      id="buyer-firstName"
+                      {...buyerForm.register("firstName")}
+                      placeholder="John"
                       className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
                       disabled={isLoading}
                     />
-                    {buyerForm.formState.errors.name && (
+                    {buyerForm.formState.errors.firstName && (
                       <p className="text-sm text-red-600 mt-1">
-                        {buyerForm.formState.errors.name.message}
+                        {buyerForm.formState.errors.firstName.message}
                       </p>
                     )}
                   </div>
 
+                  <div className="space-y-3">
+                    <Label
+                      htmlFor="buyer-lastName"
+                      className="text-green-800 font-semibold"
+                    >
+                      {t("profile.lastName")} *
+                    </Label>
+                    <Input
+                      id="buyer-lastName"
+                      {...buyerForm.register("lastName")}
+                      placeholder="Doe"
+                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
+                      disabled={isLoading}
+                    />
+                    {buyerForm.formState.errors.lastName && (
+                      <p className="text-sm text-red-600 mt-1">
+                        {buyerForm.formState.errors.lastName.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <Label
                       htmlFor="buyer-email"
@@ -230,9 +280,7 @@ const Signup = () => {
                       </p>
                     )}
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <Label
                       htmlFor="buyer-password"
@@ -359,341 +407,128 @@ const Signup = () => {
                   )}
                 </Button>
               </form>
-            </TabsContent>
+            </div>
 
-            {/* Seller Signup */}
-            <TabsContent value="seller" className="space-y-6 animate-fade-in">
-              <div className="text-center mb-6">
-                <div className="flex justify-center mb-3">
-                  <div className="rounded-full bg-green-100 p-3">
-                    <Users className="h-6 w-6 text-green-600" />
+            {/* Seller Registration Redirect Notice */}
+            <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg mb-6">
+              <div className="text-center space-y-4">
+                <div className="flex justify-center">
+                  <div className="rounded-full bg-green-100 p-4">
+                    <BadgeCheck className="h-8 w-8 text-green-600" />
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold text-green-800">
-                  Join as a Farmer/Seller
-                </h3>
-                <p className="text-green-600">
-                  Sell your fresh produce directly to buyers nationwide
-                </p>
+                <div>
+                  <h3 className="text-xl font-bold text-green-800 mb-2">
+                    Are you a Farmer/Seller?
+                  </h3>
+                  <p className="text-green-700 mb-4">
+                    Use our dedicated seller registration with enhanced features:
+                  </p>
+                  <ul className="text-sm text-green-600 space-y-1 mb-4">
+                    <li>✓ Email verification with OTP</li>
+                    <li>✓ Admin approval for quality assurance</li>
+                    <li>✓ Secure bank account setup</li>
+                    <li>✓ Email notifications at every step</li>
+                  </ul>
+                </div>
+                <Button
+                  type="button"
+                  size="lg"
+                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+                  onClick={() => navigate('/seller-registration')}
+                >
+                  Proceed to Seller Registration
+                </Button>
+              </div>
+            </div>
+
+            <div className="text-center pt-6 border-t border-green-100">
+              <p className="text-green-700">
+                {t("auth.alreadyHaveAccount")}{" "}
+                <Link
+                  to="/login"
+                  className="text-emerald-600 hover:text-emerald-800 font-bold underline-offset-4 hover:underline transition-all duration-300"
+                >
+                  {t("auth.signIn")}
+                </Link>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* OTP Verification Modal */}
+        <Dialog open={showOTPModal} onOpenChange={setShowOTPModal}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <div className="flex items-center justify-center mb-4">
+                <div className="p-3 rounded-full bg-green-100">
+                  <Mail className="h-8 w-8 text-green-600" />
+                </div>
+              </div>
+              <DialogTitle className="text-center text-2xl">Verify Your Email</DialogTitle>
+              <DialogDescription className="text-center">
+                We've sent a 6-digit OTP to <strong>{userEmail}</strong>
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6 py-4">
+              <div>
+                <Label htmlFor="otp" className="sr-only">Enter OTP</Label>
+                <Input
+                  id="otp"
+                  type="text"
+                  maxLength={6}
+                  placeholder="Enter 6-digit OTP"
+                  value={otp}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    setOtp(value);
+                    setOtpError("");
+                  }}
+                  className="text-center text-2xl tracking-widest font-mono"
+                  disabled={isVerifying}
+                />
               </div>
 
-              <form
-                onSubmit={sellerForm.handleSubmit(onSellerSubmit)}
-                className="space-y-5"
+              {otpError && (
+                <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-800">{otpError}</p>
+                </div>
+              )}
+
+              <Button
+                onClick={handleVerifyOTP}
+                disabled={otp.length !== 6 || isVerifying}
+                className="w-full bg-green-600 hover:bg-green-700"
+                size="lg"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-3">
-                    <Label
-                      htmlFor="seller-name"
-                      className="text-green-800 font-semibold"
-                    >
-                      {t("profile.name")} *
-                    </Label>
-                    <Input
-                      id="seller-name"
-                      {...sellerForm.register("name")}
-                      placeholder="Nimal Perera"
-                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
-                      disabled={isLoading}
-                    />
-                    {sellerForm.formState.errors.name && (
-                      <p className="text-sm text-red-600 mt-1">
-                        {sellerForm.formState.errors.name.message}
-                      </p>
-                    )}
-                  </div>
+                {isVerifying ? "Verifying..." : "Verify OTP"}
+              </Button>
 
-                  <div className="space-y-3">
-                    <Label
-                      htmlFor="seller-email"
-                      className="text-green-800 font-semibold"
-                    >
-                      {t("common.email")} *
-                    </Label>
-                    <Input
-                      id="seller-email"
-                      type="email"
-                      {...sellerForm.register("email")}
-                      placeholder="nimal@farm.lk"
-                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
-                      disabled={isLoading}
-                    />
-                    {sellerForm.formState.errors.email && (
-                      <p className="text-sm text-red-600 mt-1">
-                        {sellerForm.formState.errors.email.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-3">
-                    <Label
-                      htmlFor="seller-password"
-                      className="text-green-800 font-semibold"
-                    >
-                      {t("common.password")} *
-                    </Label>
-                    <Input
-                      id="seller-password"
-                      type="password"
-                      {...sellerForm.register("password")}
-                      placeholder="••••••••"
-                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
-                      disabled={isLoading}
-                    />
-                    {sellerForm.formState.errors.password && (
-                      <p className="text-sm text-red-600 mt-1">
-                        {sellerForm.formState.errors.password.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label
-                      htmlFor="seller-phone"
-                      className="text-green-800 font-semibold"
-                    >
-                      {t("profile.phone")} *
-                    </Label>
-                    <Input
-                      id="seller-phone"
-                      {...sellerForm.register("phone")}
-                      placeholder="+94771234567"
-                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
-                      disabled={isLoading}
-                    />
-                    {sellerForm.formState.errors.phone && (
-                      <p className="text-sm text-red-600 mt-1">
-                        {sellerForm.formState.errors.phone.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-3">
-                    <Label
-                      htmlFor="seller-nic"
-                      className="text-green-800 font-semibold flex items-center gap-2"
-                    >
-                       
-                      {t("profile.nic")} *
-                    </Label>
-                    <Input
-                      id="seller-nic"
-                      {...sellerForm.register("nic")}
-                      placeholder="123456789V or 123456789012"
-                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
-                      disabled={isLoading}
-                    />
-                    {sellerForm.formState.errors.nic && (
-                      <p className="text-sm text-red-600 mt-1">
-                        {sellerForm.formState.errors.nic.message}
-                      </p>
-                    )}
-                     
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label
-                      htmlFor="seller-farmName"
-                      className="text-green-800 font-semibold"
-                    >
-                      {t("profile.farmName")} *
-                    </Label>
-                    <Input
-                      id="seller-farmName"
-                      {...sellerForm.register("farmName")}
-                      placeholder="Green Valley Farms"
-                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
-                      disabled={isLoading}
-                    />
-                    {sellerForm.formState.errors.farmName && (
-                      <p className="text-sm text-red-600 mt-1">
-                        {sellerForm.formState.errors.farmName.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-3">
-                    <Label
-                      htmlFor="seller-district"
-                      className="text-green-800 font-semibold"
-                    >
-                      {t("profile.district")} *
-                    </Label>
-                    <Input
-                      id="seller-district"
-                      {...sellerForm.register("district")}
-                      placeholder="Nuwara Eliya"
-                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
-                      disabled={isLoading}
-                    />
-                    {sellerForm.formState.errors.district && (
-                      <p className="text-sm text-red-600 mt-1">
-                        {sellerForm.formState.errors.district.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="seller-address"
-                    className="text-green-800 font-semibold"
-                  >
-                    {t("auth.farmAddress")} *
-                  </Label>
-                  <Textarea
-                    id="seller-address"
-                    {...sellerForm.register("address")}
-                    placeholder="Ramboda Road, Nuwara Eliya"
-                    className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300 min-h-[80px]"
-                    disabled={isLoading}
-                  />
-                  {sellerForm.formState.errors.address && (
-                    <p className="text-sm text-red-600 mt-1">
-                      {sellerForm.formState.errors.address.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Bank Details Section */}
-                <div className="border-t border-green-200 pt-6 mt-6">
-                  <div className="flex items-center space-x-2 mb-4">
-                    <Shield className="h-5 w-5 text-green-600" />
-                    <h3 className="font-bold text-green-800 text-lg">
-                      {t("profile.bankDetails")}
-                    </h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-3">
-                      <Label
-                        htmlFor="seller-bankAccountName"
-                        className="text-green-800 font-semibold"
-                      >
-                        {t("profile.accountName")} *
-                      </Label>
-                      <Input
-                        id="seller-bankAccountName"
-                        {...sellerForm.register("bankAccountName")}
-                        placeholder="Nimal Perera"
-                        className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
-                        disabled={isLoading}
-                      />
-                      {sellerForm.formState.errors.bankAccountName && (
-                        <p className="text-sm text-red-600 mt-1">
-                          {sellerForm.formState.errors.bankAccountName.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-3">
-                      <Label
-                        htmlFor="seller-bankAccountNo"
-                        className="text-green-800 font-semibold"
-                      >
-                        {t("profile.accountNumber")} *
-                      </Label>
-                      <Input
-                        id="seller-bankAccountNo"
-                        {...sellerForm.register("bankAccountNo")}
-                        placeholder="1234567890"
-                        className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
-                        disabled={isLoading}
-                      />
-                      {sellerForm.formState.errors.bankAccountNo && (
-                        <p className="text-sm text-red-600 mt-1">
-                          {sellerForm.formState.errors.bankAccountNo.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-3">
-                      <Label
-                        htmlFor="seller-bankName"
-                        className="text-green-800 font-semibold"
-                      >
-                        {t("profile.bankName")} *
-                      </Label>
-                      <Input
-                        id="seller-bankName"
-                        {...sellerForm.register("bankName")}
-                        placeholder="Bank of Ceylon"
-                        className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
-                        disabled={isLoading}
-                      />
-                      {sellerForm.formState.errors.bankName && (
-                        <p className="text-sm text-red-600 mt-1">
-                          {sellerForm.formState.errors.bankName.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-3">
-                      <Label
-                        htmlFor="seller-bankBranch"
-                        className="text-green-800 font-semibold"
-                      >
-                        {t("profile.branch")} *
-                      </Label>
-                      <Input
-                        id="seller-bankBranch"
-                        {...sellerForm.register("bankBranch")}
-                        placeholder="Nuwara Eliya"
-                        className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
-                        disabled={isLoading}
-                      />
-                      {sellerForm.formState.errors.bankBranch && (
-                        <p className="text-sm text-red-600 mt-1">
-                          {sellerForm.formState.errors.bankBranch.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-2">Didn't receive the code?</p>
                 <Button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-semibold py-3 rounded-lg transform hover:scale-[1.02] transition-all duration-300 shadow-lg"
-                  disabled={isLoading}
+                  type="button"
+                  variant="link"
+                  onClick={handleResendOTP}
+                  className="text-green-600 hover:text-green-700"
                 >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                      <span>Submitting Application...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <BadgeCheck className="h-4 w-4" />
-                      <span>{t("auth.submitSellerApplication")}</span>
-                    </div>
-                  )}
+                  Resend OTP
                 </Button>
-                <p className="text-xs text-green-600 text-center">
-                  {t("auth.applicationReview")}
-                </p>
-              </form>
-            </TabsContent>
-          </Tabs>
+              </div>
 
-          <div className="text-center pt-6 border-t border-green-100">
-            <p className="text-green-700">
-              {t("auth.alreadyHaveAccount")}{" "}
-              <Link
-                to="/login"
-                className="text-emerald-600 hover:text-emerald-800 font-bold underline-offset-4 hover:underline transition-all duration-300"
-              >
-                {t("auth.signIn")}
-              </Link>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="text-sm text-green-800">
+                  <p className="font-medium mb-1">✓ What happens next?</p>
+                  <p className="text-xs">
+                    After verification, you can immediately log in and start shopping for fresh produce!
+                  </p>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
       {/* Custom Animations */}
       <style>{`
