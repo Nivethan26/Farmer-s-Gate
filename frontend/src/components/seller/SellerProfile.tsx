@@ -24,6 +24,7 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
+import { ChangePasswordForm } from "@/components/common/ChangePasswordForm";
 
 export const SellerProfile = () => {
   const { t } = useTranslation();
@@ -414,6 +415,17 @@ export const SellerProfile = () => {
               )}
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Change Password Section */}
+      <Card className="border-gray-200 shadow-xl overflow-hidden bg-gradient-to-br from-white to-gray-50/50 mt-6">
+        <CardHeader className="bg-gradient-to-r from-blue-600 to-emerald-600 text-white py-6">
+          <CardTitle className="text-2xl font-bold">Change Password</CardTitle>
+          <p className="text-sm text-white/90 mt-1">Update your account password securely</p>
+        </CardHeader>
+        <CardContent className="p-6">
+          <ChangePasswordForm />
         </CardContent>
       </Card>
     </div>

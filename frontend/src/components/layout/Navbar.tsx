@@ -11,11 +11,23 @@ import {
   Info,
   Phone,
   Grid,
+  Bell,
+  Package,
+  Scale,
+  CreditCard,
+  MessageSquare,
+  CheckCheck,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import type { RootState } from "@/store";
 import { logout } from "@/store/authSlice";
+import { 
+  fetchNotifications, 
+  fetchUnreadCount, 
+  markNotificationAsRead,
+  markAllNotificationsAsRead 
+} from '@/store/notificationSlice';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -29,6 +41,7 @@ import {
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 // import { NotificationBell } from "@/components/common/NotificationBell";
 import { ProfessionalNotificationPanel } from "../common/ProfessionalNotificationPanel";
+import { toast } from 'sonner';
 
 
 export const Navbar = () => {
@@ -38,9 +51,11 @@ export const Navbar = () => {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mobileNotificationOpen, setMobileNotificationOpen] = useState(false);
 
   const user = useAppSelector((state: RootState) => state.auth.user);
   const cartItems = useAppSelector((state: RootState) => state.cart.items);
+  const { notifications, unreadCount, loading } = useAppSelector((state) => state.notifications);
 
   // Handle scroll effect
   useEffect(() => {
@@ -53,9 +68,66 @@ export const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Fetch notifications when mobile panel opens
+  useEffect(() => {
+    if (user && mobileNotificationOpen) {
+      dispatch(fetchNotifications({ page: 1, limit: 20 }));
+      dispatch(fetchUnreadCount());
+    }
+  }, [dispatch, user, mobileNotificationOpen]);
+
+  // Fetch unread count on mount
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchUnreadCount());
+    }
+  }, [dispatch, user]);
+
   const handleLogout = () => {
     dispatch(logout());
     navigate("/login");
+  };
+
+  const handleNotificationClick = async (notification: any) => {
+    if (!notification.isRead) {
+      try {
+        await dispatch(markNotificationAsRead(notification._id));
+        dispatch(fetchUnreadCount());
+      } catch (error) {
+        console.error('Failed to mark notification as read:', error);
+      }
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await dispatch(markAllNotificationsAsRead());
+      dispatch(fetchUnreadCount());
+      toast.success('All notifications marked as read');
+    } catch (error) {
+      toast.error('Failed to mark all as read');
+    }
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'negotiation': return <Scale className="h-5 w-5" />;
+      case 'order': return <Package className="h-5 w-5" />;
+      case 'payment': return <CreditCard className="h-5 w-5" />;
+      default: return <MessageSquare className="h-5 w-5" />;
+    }
+  };
+
+  const formatTimeAgo = (date: string) => {
+    const now = new Date();
+    const notificationDate = new Date(date);
+    const diffInSeconds = Math.floor((now.getTime() - notificationDate.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    return notificationDate.toLocaleDateString();
   };
 
   const navigationItems = [
@@ -85,7 +157,7 @@ export const Navbar = () => {
         <div className="flex items-center justify-between gap-3 py-3 md:py-4">
           {/* Left Section - Logo & Brand */}
           <Link
-            to={user ? `/${user.role}` : "/"}
+            to={'/'}
             className="flex items-center gap-2 sm:gap-3 font-poppins min-w-0"
           >
             {/* Simplified Logo */}
@@ -236,26 +308,20 @@ export const Navbar = () => {
 
           {/* Mobile - Language & Menu Button */}
           <div className="md:hidden flex items-center gap-1.5 shrink-0">
-            {user && user.role === "buyer" && (
+            {user && (
               <Button
                 variant="ghost"
                 size="icon"
                 className="relative h-9 w-9 rounded-lg hover:bg-green-50 hover:text-green-600 transition-all"
-                onClick={() => navigate("/buyer/cart")}
+                onClick={() => setMobileNotificationOpen(true)}
               >
-                <ShoppingCart className="h-4 w-4" />
-                {cartItems.length > 0 && (
-                  <Badge className="absolute -right-1 -top-1 h-3.5 w-3.5 p-0 flex items-center justify-center text-[9px] bg-red-500 text-white font-bold">
-                    {cartItems.length}
+                <Bell className="h-4 w-4" />
+                {unreadCount > 0 && (
+                  <Badge className="absolute -right-1 -top-1 h-4 w-4 p-0 flex items-center justify-center text-[9px] bg-red-500 text-white font-bold">
+                    {unreadCount}
                   </Badge>
                 )}
               </Button>
-            )}
-
-            {user && (
-              <div className="flex-shrink-0">
-                {/* NotificationCenter removed from mobile - moved to sidebar menu */}
-              </div>
             )}
 
             <div className="flex-shrink-0">
@@ -281,46 +347,60 @@ export const Navbar = () => {
     </nav>
 
     {/* Mobile Sidebar Menu - Slides from Right (Outside Nav) */}
-    {/* Overlay */}
+    {/* Overlay with blur effect */}
     {menuOpen && (
       <div
-        className="md:hidden fixed inset-0 bg-black/30 z-30 transition-opacity duration-300"
+        className="md:hidden fixed inset-0 bg-gradient-to-br from-green-900/40 to-emerald-900/40 backdrop-blur-sm z-30 transition-all duration-300"
         onClick={() => setMenuOpen(false)}
       />
     )}
 
-    {/* Menu Panel */}
+    {/* Menu Panel - Green themed */}
     <div
-      className={`md:hidden fixed right-0 top-0 bottom-0 w-80 bg-white shadow-2xl transition-all duration-300 z-40 overflow-y-auto ${
+      className={`md:hidden fixed right-0 top-0 bottom-0 w-[85%] max-w-sm bg-gradient-to-b from-white via-green-50/30 to-white shadow-2xl transition-all duration-300 z-40 overflow-y-auto border-l-2 border-green-200 ${
         menuOpen
           ? "translate-x-0 opacity-100"
           : "translate-x-full opacity-0 pointer-events-none"
         }`}
     >
-      {/* Close Button */}
-      <button
-        onClick={() => setMenuOpen(false)}
-        className="absolute top-3 right-3 p-2 bg-red-500 hover:bg-red-600 border border-red-600 rounded-md z-50 shadow-md transition-all"
-      >
-        <X className="h-4 w-4 text-white" />
-      </button>
+      {/* Header with brand colors
+      <div className="sticky top-0 bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-4 shadow-md z-10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+              <Sprout className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-white font-bold text-lg leading-tight">AgriLink</h2>
+              <p className="text-green-100 text-xs font-medium">Eco-Friendly</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setMenuOpen(false)}
+            className="p-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-all shadow-md"
+          >
+            <X className="h-5 w-5 text-white" />
+          </button>
+        </div>
+      </div> */}
 
-      <div className="flex flex-col h-full" style={{ padding: '16px', gap: '12px' }}>
+      <div className="flex flex-col p-4 gap-4">
         {!user && (
           <>
-            {/* Sign In & Register Buttons */}
-            <div className="flex" style={{ gap: '12px', marginTop: '65px', marginBottom: '8px' }}>
+            {/* Sign In & Register Buttons - Green themed */}
+            <div className="flex gap-3 pt-2 mt-16">
               <Link to="/login" onClick={() => setMenuOpen(false)} className="flex-1">
                 <Button
                   variant="outline"
-                  className="w-full border-2 border-gray-400 text-gray-700 hover:bg-gray-50 rounded-lg font-semibold py-2.5 text-sm"
+                  className="w-full border-2 border-green-600 text-green-700 hover:bg-green-50 rounded-xl font-semibold py-6 text-sm shadow-sm"
                 >
+                  <User className="h-4 w-4 mr-2" />
                   Sign In
                 </Button>
               </Link>
               <Link to="/signup" onClick={() => setMenuOpen(false)} className="flex-1">
                 <Button
-                  className="w-full bg-amber-700 hover:bg-amber-800 text-white rounded-lg font-semibold py-2.5 text-sm"
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold py-6 text-sm shadow-md"
                 >
                   Register
                 </Button>
@@ -331,70 +411,64 @@ export const Navbar = () => {
 
         {user && (
           <>
-            {/* User Profile Card at Top */}
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg shadow-md" style={{ padding: '12px', marginTop: '55px', marginBottom: '6px' }}>
-              <div className="flex items-center" style={{ gap: '12px' }}>
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-white font-bold text-lg shadow-md">
+            {/* User Profile Card - Green themed */}
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2  border-green-200 rounded-2xl shadow-md p-4 mt-16">
+              <div className="flex items-center gap-3">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center text-white font-bold text-xl shadow-lg ring-4 ring-green-100">
                   {user.name?.charAt(0).toUpperCase() || "U"}
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-sm text-gray-800">{user.name}</h3>
-                  <p className="text-xs text-gray-600">{user.email}</p>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-base text-green-800 truncate">{user.name}</h3>
+                  <p className="text-xs text-green-600 truncate">{user.email}</p>
+                  <div className="inline-flex items-center gap-1 mt-1.5 px-2.5 py-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full text-xs font-semibold shadow-sm">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                    {user.role}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* User Actions Group - Notifications, Dashboard, Logout */}
-            <div className="border-b border-gray-200" style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingBottom: '8px' }}>
-              <Link
-                to="#"
-                onClick={() => {}}
-                className="w-full block"
-              >
-                <div className="flex items-center justify-between rounded-md hover:bg-gray-50 transition-all" style={{ padding: '3px' }}>
-                  <div className="flex items-center" style={{ gap: '10px' }}>
-                    <span className="text-base">🔔</span>
-                    <span className="font-semibold text-xs text-gray-800">Notifications</span>
-                  </div>
-                  
-                </div>
-              </Link>
+            {/* User Actions - Green themed cards */}
+            <div className="flex flex-col gap-2 pb-3 border-b-2 border-green-100">
 
-              <Link
-                to={`/${user.role}`}
-                onClick={() => setMenuOpen(false)}
-                className="w-full block"
-              >
-                <div className="flex items-center justify-between rounded-md hover:bg-gray-50 transition-all" style={{ padding: '3px' }}>
-                  <div className="flex items-center" style={{ gap: '10px' }}>
-                    <span className="text-base">👤</span>
-                    <span className="font-semibold text-xs text-gray-800">Dashboard</span>
+              <div className="bg-white rounded-xl border border-green-100 shadow-sm overflow-hidden">
+                <Link
+                  to={`/${user.role}`}
+                  onClick={() => setMenuOpen(false)}
+                  className="w-full block"
+                >
+                  <div className="flex items-center gap-3 p-3.5 hover:bg-green-50 transition-all active:bg-green-100">
+                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-green-100 to-emerald-200 flex items-center justify-center">
+                      <User className="h-5 w-5 text-green-700" />
+                    </div>
+                    <span className="font-semibold text-sm text-gray-800">Dashboard</span>
                   </div>
-                 
-                </div>
-              </Link>
+                </Link>
+              </div>
 
-              <button
-                onClick={() => {
-                  handleLogout();
-                  setMenuOpen(false);
-                }}
-                className="w-full block text-left"
-              >
-                <div className="flex items-center justify-between rounded-md hover:bg-gray-50 transition-all" style={{ padding: '3px' }}>
-                  <div className="flex items-center" style={{ gap: '10px' }}>
-                    <span className="text-base">↪️</span>
-                    <span className="font-semibold text-xs text-gray-800">Logout</span>
+              <div className="bg-white rounded-xl border border-red-100 shadow-sm overflow-hidden">
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setMenuOpen(false);
+                  }}
+                  className="w-full block text-left"
+                >
+                  <div className="flex items-center gap-3 p-3.5 hover:bg-red-50 transition-all active:bg-red-100">
+                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center">
+                      <LogOut className="h-4 w-4 text-red-600" />
+                    </div>
+                    <span className="font-semibold text-sm text-red-700">Logout</span>
                   </div>
-                 
-                </div>
-              </button>
+                </button>
+              </div>
             </div>
           </>
         )}
 
-        {/* Navigation Items */}
-        <div className="border-b border-gray-200" style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingBottom: '12px' }}>
+        {/* Navigation Items - Green themed */}
+        <div className="flex flex-col gap-2 pb-3 border-b-2 border-green-100">
+          <h3 className="text-xs font-bold text-green-700 uppercase tracking-wider px-2 mb-1">Menu</h3>
           {navigationItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -404,53 +478,51 @@ export const Navbar = () => {
                 onClick={() => setMenuOpen(false)}
                 className="w-full block"
               >
-                <div className={`flex items-center justify-between rounded-md transition-all ${
+                <div className={`flex items-center gap-3 p-3.5 rounded-xl transition-all border-2 ${
                   isActive
-                    ? "bg-yellow-100"
-                    : "hover:bg-gray-50"
-                }`} style={{ padding: '3px' }}>
-                  <div className="flex items-center" style={{ gap: '10px' }}>
-                    <div className="text-base">
-                      {item.icon === Home && "🏠"}
-                      {item.icon === Grid && "🛍️"}
-                      {item.icon === Info && "ℹ️"}
-                      {item.icon === Phone && "📞"}
-                    </div>
-                    <span className={`font-semibold text-xs ${isActive ? "text-yellow-800" : "text-gray-800"}`}>
-                      {item.label}
-                    </span>
+                    ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white border-green-700 shadow-md"
+                    : "bg-white text-gray-800 border-green-100 hover:bg-green-50 hover:border-green-300 shadow-sm"
+                }`}>
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                    isActive ? "bg-white/20" : "bg-green-50"
+                  }`}>
+                    <item.icon className={`h-5 w-5 ${isActive ? "text-white" : "text-green-600"}`} />
                   </div>
-                  
+                  <span className="font-semibold text-sm flex-1">{item.label}</span>
+                  {isActive && (
+                    <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+                  )}
                 </div>
               </Link>
             );
           })}
           
           {user && user.role === "buyer" && (
-            <>
-              <Link
-                to="/buyer/cart"
-                onClick={() => setMenuOpen(false)}
-                className="w-full block"
-              >
-                <div className="flex items-center justify-between rounded-md hover:bg-gray-50 transition-all" style={{ padding: '3px' }}>
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-base">🛒</span>
-                    <span className="font-semibold text-xs text-gray-800">Shopping Cart</span>
-                  </div>
-                 
+            <Link
+              to="/buyer/cart"
+              onClick={() => setMenuOpen(false)}
+              className="w-full block"
+            >
+              <div className="flex items-center gap-3 p-3.5 rounded-xl bg-white border-2 border-green-100 hover:bg-green-50 hover:border-green-300 transition-all shadow-sm">
+                <div className="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center relative">
+                  <ShoppingCart className="h-5 w-5 text-green-600" />
+                  {cartItems.length > 0 && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] text-white font-bold">
+                      {cartItems.length}
+                    </div>
+                  )}
                 </div>
-              </Link>
-              
-            </>
+                <span className="font-semibold text-sm text-gray-800">Shopping Cart</span>
+              </div>
+            </Link>
           )}
         </div>
 
-        {/* Shop Categories Section - Only for Buyers */}
+        {/* Shop Categories - Enhanced cards */}
         {user && user.role === "buyer" && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingBottom: '16px' }}>
-            <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wider px-1 text-[10px] letter-spacing">Shop Categories</h3>
-            <div className="grid grid-cols-2" style={{ gap: '8px' }}>
+          <div className="flex flex-col gap-3">
+            <h3 className="text-xs font-bold text-green-700 uppercase tracking-wider px-2">Shop by Category</h3>
+            <div className="grid grid-cols-2 gap-3">
               {categories.map((category) => (
                 <Link
                   key={category.name}
@@ -458,17 +530,154 @@ export const Navbar = () => {
                   onClick={() => setMenuOpen(false)}
                   className="group"
                 >
-                  <div className="bg-white border border-gray-200 rounded-md text-center shadow-sm hover:bg-gray-50 hover:shadow-md transition-all" style={{ padding: '12px' }}>
-                    <div className="text-3xl mb-1.5">{category.emoji}</div>
-                    <p className="text-xs font-semibold text-gray-800 leading-tight">{category.name}</p>
+                  <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-100 rounded-2xl text-center shadow-sm hover:shadow-lg hover:border-green-300 hover:scale-105 transition-all p-4">
+                    <div className="text-4xl mb-2 transform group-hover:scale-110 transition-transform">{category.emoji}</div>
+                    <p className="text-xs font-bold text-green-800 leading-tight">{category.name}</p>
                   </div>
                 </Link>
               ))}
             </div>
           </div>
         )}
+
+        {/* Footer branding */}
+        <div className="mt-auto pt-4 pb-2">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
+            <p className="text-xs text-center text-green-700 font-medium">
+              🌱 Farm Fresh • Direct to You
+            </p>
+          </div>
+        </div>
       </div>
     </div>
+
+    {/* Mobile Notification Panel */}
+    {user && mobileNotificationOpen && (
+      <>
+        {/* Overlay */}
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-all duration-300"
+          onClick={() => setMobileNotificationOpen(false)}
+        />
+        
+        {/* Notification Panel - Sliding from right */}
+        <div className="md:hidden fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out">
+          <div className="h-full flex flex-col">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-4 shadow-md">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Bell className="h-5 w-5 text-white" />
+                  <h2 className="text-white font-bold text-lg">Notifications</h2>
+                  {unreadCount > 0 && (
+                    <Badge className="bg-red-500 text-white text-xs">
+                      {unreadCount} new
+                    </Badge>
+                  )}
+                </div>
+                <button
+                  onClick={() => setMobileNotificationOpen(false)}
+                  className="p-2 hover:bg-white/20 rounded-lg transition-all"
+                >
+                  <X className="h-5 w-5 text-white" />
+                </button>
+              </div>
+            </div>
+
+            {/* Mark all as read button */}
+            {unreadCount > 0 && (
+              <div className="px-4 py-2 bg-green-50 border-b border-green-100">
+                <button
+                  onClick={handleMarkAllAsRead}
+                  className="text-sm text-green-700 font-semibold hover:text-green-800 flex items-center gap-1"
+                >
+                  <CheckCheck className="h-4 w-4" />
+                  Mark all as read
+                </button>
+              </div>
+            )}
+            
+            {/* Notification Content */}
+            <div className="flex-1 overflow-y-auto">
+              {loading ? (
+                <div className="flex flex-col items-center justify-center h-full p-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
+                  <p className="text-gray-500">Loading notifications...</p>
+                </div>
+              ) : notifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full p-8">
+                  <Bell className="h-16 w-16 text-gray-300 mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">No notifications</h3>
+                  <p className="text-sm text-gray-500 text-center">You're all caught up! Check back later for new updates.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {notifications.map((notification: any) => (
+                    <div
+                      key={notification._id}
+                      onClick={() => handleNotificationClick(notification)}
+                      className={`p-4 cursor-pointer transition-all active:bg-gray-50 ${
+                        !notification.isRead ? 'bg-blue-50/50' : 'bg-white hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        {/* Icon */}
+                        <div className={`flex-shrink-0 p-2.5 rounded-xl ${
+                          notification.type === 'negotiation' ? 'bg-purple-100 text-purple-600' :
+                          notification.type === 'order' ? 'bg-blue-100 text-blue-600' :
+                          notification.type === 'payment' ? 'bg-green-100 text-green-600' :
+                          'bg-gray-100 text-gray-600'
+                        }`}>
+                          {getNotificationIcon(notification.type)}
+                        </div>
+                        
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <h4 className={`text-sm font-semibold ${
+                              !notification.isRead ? 'text-gray-900' : 'text-gray-700'
+                            }`}>
+                              {notification.title}
+                            </h4>
+                            {!notification.isRead && (
+                              <div className="w-2 h-2 bg-blue-500 rounded-full mt-1 flex-shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                            {notification.message}
+                          </p>
+                          
+                          {/* Meta */}
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge variant="outline" className="text-xs capitalize">
+                              {notification.type}
+                            </Badge>
+                            <span className="text-xs text-gray-500">
+                              {formatTimeAgo(notification.createdAt)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Bottom Close Button */}
+            <div className="border-t border-gray-200 p-3 bg-white">
+              <button
+                onClick={() => setMobileNotificationOpen(false)}
+                className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
+              >
+                <X className="h-4 w-4" />
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    )}
     </>
   );
 };

@@ -45,6 +45,7 @@ export interface Negotiation {
   counterPrice?: number;
   counterNotes?: string;
   agreedPrice?: number;
+  productDistrict?: string;
   createdAt: string;
   updatedAt: string;
 }

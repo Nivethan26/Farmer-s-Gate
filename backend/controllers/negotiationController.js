@@ -86,7 +86,28 @@ const createNegotiation = asyncHandler(async (req, res) => {
 const getBuyerNegotiations = asyncHandler(async (req, res) => {
   const negotiations = await Negotiation.find({ buyerId: req.user._id })
     .sort({ createdAt: -1 });
-  res.json(negotiations);
+  
+  console.log(`Found ${negotiations.length} negotiations for buyer ${req.user._id}`);
+  
+  // Populate product district information for each negotiation
+  const negotiationsWithDistrict = await Promise.all(
+    negotiations.map(async (negotiation) => {
+      const product = await Product.findById(negotiation.productId).select('locationDistrict');
+      console.log(`Negotiation ${negotiation._id} - Product locationDistrict: ${product?.locationDistrict}`);
+      return {
+        ...negotiation.toObject(),
+        productDistrict: product?.locationDistrict || null
+      };
+    })
+  );
+  
+  console.log('Sending negotiations with districts:', negotiationsWithDistrict.map(n => ({
+    id: n._id,
+    status: n.status,
+    productDistrict: n.productDistrict
+  })));
+  
+  res.json(negotiationsWithDistrict);
 });
 
 // @desc    Get negotiations for seller
@@ -216,6 +237,70 @@ const acceptCounter = asyncHandler(async (req, res) => {
   res.json(updatedNegotiation);
 });
 
+// @desc    Update negotiation request (Buyer resubmit)
+// @route   PUT /api/negotiations/:id/buyer-update
+// @access  Private/Buyer
+const updateBuyerNegotiation = asyncHandler(async (req, res) => {
+  const negotiation = await Negotiation.findById(req.params.id);
+
+  if (!negotiation) {
+    res.status(404);
+    throw new Error('Negotiation not found');
+  }
+
+  if (negotiation.buyerId.toString() !== req.user._id.toString()) {
+    res.status(401);
+    throw new Error('Not authorized to update this negotiation');
+  }
+
+  // Can only update if countered or rejected
+  if (negotiation.status !== 'countered' && negotiation.status !== 'rejected') {
+    res.status(400);
+    throw new Error('Can only update countered or rejected negotiations');
+  }
+
+  const { requestedPrice, notes } = req.body;
+
+  if (requestedPrice) {
+    negotiation.requestedPrice = requestedPrice;
+  }
+  
+  if (notes) {
+    negotiation.notes = notes;
+  }
+
+  // Reset status to 'open' and clear counter/reject info
+  negotiation.status = 'open';
+  negotiation.counterPrice = undefined;
+  negotiation.counterNotes = undefined;
+
+  const updatedNegotiation = await negotiation.save();
+
+  // Get product info
+  const product = await Product.findById(negotiation.productId);
+
+  // Notify seller about updated negotiation request
+  try {
+    await createNegotiationNotification(negotiation.sellerId, {
+      id: updatedNegotiation._id,
+      productName: negotiation.productName,
+      productId: negotiation.productId,
+      buyerName: negotiation.buyerName,
+      requestedPrice: updatedNegotiation.requestedPrice
+    }, 'new_request');
+  } catch (notificationError) {
+    console.error('Failed to create seller notification:', notificationError);
+  }
+
+  // Add product district to response
+  const responseData = {
+    ...updatedNegotiation.toObject(),
+    productDistrict: product?.locationDistrict || null
+  };
+
+  res.json(responseData);
+});
+
 // @desc    Get negotiation by ID
 // @route   GET /api/negotiations/:id
 // @access  Private
@@ -259,6 +344,171 @@ const getNegotiationStats = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Get negotiations for agent's region
+// @route   GET /api/negotiations/agent
+// @access  Private/Agent
+const getAgentNegotiations = asyncHandler(async (req, res) => {
+  // Get agent's assigned district
+  const agentDistrict = req.user.district;
+  
+  console.log('Agent requesting negotiations');
+  console.log('Agent ID:', req.user._id);
+  console.log('Agent district:', agentDistrict);
+  
+  if (!agentDistrict) {
+    console.log('No district assigned to agent');
+    return res.json([]);
+  }
+
+  // Find all sellers in agent's district (case-insensitive)
+  const sellersInDistrict = await User.find({ 
+    role: 'seller',
+    district: { $regex: new RegExp(`^${agentDistrict}$`, 'i') },
+    isDeleted: { $ne: true }
+  }).select('_id');
+
+  console.log(`Found ${sellersInDistrict.length} sellers in district: ${agentDistrict}`);
+
+  const sellerIds = sellersInDistrict.map(seller => seller._id.toString());
+
+  // Get negotiations for those sellers
+  const negotiations = await Negotiation.find({ 
+    sellerId: { $in: sellerIds }
+  }).sort({ createdAt: -1 });
+
+  console.log(`Found ${negotiations.length} negotiations for sellers in district`);
+
+  // Populate seller and buyer details
+  const enrichedNegotiations = await Promise.all(
+    negotiations.map(async (negotiation) => {
+      const seller = await User.findById(negotiation.sellerId).select('name phone district email farmName');
+      const buyer = await User.findById(negotiation.buyerId).select('firstName lastName phone district email');
+      
+      return {
+        ...negotiation.toObject(),
+        id: negotiation._id,
+        sellerDetails: seller ? {
+          name: seller.name,
+          phone: seller.phone,
+          district: seller.district,
+          email: seller.email,
+          farmName: seller.farmName
+        } : null,
+        buyerDetails: buyer ? {
+          name: buyer.firstName && buyer.lastName ? `${buyer.firstName} ${buyer.lastName}` : buyer.email,
+          phone: buyer.phone,
+          district: buyer.district,
+          email: buyer.email
+        } : null
+      };
+    })
+  );
+
+  console.log(`Returning ${enrichedNegotiations.length} enriched negotiations`);
+  res.json(enrichedNegotiations);
+});
+
+// @desc    Add agent note to negotiation
+// @route   PUT /api/negotiations/:id/agent-note
+// @access  Private/Agent
+const addAgentNote = asyncHandler(async (req, res) => {
+  const { note } = req.body;
+
+  if (!note || !note.trim()) {
+    res.status(400);
+    throw new Error('Note is required');
+  }
+
+  const negotiation = await Negotiation.findById(req.params.id);
+
+  if (!negotiation) {
+    res.status(404);
+    throw new Error('Negotiation not found');
+  }
+
+  // Verify seller is in agent's district
+  const seller = await User.findById(negotiation.sellerId);
+  if (!seller || seller.district !== req.user.district) {
+    res.status(401);
+    throw new Error('Not authorized to access this negotiation');
+  }
+
+  negotiation.agentNotes = note;
+  const updatedNegotiation = await negotiation.save();
+
+  res.json(updatedNegotiation);
+});
+
+// @desc    Mark negotiation as connected
+// @route   PUT /api/negotiations/:id/mark-connected
+// @access  Private/Agent
+const markAsConnected = asyncHandler(async (req, res) => {
+  const negotiation = await Negotiation.findById(req.params.id);
+
+  if (!negotiation) {
+    res.status(404);
+    throw new Error('Negotiation not found');
+  }
+
+  // Verify seller is in agent's district
+  const seller = await User.findById(negotiation.sellerId);
+  if (!seller || seller.district !== req.user.district) {
+    res.status(401);
+    throw new Error('Not authorized to access this negotiation');
+  }
+
+  negotiation.agentConnected = true;
+  const updatedNegotiation = await negotiation.save();
+
+  res.json(updatedNegotiation);
+});
+
+// @desc    Escalate negotiation to admin
+// @route   PUT /api/negotiations/:id/escalate
+// @access  Private/Agent
+const escalateNegotiation = asyncHandler(async (req, res) => {
+  const { reason } = req.body;
+
+  const negotiation = await Negotiation.findById(req.params.id);
+
+  if (!negotiation) {
+    res.status(404);
+    throw new Error('Negotiation not found');
+  }
+
+  // Verify seller is in agent's district
+  const seller = await User.findById(negotiation.sellerId);
+  if (!seller || seller.district !== req.user.district) {
+    res.status(401);
+    throw new Error('Not authorized to access this negotiation');
+  }
+
+  negotiation.escalatedToAdmin = true;
+  negotiation.escalationReason = reason || 'Requires admin attention';
+  negotiation.escalatedAt = Date.now();
+  negotiation.escalatedBy = req.user._id.toString();
+
+  const updatedNegotiation = await negotiation.save();
+
+  // Create notification for admin
+  try {
+    const admins = await User.find({ role: 'admin' });
+    for (const admin of admins) {
+      await createNegotiationNotification(admin._id, {
+        id: updatedNegotiation._id,
+        productName: negotiation.productName,
+        productId: negotiation.productId,
+        agentName: req.user.name,
+        reason
+      }, 'escalated');
+    }
+  } catch (notificationError) {
+    console.error('Failed to create admin notification:', notificationError);
+  }
+
+  res.json(updatedNegotiation);
+});
+
 export {
   createNegotiation,
   getBuyerNegotiations,
@@ -266,6 +516,11 @@ export {
   getNegotiations,
   updateNegotiation,
   acceptCounter,
+  updateBuyerNegotiation,
   getNegotiationById,
   getNegotiationStats,
+  getAgentNegotiations,
+  addAgentNote,
+  markAsConnected,
+  escalateNegotiation,
 };

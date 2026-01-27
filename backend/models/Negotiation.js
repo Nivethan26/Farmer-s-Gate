@@ -51,6 +51,22 @@ const negotiationSchema = new mongoose.Schema({
   counterPrice: Number,
   counterNotes: String,
   agreedPrice: Number,
+  // Agent-related fields
+  agentConnected: {
+    type: Boolean,
+    default: false
+  },
+  agentNotes: {
+    type: String,
+    default: ''
+  },
+  escalatedToAdmin: {
+    type: Boolean,
+    default: false
+  },
+  escalationReason: String,
+  escalatedAt: Date,
+  escalatedBy: String,
   createdAt: {
     type: Date,
     default: Date.now

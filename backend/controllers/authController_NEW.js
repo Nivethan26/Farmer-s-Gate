@@ -281,6 +281,17 @@ const login = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email });
 
   if (user && !user.isDeleted && (await user.comparePassword(password))) {
+    // Check if user status is active
+    if (user.status === 'pending') {
+      res.status(403);
+      throw new Error('Your account is pending admin approval. Please wait for approval to access your account.');
+    }
+    
+    if (user.status !== 'active') {
+      res.status(403);
+      throw new Error(`Account is ${user.status}. Please contact support or complete verification.`);
+    }
+
     res.json({
       _id: user._id,
       publicId: user.publicId,

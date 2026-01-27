@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ProfileCardHeaderSection } from '@/pages/profile/ProfileCardHeaderSection';
 import { ProfileFormFieldsSection } from '@/pages/profile/ProfileFormFieldsSection';
 import { ProfileActionButtonsSection } from '@/pages/profile/ProfileActionButtonsSection';
+import { ChangePasswordForm } from '@/components/common/ChangePasswordForm';
 import type { User } from '@/store/authSlice';
 
 interface ProfileSectionProps {
@@ -185,6 +186,14 @@ export const ProfileSection = ({ user }: ProfileSectionProps) => {
               onCancel={handleCancel} 
             />
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Change Password Section */}
+      <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+        <CardContent className="px-4 sm:px-6 py-4 sm:py-6">
+          <h3 className="text-lg font-semibold mb-4">Change Password</h3>
+          <ChangePasswordForm />
         </CardContent>
       </Card>
     </div>

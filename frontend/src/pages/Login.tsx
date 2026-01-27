@@ -179,32 +179,7 @@ const Login = () => {
             </Button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 shadow-sm">
-            <p className="text-sm font-semibold mb-3 text-amber-800 flex items-center">
-              <Sun className="h-4 w-4 mr-2 text-amber-600" />
-              Demo Credentials
-            </p>
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center justify-between p-2 bg-white rounded-lg border border-amber-100">
-                <span className="font-medium text-amber-700">Buyer</span>
-                <span className="text-amber-600">buyer@agrilink.lk / buyer123</span>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-white rounded-lg border border-amber-100">
-                <span className="font-medium text-amber-700">Seller</span>
-                <span className="text-amber-600">seller@agrilink.lk / seller123</span>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-white rounded-lg border border-amber-100">
-                <span className="font-medium text-amber-700">Admin</span>
-                <span className="text-amber-600">admin@agrilink.lk / admin123</span>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-white rounded-lg border border-amber-100">
-                <span className="font-medium text-amber-700">Agent</span>
-                <span className="text-amber-600">agent@agrilink.lk / agent123</span>
-              </div>
-            </div>
-          </div>
-
+          
           {/* Sign Up Link */}
           <div className="text-center pt-4 border-t border-green-100 space-y-2">
             <p className="text-green-700 text-sm">

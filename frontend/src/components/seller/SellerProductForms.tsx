@@ -95,7 +95,7 @@ const SellerProductForms = ({
       name: "",
       category: "",
       pricePerKg: 0,
-      locationDistrict: "",
+      locationDistrict: user?.district || "",
       stockQty: 0,
       description: "",
       expiresOn: "",
@@ -420,6 +420,8 @@ const SellerProductForms = ({
           <Input
             id="pricePerKg"
             type="number"
+            min="0"
+            step="0.01"
             {...register("pricePerKg", { valueAsNumber: true })}
             placeholder="150"
           />
@@ -437,6 +439,8 @@ const SellerProductForms = ({
           <Input
             id="stockQty"
             type="number"
+            min="0"
+            step="0.01"
             {...register("stockQty", { valueAsNumber: true })}
             placeholder="500"
           />
@@ -498,20 +502,31 @@ const SellerProductForms = ({
         <Input
           id="locationDistrict"
           {...register("locationDistrict")}
-          placeholder="Nuwara Eliya"
+          value={user?.district || ""}
+          readOnly
+          className="bg-gray-50 cursor-not-allowed"
+          placeholder="District will be set from your profile"
         />
         {errors.locationDistrict && (
           <p className="text-sm text-destructive mt-1">
             {errors.locationDistrict.message}
           </p>
         )}
+        <p className="text-xs text-muted-foreground mt-1">
+          Location is automatically set from your profile district
+        </p>
       </div>
 
       <div>
         <Label htmlFor="expiresOn">
           {t("seller.expiresOn")} {t("seller.required")}
         </Label>
-        <Input id="expiresOn" type="date" {...register("expiresOn")} />
+        <Input 
+          id="expiresOn" 
+          type="date" 
+          min={new Date().toISOString().split('T')[0]}
+          {...register("expiresOn")} 
+        />
         {errors.expiresOn && (
           <p className="text-sm text-destructive mt-1">
             {errors.expiresOn.message}

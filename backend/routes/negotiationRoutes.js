@@ -6,8 +6,13 @@ import {
   getNegotiations,
   updateNegotiation,
   acceptCounter,
+  updateBuyerNegotiation,
   getNegotiationById,
   getNegotiationStats,
+  getAgentNegotiations,
+  addAgentNote,
+  markAsConnected,
+  escalateNegotiation,
 } from '../controllers/negotiationController.js';
 import { protect, authorize } from '../middlewares/authMiddleware.js';
 
@@ -16,6 +21,7 @@ const router = express.Router();
 router.get('/stats', protect, authorize('admin'), getNegotiationStats);
 router.get('/buyer', protect, authorize('buyer'), getBuyerNegotiations);
 router.get('/seller', protect, authorize('seller'), getSellerNegotiations);
+router.get('/agent', protect, authorize('agent'), getAgentNegotiations);
 
 router
   .route('/')
@@ -23,6 +29,10 @@ router
   .post(protect, authorize('buyer'), createNegotiation);
 
 router.put('/:id/accept-counter', protect, authorize('buyer'), acceptCounter);
+router.put('/:id/buyer-update', protect, authorize('buyer'), updateBuyerNegotiation);
+router.put('/:id/agent-note', protect, authorize('agent'), addAgentNote);
+router.put('/:id/mark-connected', protect, authorize('agent'), markAsConnected);
+router.put('/:id/escalate', protect, authorize('agent'), escalateNegotiation);
 
 router
   .route('/:id')
