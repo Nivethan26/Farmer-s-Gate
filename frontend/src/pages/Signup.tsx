@@ -10,6 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -41,16 +48,56 @@ import Footer from "@/components/layout/Footer";
 // NIC validation regex for Sri Lankan NIC formats (old: 9 digits with optional V, new: 12 digits)
 const nicRegex = /^([0-9]{9}[vVxX]|[0-9]{12})$/;
 
-const buyerSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(2, "Last name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  nic: z.string().regex(nicRegex, "Please enter a valid NIC (9 digits with V/X or 12 digits)"),
-  district: z.string().min(1, "District is required"),
-  address: z.string().min(5, "Address is required"),
-});
+// Sri Lankan districts
+const SRI_LANKAN_DISTRICTS = [
+  "Ampara",
+  "Anuradhapura",
+  "Badulla",
+  "Batticaloa",
+  "Colombo",
+  "Galle",
+  "Gampaha",
+  "Hambantota",
+  "Jaffna",
+  "Kalutara",
+  "Kandy",
+  "Kegalle",
+  "Kilinochchi",
+  "Kurunegala",
+  "Mannar",
+  "Matale",
+  "Matara",
+  "Monaragala",
+  "Mullaitivu",
+  "Nuwara Eliya",
+  "Polonnaruwa",
+  "Puttalam",
+  "Ratnapura",
+  "Trincomalee",
+  "Vavuniya",
+];
+
+const buyerSchema = z
+  .object({
+    firstName: z.string().min(2, "First name must be at least 2 characters"),
+    lastName: z.string().min(2, "Last name must be at least 2 characters"),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string(),
+    phone: z.string().min(10, "Phone number must be at least 10 digits"),
+    nic: z
+      .string()
+      .regex(
+        nicRegex,
+        "Please enter a valid NIC (9 digits with V/X or 12 digits)",
+      ),
+    district: z.string().min(1, "District is required"),
+    address: z.string().min(5, "Address is required"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 type BuyerFormData = z.infer<typeof buyerSchema>;
 
@@ -86,9 +133,12 @@ const Signup = () => {
 
       setUserEmail(data.email);
       setShowOTPModal(true);
-      toast.success("OTP sent to your email. Please verify to complete registration.");
+      toast.success(
+        "OTP sent to your email. Please verify to complete registration.",
+      );
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || "Registration failed";
+      const errorMessage =
+        error.response?.data?.message || error.message || "Registration failed";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -114,7 +164,8 @@ const Signup = () => {
       setShowOTPModal(false);
       navigate("/login");
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || "Invalid OTP";
+      const errorMessage =
+        error.response?.data?.message || error.message || "Invalid OTP";
       setOtpError(errorMessage);
       setOtp("");
     } finally {
@@ -129,86 +180,89 @@ const Signup = () => {
       setOtp("");
       setOtpError("");
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || "Failed to resend OTP";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to resend OTP";
       toast.error(errorMessage);
     }
   };
 
   return (
     <>
-    <Navbar />
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-amber-50 to-green-50 p-4 relative overflow-hidden">
-      {/* Background Decorative Elements */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-20 -left-20 w-64 h-64 bg-green-200 rounded-full opacity-20 animate-pulse-slow"></div>
-        <div
-          className="absolute -bottom-32 -right-32 w-80 h-80 bg-amber-200 rounded-full opacity-30 animate-pulse-slow"
-          style={{ animationDelay: "2s" }}
-        ></div>
-        <div className="absolute top-1/4 right-32 opacity-10 animate-float">
-          <Wheat className="h-32 w-32 text-amber-600" />
-        </div>
-        <div className="absolute bottom-1/4 left-32 opacity-10 animate-float-delayed">
-          <Leaf className="h-28 w-28 text-green-600" />
-        </div>
-        <div className="absolute top-40 left-40 opacity-5 animate-spin-slow">
-          <Sun className="h-24 w-24 text-amber-400" />
-        </div>
-      </div>
-
-      {/* Main Card */}
-      <Card className="w-full max-w-4xl bg-white/80 backdrop-blur-sm border-green-200 shadow-2xl animate-fade-in-up z-20">
-        <CardHeader className="text-center space-y-4 pb-6">
-          {/* Animated Logo */}
-          <div className="flex justify-center mb-2">
-            <div className="relative">
-              <div className="rounded-full bg-gradient-to-br from-green-500 to-emerald-600 p-4 shadow-lg transform hover:scale-105 transition-transform duration-300">
-                <a href="/">
-                  {" "}
-                  <Sprout className="h-8 w-8 text-white animate-pulse" />{" "}
-                </a>
-              </div>
-              <div className="absolute -top-2 -right-2">
-                <Sun className="h-6 w-6 text-amber-500 animate-spin-slow" />
-              </div>
-            </div>
+      <Navbar />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-amber-50 to-green-50 p-4 relative overflow-hidden">
+        {/* Background Decorative Elements */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute -top-20 -left-20 w-64 h-64 bg-green-200 rounded-full opacity-20 animate-pulse-slow"></div>
+          <div
+            className="absolute -bottom-32 -right-32 w-80 h-80 bg-amber-200 rounded-full opacity-30 animate-pulse-slow"
+            style={{ animationDelay: "2s" }}
+          ></div>
+          <div className="absolute top-1/4 right-32 opacity-10 animate-float">
+            <Wheat className="h-32 w-32 text-amber-600" />
           </div>
+          <div className="absolute bottom-1/4 left-32 opacity-10 animate-float-delayed">
+            <Leaf className="h-28 w-28 text-green-600" />
+          </div>
+          <div className="absolute top-40 left-40 opacity-5 animate-spin-slow">
+            <Sun className="h-24 w-24 text-amber-400" />
+          </div>
+        </div>
 
-          <CardTitle className="text-3xl font-bold font-poppins text-green-800 tracking-tight">
-            {t("auth.joinTitle")}
-          </CardTitle>
-          <CardDescription className="text-green-600 text-lg">
-            {t("auth.createAccount")}
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          {/* Buyer Registration Form */}
-          <div className="space-y-6 animate-fade-in">
-            <div className="text-center mb-6">
-              <div className="flex justify-center mb-3">
-                <div className="rounded-full bg-blue-100 p-3">
-                  <User className="h-6 w-6 text-green-600" />
+        {/* Main Card */}
+        <Card className="w-full max-w-4xl bg-white/80 backdrop-blur-sm border-green-200 shadow-2xl animate-fade-in-up z-20">
+          <CardHeader className="text-center space-y-4 pb-6">
+            {/* Animated Logo */}
+            <div className="flex justify-center mb-2">
+              <div className="relative">
+                <div className="rounded-full bg-gradient-to-br from-green-500 to-emerald-600 p-4 shadow-lg transform hover:scale-105 transition-transform duration-300">
+                  <a href="/">
+                    {" "}
+                    <Sprout className="h-8 w-8 text-white animate-pulse" />{" "}
+                  </a>
+                </div>
+                <div className="absolute -top-2 -right-2">
+                  <Sun className="h-6 w-6 text-amber-500 animate-spin-slow" />
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-green-800">
-                Join as a Buyer
-              </h3>
-              <p className="text-green-600">
-                Purchase fresh produce directly from local farmers
-              </p>
-              <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
-                <p className="text-sm text-green-700">
-                  Want to sell your produce?{" "}
-                  <button
-                    onClick={() => navigate('/seller-registration')}
-                    className="font-bold text-green-600 hover:text-green-800 underline"
-                  >
-                    Register as Seller
-                  </button>
-                </p>
-              </div>
             </div>
+
+            <CardTitle className="text-3xl font-bold font-poppins text-green-800 tracking-tight">
+              {t("auth.joinTitle")}
+            </CardTitle>
+            <CardDescription className="text-green-600 text-lg">
+              {t("auth.createAccount")}
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-6">
+            {/* Buyer Registration Form */}
+            <div className="space-y-6 animate-fade-in">
+              <div className="text-center mb-6">
+                <div className="flex justify-center mb-3">
+                  <div className="rounded-full bg-blue-100 p-3">
+                    <User className="h-6 w-6 text-green-600" />
+                  </div>
+                </div>
+                <h3 className="text-xl font-semibold text-green-800">
+                  Join as a Buyer
+                </h3>
+                <p className="text-green-600">
+                  Purchase fresh produce directly from local farmers
+                </p>
+                <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <p className="text-sm text-green-700">
+                    Want to sell your produce?{" "}
+                    <button
+                      onClick={() => navigate("/seller-registration")}
+                      className="font-bold text-green-600 hover:text-green-800 underline"
+                    >
+                      Register as Seller
+                    </button>
+                  </p>
+                </div>
+              </div>
 
               <form
                 onSubmit={buyerForm.handleSubmit(onBuyerSubmit)}
@@ -280,29 +334,6 @@ const Signup = () => {
                       </p>
                     )}
                   </div>
-
-                  <div className="space-y-3">
-                    <Label
-                      htmlFor="buyer-password"
-                      className="text-green-800 font-semibold"
-                    >
-                      {t("common.password")} *
-                    </Label>
-                    <Input
-                      id="buyer-password"
-                      type="password"
-                      {...buyerForm.register("password")}
-                      placeholder="••••••••"
-                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
-                      disabled={isLoading}
-                    />
-                    {buyerForm.formState.errors.password && (
-                      <p className="text-sm text-red-600 mt-1">
-                        {buyerForm.formState.errors.password.message}
-                      </p>
-                    )}
-                  </div>
-
                   <div className="space-y-3">
                     <Label
                       htmlFor="buyer-phone"
@@ -328,10 +359,54 @@ const Signup = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <Label
+                      htmlFor="buyer-password"
+                      className="text-green-800 font-semibold"
+                    >
+                      {t("common.password")} *
+                    </Label>
+                    <Input
+                      id="buyer-password"
+                      type="password"
+                      {...buyerForm.register("password")}
+                      placeholder="••••••••"
+                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
+                      disabled={isLoading}
+                    />
+                    {buyerForm.formState.errors.password && (
+                      <p className="text-sm text-red-600 mt-1">
+                        {buyerForm.formState.errors.password.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-3">
+                    <Label
+                      htmlFor="buyer-confirmPassword"
+                      className="text-green-800 font-semibold"
+                    >
+                      Confirm Password *
+                    </Label>
+                    <Input
+                      id="buyer-confirmPassword"
+                      type="password"
+                      {...buyerForm.register("confirmPassword")}
+                      placeholder="••••••••"
+                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
+                      disabled={isLoading}
+                    />
+                    {buyerForm.formState.errors.confirmPassword && (
+                      <p className="text-sm text-red-600 mt-1">
+                        {buyerForm.formState.errors.confirmPassword.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <Label
                       htmlFor="buyer-nic"
                       className="text-green-800 font-semibold flex items-center gap-2"
                     >
-                     
                       {t("profile.nic")} *
                     </Label>
                     <Input
@@ -346,7 +421,6 @@ const Signup = () => {
                         {buyerForm.formState.errors.nic.message}
                       </p>
                     )}
-                    
                   </div>
 
                   <div className="space-y-3">
@@ -356,13 +430,24 @@ const Signup = () => {
                     >
                       {t("profile.district")} *
                     </Label>
-                    <Input
-                      id="buyer-district"
-                      {...buyerForm.register("district")}
-                      placeholder="Colombo"
-                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
+                    <Select
+                      value={buyerForm.watch("district")}
+                      onValueChange={(value) =>
+                        buyerForm.setValue("district", value)
+                      }
                       disabled={isLoading}
-                    />
+                    >
+                      <SelectTrigger className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300">
+                        <SelectValue placeholder="Select district" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SRI_LANKAN_DISTRICTS.map((district) => (
+                          <SelectItem key={district} value={district}>
+                            {district}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     {buyerForm.formState.errors.district && (
                       <p className="text-sm text-red-600 mt-1">
                         {buyerForm.formState.errors.district.message}
@@ -422,7 +507,8 @@ const Signup = () => {
                     Are you a Farmer/Seller?
                   </h3>
                   <p className="text-green-700 mb-4">
-                    Use our dedicated seller registration with enhanced features:
+                    Use our dedicated seller registration with enhanced
+                    features:
                   </p>
                   <ul className="text-sm text-green-600 space-y-1 mb-4">
                     <li>✓ Email verification with OTP</li>
@@ -435,7 +521,7 @@ const Signup = () => {
                   type="button"
                   size="lg"
                   className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-                  onClick={() => navigate('/seller-registration')}
+                  onClick={() => navigate("/seller-registration")}
                 >
                   Proceed to Seller Registration
                 </Button>
@@ -465,7 +551,9 @@ const Signup = () => {
                   <Mail className="h-8 w-8 text-green-600" />
                 </div>
               </div>
-              <DialogTitle className="text-center text-2xl">Verify Your Email</DialogTitle>
+              <DialogTitle className="text-center text-2xl">
+                Verify Your Email
+              </DialogTitle>
               <DialogDescription className="text-center">
                 We've sent a 6-digit OTP to <strong>{userEmail}</strong>
               </DialogDescription>
@@ -473,7 +561,9 @@ const Signup = () => {
 
             <div className="space-y-6 py-4">
               <div>
-                <Label htmlFor="otp" className="sr-only">Enter OTP</Label>
+                <Label htmlFor="otp" className="sr-only">
+                  Enter OTP
+                </Label>
                 <Input
                   id="otp"
                   type="text"
@@ -481,7 +571,7 @@ const Signup = () => {
                   placeholder="Enter 6-digit OTP"
                   value={otp}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
+                    const value = e.target.value.replace(/\D/g, "");
                     setOtp(value);
                     setOtpError("");
                   }}
@@ -507,7 +597,9 @@ const Signup = () => {
               </Button>
 
               <div className="text-center">
-                <p className="text-sm text-gray-600 mb-2">Didn't receive the code?</p>
+                <p className="text-sm text-gray-600 mb-2">
+                  Didn't receive the code?
+                </p>
                 <Button
                   type="button"
                   variant="link"
@@ -522,7 +614,8 @@ const Signup = () => {
                 <div className="text-sm text-green-800">
                   <p className="font-medium mb-1">✓ What happens next?</p>
                   <p className="text-xs">
-                    After verification, you can immediately log in and start shopping for fresh produce!
+                    After verification, you can immediately log in and start
+                    shopping for fresh produce!
                   </p>
                 </div>
               </div>
@@ -530,8 +623,8 @@ const Signup = () => {
           </DialogContent>
         </Dialog>
 
-      {/* Custom Animations */}
-      <style>{`
+        {/* Custom Animations */}
+        <style>{`
         @keyframes fade-in-up {
           0% {
             opacity: 0;
@@ -601,8 +694,8 @@ const Signup = () => {
           animation: spin-slow 8s linear infinite;
         }
       `}</style>
-    </div>
-    <Footer />
+      </div>
+      <Footer />
     </>
   );
 };

@@ -142,7 +142,7 @@ export function DataTable<T extends { id: string }>({
               paginatedData.map((row) => (
                 <TableRow key={row.id}>
                   {columns.map((column, index) => (
-                    <TableCell key={index}>{getCellValue(row, column)}</TableCell>
+                    <TableCell key={`${row.id}-${index}`}>{getCellValue(row, column)}</TableCell>
                   ))}
                 </TableRow>
               ))

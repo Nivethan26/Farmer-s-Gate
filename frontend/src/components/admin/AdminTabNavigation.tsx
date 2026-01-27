@@ -1,17 +1,18 @@
 import { TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, Users, Building, Package, ShoppingCart, UserCheck } from 'lucide-react';
+import { BarChart3, Users, Building, Package, ShoppingCart, UserCheck, Handshake } from 'lucide-react';
 
 interface AdminTabNavigationProps {
   activeTab: string;
 }
 
 export const AdminTabNavigation = ({ activeTab }: AdminTabNavigationProps) => (
-  <TabsList className="grid w-full grid-cols-5 h-auto bg-transparent p-0">
+  <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 h-auto bg-transparent p-0 gap-2">
     {[
       { value: 'overview', label: 'Overview', icon: BarChart3 },
       { value: 'users', label: 'Users', icon: Users },
       { value: 'products', label: 'Products', icon: Package },
       { value: 'orders', label: 'Orders', icon: ShoppingCart },
+      { value: 'negotiations', label: 'Negotiations', icon: Handshake },
       { value: 'approvals', label: 'Approvals', icon: UserCheck },
     ].map(tab => (
       <TabsTrigger 

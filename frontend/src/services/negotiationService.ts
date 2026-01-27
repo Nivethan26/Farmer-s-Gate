@@ -71,6 +71,10 @@ export const negotiationAPI = {
     return apiClient.put<Negotiation>(`/negotiations/${id}/accept-counter`);
   },
 
+  async updateBuyerNegotiation(id: string, data: { requestedPrice: number; notes?: string }): Promise<Negotiation> {
+    return apiClient.put<Negotiation>(`/negotiations/${id}/buyer-update`, data);
+  },
+
   async getNegotiationStats(): Promise<NegotiationStats> {
     return apiClient.get<NegotiationStats>('/negotiations/stats');
   }

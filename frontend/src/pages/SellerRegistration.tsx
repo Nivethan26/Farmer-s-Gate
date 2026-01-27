@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Navbar } from '@/components/layout/Navbar';
 import { OTPVerificationModal } from '@/components/seller/OTPVerificationModal';
 import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -11,10 +12,20 @@ import { sellerApprovalAPI } from '@/services/sellerApprovalService';
 import { toast } from 'sonner';
 import type { SellerRegistration } from '@/types/seller';
 
+// Sri Lankan districts
+const SRI_LANKAN_DISTRICTS = [
+  'Ampara', 'Anuradhapura', 'Badulla', 'Batticaloa', 'Colombo', 'Galle', 
+  'Gampaha', 'Hambantota', 'Jaffna', 'Kalutara', 'Kandy', 'Kegalle', 
+  'Kilinochchi', 'Kurunegala', 'Mannar', 'Matale', 'Matara', 'Monaragala', 
+  'Mullaitivu', 'Nuwara Eliya', 'Polonnaruwa', 'Puttalam', 'Ratnapura', 
+  'Trincomalee', 'Vavuniya'
+];
+
 export const SellerRegistrationPage = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -23,6 +34,7 @@ export const SellerRegistrationPage = () => {
     name: '',
     email: '',
     password: '',
+    confirmPassword: '',
     phone: '',
     farmName: '',
     district: '',
@@ -50,6 +62,12 @@ export const SellerRegistrationPage = () => {
       newErrors.password = 'Password must be at least 8 characters';
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(formData.password)) {
       newErrors.password = 'Password must contain uppercase, lowercase, number, and special character';
+    }
+
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords don't match";
     }
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
@@ -234,6 +252,33 @@ export const SellerRegistrationPage = () => {
                     </p>
                   </div>
 
+                  {/* Confirm Password */}
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={formData.confirmPassword}
+                        onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                    </div>
+                    {errors.confirmPassword && (
+                      <p className="text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                        <span>{errors.confirmPassword}</span>
+                      </p>
+                    )}
+                  </div>
+
                   {/* Phone */}
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
@@ -279,12 +324,21 @@ export const SellerRegistrationPage = () => {
                   {/* District */}
                   <div className="space-y-2">
                     <Label htmlFor="district">District *</Label>
-                    <Input
-                      id="district"
+                    <Select
                       value={formData.district}
-                      onChange={(e) => handleChange('district', e.target.value)}
-                      placeholder="Colombo"
-                    />
+                      onValueChange={(value) => handleChange('district', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select district" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SRI_LANKAN_DISTRICTS.map((district) => (
+                          <SelectItem key={district} value={district}>
+                            {district}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     {errors.district && (
                       <p className="text-sm text-red-600 flex items-center gap-1">
                         <AlertCircle className="h-4 w-4" />

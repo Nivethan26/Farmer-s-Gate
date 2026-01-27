@@ -4,23 +4,51 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Mail, Phone, Edit, Trash2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Mail, Phone, Edit, Trash2, Plus, MapPin } from 'lucide-react';
 import { FilterBar } from '../ui/FilterBar';
 import { StatusBadge } from '../ui/StatusBadge';
 import { TableSkeleton } from '../ui/TableSkeleton';
 import { exportToCSV } from '@/utils/adminUtils';
 import type { Agent } from '@/types/admin';
 import { toast } from 'sonner';
+import { userAPI } from '@/services/userService';
 
 interface AgentsTabProps {
   agents: Agent[];
   isLoading: boolean;
+  onRefresh?: () => void;
 }
 
-export const AgentsTab = ({ agents, isLoading }: AgentsTabProps) => {
+// Sri Lankan districts
+const SRI_LANKAN_DISTRICTS = [
+  'Ampara', 'Anuradhapura', 'Badulla', 'Batticaloa', 'Colombo', 'Galle', 
+  'Gampaha', 'Hambantota', 'Jaffna', 'Kalutara', 'Kandy', 'Kegalle', 
+  'Kilinochchi', 'Kurunegala', 'Mannar', 'Matale', 'Matara', 'Monaragala', 
+  'Mullaitivu', 'Nuwara Eliya', 'Polonnaruwa', 'Puttalam', 'Ratnapura', 
+  'Trincomalee', 'Vavuniya'
+];
+
+const REGIONS = ['North', 'South', 'East', 'West', 'Central', 'North Central', 'North Western', 'Sabaragamuwa', 'Uva'];
+
+export const AgentsTab = ({ agents, isLoading, onRefresh }: AgentsTabProps) => {
   const [agentDistrictFilter, setAgentDistrictFilter] = useState('all');
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
   const [newStatus, setNewStatus] = useState<Agent["status"]>("active");
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [newAgent, setNewAgent] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    district: '',
+    regions: [] as string[],
+    officeContact: '',
+    status: 'active' as Agent['status']
+  });
 
   // Get unique districts
   const districts = useMemo(() => 
@@ -42,9 +70,56 @@ export const AgentsTab = ({ agents, isLoading }: AgentsTabProps) => {
     exportToCSV(filteredAgents, 'agents');
   };
 
-  const handleDeleteAgent = (id: string) => {
+  const handleDeleteAgent = async (id: string) => {
     if (!confirm("Are you sure you want to delete this agent?")) return;
-    toast.success('Agent deleted successfully');
+    
+    try {
+      await userAPI.deleteUser(id);
+      toast.success('Agent deleted successfully');
+      if (onRefresh) onRefresh();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to delete agent');
+    }
+  };
+
+  const handleAddAgent = async () => {
+    // Validate form
+    if (!newAgent.name || !newAgent.email || !newAgent.phone || !newAgent.password || !newAgent.district || newAgent.regions.length === 0) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await userAPI.createAgent(newAgent);
+      toast.success('Agent added successfully');
+      setIsAddDialogOpen(false);
+      // Reset form
+      setNewAgent({
+        name: '',
+        email: '',
+        phone: '',
+        password: '',
+        district: '',
+        regions: [],
+        officeContact: '',
+        status: 'active'
+      });
+      if (onRefresh) onRefresh();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to add agent');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const toggleRegion = (region: string) => {
+    setNewAgent(prev => ({
+      ...prev,
+      regions: prev.regions.includes(region)
+        ? prev.regions.filter(r => r !== region)
+        : [...prev.regions, region]
+    }));
   };
 
   const openEditModal = (agent: Agent) => {
@@ -56,10 +131,17 @@ export const AgentsTab = ({ agents, isLoading }: AgentsTabProps) => {
     setEditingAgent(null);
   };
 
-  const saveStatusChange = () => {
+  const saveStatusChange = async () => {
     if (!editingAgent) return;
-    toast.success('Agent status updated successfully');
-    closeModal();
+    
+    try {
+      await userAPI.updateAgentStatus(editingAgent._id || editingAgent.id, newStatus);
+      toast.success('Agent status updated successfully');
+      closeModal();
+      if (onRefresh) onRefresh();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to update agent status');
+    }
   };
 
   const districtOptions = [
@@ -76,6 +158,141 @@ export const AgentsTab = ({ agents, isLoading }: AgentsTabProps) => {
         filterPlaceholder="All Districts"
         onExport={handleExport}
       >
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" />
+              Add New Agent
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Add New Agent</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name *</Label>
+                  <Input
+                    id="name"
+                    placeholder="Enter full name"
+                    value={newAgent.name}
+                    onChange={(e) => setNewAgent({...newAgent, name: e.target.value})}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="agent@example.com"
+                    value={newAgent.email}
+                    onChange={(e) => setNewAgent({...newAgent, email: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Input
+                    id="phone"
+                    placeholder="+94XXXXXXXXX"
+                    value={newAgent.phone}
+                    onChange={(e) => setNewAgent({...newAgent, phone: e.target.value})}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="officeContact">Office Contact</Label>
+                  <Input
+                    id="officeContact"
+                    placeholder="+94XXXXXXXXX"
+                    value={newAgent.officeContact}
+                    onChange={(e) => setNewAgent({...newAgent, officeContact: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password *</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter password"
+                  value={newAgent.password}
+                  onChange={(e) => setNewAgent({...newAgent, password: e.target.value})}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="district">Primary District *</Label>
+                <Select value={newAgent.district} onValueChange={(value) => setNewAgent({...newAgent, district: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select district" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SRI_LANKAN_DISTRICTS.map((district) => (
+                      <SelectItem key={district} value={district}>{district}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Assigned Regions * (Select multiple)</Label>
+                <div className="grid grid-cols-3 gap-2 p-4 border rounded-lg">
+                  {REGIONS.map((region) => (
+                    <div key={region} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`region-${region}`}
+                        checked={newAgent.regions.includes(region)}
+                        onChange={() => toggleRegion(region)}
+                        className="rounded border-gray-300"
+                      />
+                      <label htmlFor={`region-${region}`} className="text-sm cursor-pointer">
+                        {region}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                {newAgent.regions.length > 0 && (
+                  <div className="flex gap-1 flex-wrap mt-2">
+                    {newAgent.regions.map((region) => (
+                      <Badge key={region} variant="secondary">{region}</Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={newAgent.status} onValueChange={(value) => setNewAgent({...newAgent, status: value as Agent['status']})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={isSaving}>
+                  Cancel
+                </Button>
+                <Button onClick={handleAddAgent} disabled={isSaving}>
+                  {isSaving ? 'Adding...' : 'Add Agent'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+        
         <Button variant="outline">
           <Mail className="h-4 w-4 mr-2" />
           Send Notification

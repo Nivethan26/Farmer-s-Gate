@@ -162,4 +162,89 @@ const sendSellerRejectedEmail = async (email, name, rejectionReason) => {
   return await sendEmail(email, subject, html);
 };
 
-export { sendOTPEmail, sendWelcomeEmail, sendRegistrationPendingEmail, sendSellerApprovedEmail, sendSellerRejectedEmail };
+const sendAgentCredentialsEmail = async (email, name, password, regions) => {
+  const subject = '🎉 Welcome to Farmer\'s Gate - Agent Account Created';
+  const loginUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+      <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #2d5a27; margin: 0;">🌾 Farmer's Gate</h1>
+          <p style="color: #666; margin: 10px 0 0 0;">Regional Coordinator Platform</p>
+        </div>
+        
+        <h2 style="color: #2d5a27;">Welcome, ${name}! 👋</h2>
+        <p>Your agent account has been successfully created by the administrator.</p>
+        
+        <div style="background-color: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #28a745;">
+          <p style="margin: 0; color: #155724; font-weight: bold;">✓ Account Status: ACTIVE</p>
+          <p style="margin: 10px 0 0 0; color: #155724;">✓ Role: Regional Coordinator (Agent)</p>
+        </div>
+
+        <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+          <h3 style="margin: 0 0 15px 0; color: #856404;">🔐 Your Login Credentials</h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 8px 0; color: #666; font-weight: bold;">Email:</td>
+              <td style="padding: 8px 0; color: #333;">${email}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #666; font-weight: bold;">Password:</td>
+              <td style="padding: 8px 0;">
+                <code style="background-color: #f0f0f0; padding: 5px 10px; border-radius: 4px; font-size: 16px; color: #c0392b; font-weight: bold;">${password}</code>
+              </td>
+            </tr>
+          </table>
+          <p style="margin: 15px 0 0 0; color: #856404; font-size: 14px;">
+            <strong>⚠️ Important:</strong> Please change your password after your first login for security.
+          </p>
+        </div>
+
+        <div style="background-color: #e7f3ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2196F3;">
+          <h3 style="margin: 0 0 10px 0; color: #1976D2;">📍 Your Assigned Regions</h3>
+          <p style="margin: 0; color: #1565C0; font-size: 16px; font-weight: bold;">${regions.join(', ')}</p>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${loginUrl}/login" style="background-color: #2d5a27; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; display: inline-block;">
+            Login to Dashboard
+          </a>
+        </div>
+
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin: 0 0 15px 0; color: #2d5a27;">📋 Your Responsibilities</h3>
+          <ul style="margin: 0; padding-left: 20px; color: #666;">
+            <li style="margin: 10px 0;">Monitor farmers (sellers) in your assigned regions</li>
+            <li style="margin: 10px 0;">Facilitate price negotiations between buyers and sellers</li>
+            <li style="margin: 10px 0;">Add internal notes to track negotiation progress</li>
+            <li style="margin: 10px 0;">Mark negotiations as connected when parties are engaged</li>
+            <li style="margin: 10px 0;">Escalate complex issues to administrators</li>
+          </ul>
+        </div>
+
+        <div style="background-color: #fff; padding: 15px; border: 2px dashed #ddd; border-radius: 8px; margin: 20px 0;">
+          <p style="margin: 0; color: #666; font-size: 14px; text-align: center;">
+            <strong>💡 First Steps:</strong> Log in → Explore Farmers Tab → Review Negotiations 
+          </p>
+        </div>
+
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+        
+        <div style="text-align: center; color: #666; font-size: 12px;">
+          <p style="margin: 0;">Need help? Contact your administrator</p>
+          <p style="margin: 10px 0 0 0;"><strong>Farmer's Gate Team</strong></p>
+        </div>
+      </div>
+    </div>
+  `;
+  return await sendEmail(email, subject, html);
+};
+
+export { 
+  sendOTPEmail, 
+  sendWelcomeEmail, 
+  sendRegistrationPendingEmail, 
+  sendSellerApprovedEmail, 
+  sendSellerRejectedEmail,
+  sendAgentCredentialsEmail 
+};

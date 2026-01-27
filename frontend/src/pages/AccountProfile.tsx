@@ -16,6 +16,7 @@ import { ProfileHeaderSection } from "./profile/ProfileHeaderSection"
 import { ProfileCardHeaderSection } from "./profile/ProfileCardHeaderSection"
 import { ProfileFormFieldsSection } from "./profile/ProfileFormFieldsSection"
 import { ProfileActionButtonsSection } from "./profile/ProfileActionButtonsSection"
+import { ChangePasswordForm } from "@/components/common/ChangePasswordForm"
 
 // Profile schema - editable fields for buyers (include first/last name and NIC)
 const profileSchema = z.object({
@@ -191,6 +192,14 @@ const AccountProfile = () => {
                     onCancel={handleCancel}
                   />
                 </form>
+              </CardContent>
+            </Card>
+
+            {/* Change Password Section */}
+            <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm overflow-hidden mt-6">
+              <CardContent className="pt-6 sm:pt-8 px-4 sm:px-6">
+                <h3 className="text-xl font-semibold mb-6">Change Password</h3>
+                <ChangePasswordForm />
               </CardContent>
             </Card>
           </div>

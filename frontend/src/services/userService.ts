@@ -62,6 +62,27 @@ export const userAPI = {
 
   async toggleSellerStatus(id: string): Promise<{ success: boolean; message: string; data: { _id: string; status: string; name: string; email: string } }> {
     return apiClient.patch(`/users/${id}/toggle-status`, {});
+  },
+
+  async createAgent(agentData: {
+    name: string;
+    email: string;
+    phone: string;
+    password: string;
+    district: string;
+    regions: string[];
+    officeContact?: string;
+    status: 'active' | 'inactive' | 'pending';
+  }): Promise<User> {
+    return apiClient.post<User>('/users/agent', agentData);
+  },
+
+  async updateAgentStatus(id: string, status: 'active' | 'inactive' | 'pending'): Promise<User> {
+    return apiClient.patch<User>(`/users/${id}/agent-status`, { status });
+  },
+
+  async changePassword(data: { currentPassword: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
+    return apiClient.put<{ success: boolean; message: string }>('/users/change-password', data);
   }
 };
 

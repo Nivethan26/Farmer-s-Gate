@@ -286,15 +286,15 @@ const Index = () => {
         </div>
         
         <div className="container mx-auto relative" style={{ paddingLeft: '12px', paddingRight: '12px' }}>
-          <div className="text-center" style={{ marginBottom: '20px' }}>
+          <div className="text-center " style={{ marginBottom: '20px' }}>
             
-            <h2 className="font-poppins text-3xl md:text-5xl font-bold bg-gradient-to-r from-green-700 via-emerald-700 to-green-800 bg-clip-text text-transparent animate-fade-in" style={{ marginBottom: '15px', marginTop: '15px', animationDelay: '0.1s' }}>Shop by Category</h2>
+            <h2 className="font-poppins text-3xl md:text-5xl font-bold bg-gradient-to-r from-green-700 via-emerald-700 to-green-800 bg-clip-text text-transparent animate-fade-in" style={{ marginBottom: '20px', marginTop: '15px', animationDelay: '0.1s' }}>Shop by Category</h2>
             <p className="text-gray-600 text-base md:text-xl font-medium leading-relaxed max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '0.2s' }}>Discover fresh, organic products from local farmers</p>
           </div>
-          <div className="flex justify-center" style={{ marginLeft: '0px', marginRight: '18px' }}>
-            <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: '24px', width: 'fit-content' }}>
+          <div className="w-full max-w-7xl mx-auto px-2 sm:px-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
             {categories.map((category, index) => (
-              <Card key={index} className="group cursor-pointer relative overflow-hidden border-2 border-green-100 bg-white shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 animate-fade-in" style={{ animationDelay: `${index * 0.1}s`, width: '165px', height: '200px' }}>
+              <Card key={index} className="group cursor-pointer relative overflow-hidden border-2 border-green-100 bg-white shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 animate-fade-in w-full" style={{ animationDelay: `${index * 0.1}s` }}>
                 {/* Animated gradient background */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
                 
@@ -303,44 +303,44 @@ const Index = () => {
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                 </div>
                 
-                <CardContent className="relative text-center" style={{ padding: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <CardContent className="relative text-center p-3 sm:p-4 md:p-6 flex flex-col justify-center items-center min-h-[180px] sm:min-h-[200px] md:min-h-[220px]">
                   {/* Image container with enhanced effects */}
-                  <div className="relative mx-auto inline-block" style={{ marginBottom: '5px' }}>
+                  <div className="relative mx-auto inline-block mb-2 sm:mb-3 md:mb-4">
                     {/* Pulsing glow effect */}
                     <div className={`absolute inset-0 ${category.color} rounded-full blur-2xl opacity-30 group-hover:opacity-50 animate-pulse-slow`} />
                     
                     {/* Main image container */}
-                    <div className={`relative rounded-3xl ${category.color} shadow-2xl group-hover:shadow-3xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 flex items-center justify-center overflow-hidden`} style={{ width: '125px', height: '106px' }}>
+                    <div className={`relative rounded-2xl sm:rounded-3xl ${category.color} shadow-2xl group-hover:shadow-3xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 flex items-center justify-center overflow-hidden w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32`}>
                       {/* Image shine effect */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent rounded-3xl z-20" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent rounded-2xl sm:rounded-3xl z-20" />
                       
                       {/* Category Image */}
-                      <img src={category.image} alt={category.name} className="w-full h-full object-cover rounded-3xl transition-transform duration-500 group-hover:scale-110" />
+                      <img src={category.image} alt={category.name} className="w-full h-full object-cover rounded-2xl sm:rounded-3xl transition-transform duration-500 group-hover:scale-110" />
                     </div>
                     
                     {/* Corner accent badges */}
-                    <div className="absolute rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg bg-gradient-to-br from-green-500 to-emerald-600" style={{ top: '-4px', right: '-4px', width: '16px', height: '16px' }}>
+                    <div className="absolute rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg bg-gradient-to-br from-green-500 to-emerald-600 w-4 h-4 -top-1 -right-1">
                       <CheckCircle className="w-full h-full text-white p-0.5" />
                     </div>
                   </div>
                   
                   {/* Category name */}
-                  <h3 className="font-poppins text-lg md:text-2xl font-bold text-gray-900 group-hover:text-green-700 transition-colors duration-300 leading-tight" style={{ marginBottom: '10px' }}>
+                  <h3 className="font-poppins text-sm sm:text-base md:text-lg lg:text-xl font-bold text-gray-900 group-hover:text-green-700 transition-colors duration-300 leading-tight mb-2 sm:mb-3">
                     {category.name}
                   </h3>
                   
                   {/* Item count with enhanced styling */}
-                  <div className="inline-flex items-center bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200/50 group-hover:border-green-300 group-hover:from-green-100 group-hover:to-emerald-100 transition-all duration-300 rounded-full" style={{ gap: '8px', paddingLeft: '16px', paddingRight: '16px', paddingTop: '6px', paddingBottom: '6px' }}>
-                    <Sprout className="h-3 w-3 text-green-600" />
-                    <p className="text-gray-700 text-xs md:text-sm font-bold">{category.count}</p>
+                  <div className="inline-flex items-center bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200/50 group-hover:border-green-300 group-hover:from-green-100 group-hover:to-emerald-100 transition-all duration-300 rounded-full gap-1 sm:gap-2 px-2 sm:px-3 md:px-4 py-1 sm:py-1.5">
+                    <Sprout className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-600" />
+                    <p className="text-gray-700 text-[10px] sm:text-xs md:text-sm font-bold">{category.count}</p>
                   </div>
                 </CardContent>
                 
                 {/* Bottom accent line with glow */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-green-500 via-emerald-500 to-green-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 shadow-lg shadow-green-500/50" style={{ height: '6px' }} />
+                <div className="absolute bottom-0 left-0 right-0 h-1 sm:h-1.5 md:h-2 bg-gradient-to-r from-green-500 via-emerald-500 to-green-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 shadow-lg shadow-green-500/50" />
                 
                 {/* Side accent line on hover */}
-                <div className="absolute left-0 top-0 bottom-0 bg-gradient-to-b from-green-500 to-emerald-500 transform scale-y-0 group-hover:scale-y-100 transition-transform duration-500" style={{ width: '2px' }} />
+                <div className="absolute left-0 top-0 bottom-0 w-0.5 sm:w-1 bg-gradient-to-b from-green-500 to-emerald-500 transform scale-y-0 group-hover:scale-y-100 transition-transform duration-500" />
               </Card>
             ))}
           </div>
