@@ -1,3 +1,22 @@
+// Send password reset email with secure link
+const sendPasswordResetEmail = async (email, name, resetUrl) => {
+  const subject = 'Reset Your Password - Farmer\'s Gate';
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #2d5a27;">Password Reset Request</h2>
+      <p>Dear ${name || 'User'},</p>
+      <p>We received a request to reset your password for your Farmer's Gate account.</p>
+      <p>If you did not request this, you can safely ignore this email.</p>
+      <div style="margin: 30px 0; text-align: center;">
+        <a href="${resetUrl}" style="background-color: #2d5a27; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; font-size: 18px; font-weight: bold; display: inline-block;">Reset Password</a>
+      </div>
+      <p style="color: #ff6b6b; font-weight: bold;">⚠️ This link will expire in 10 minutes for your security.</p>
+      <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+      <p style="color: #666; font-size: 12px;">Best regards,<br>Farmer's Gate Team</p>
+    </div>
+  `;
+  return await sendEmail(email, subject, html);
+};
 import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
@@ -54,13 +73,23 @@ const sendEmail = async (to, subject, html) => {
   }
 };
 
-const sendOTPEmail = async (email, otp, name = '') => {
-  const subject = 'Verify Your Email - Farmer\'s Gate';
+const sendOTPEmail = async (email, otp, name = '', role = 'buyer') => {
+  const subject = "Verify Your Email - Farmer's Gate";
+  let roleText = '';
+  if (role === 'seller') {
+    roleText = 'Thank you for registering as a <b>seller</b> on Farmer\'s Gate!';
+  } else if (role === 'buyer') {
+    roleText = 'Thank you for registering as a <b>buyer</b> on Farmer\'s Gate!';
+  } else if (role === 'agent') {
+    roleText = 'Thank you for registering as an <b>agent</b> on Farmer\'s Gate!';
+  } else {
+    roleText = 'Thank you for registering on Farmer\'s Gate!';
+  }
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h2 style="color: #2d5a27;">Farmer's Gate - Email Verification</h2>
       <p>Dear ${name},</p>
-      <p>Thank you for registering as a seller on Farmer's Gate!</p>
+      <p>${roleText}</p>
       <p>Your OTP for email verification is:</p>
       <div style="background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; margin: 20px 0; letter-spacing: 5px; border-radius: 8px;">
         ${otp}
@@ -247,4 +276,5 @@ export {
   sendSellerApprovedEmail, 
   sendSellerRejectedEmail,
   sendAgentCredentialsEmail 
+  ,sendPasswordResetEmail
 };
