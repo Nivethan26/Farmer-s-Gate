@@ -26,7 +26,7 @@ import BuyerOrders from "./pages/BuyerOrders";
 import { SellerRegistrationPage } from "./pages/SellerRegistration";
 import { CartSyncProvider } from "./components/CartSyncProvider";
 import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
+// import ResetPassword from "./pages/ResetPassword";
 import ResetPasswordOTP from "./pages/ResetPasswordOTP";
 
 const queryClient = new QueryClient();
@@ -44,7 +44,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
+                {/* <Route path="/reset-password" element={<ResetPassword />} /> */}
               <Route path="/reset-password-otp" element={<ResetPasswordOTP />} />
             <Route path="/seller-registration" element={<SellerRegistrationPage />} />
             <Route path="/catalog" element={<Catalog />} />
