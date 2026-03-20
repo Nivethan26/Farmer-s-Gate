@@ -11,6 +11,8 @@ import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { sellerApprovalAPI } from '@/services/sellerApprovalService';
 import { toast } from 'sonner';
 import type { SellerRegistration } from '@/types/seller';
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 // Sri Lankan districts
 const SRI_LANKAN_DISTRICTS = [
@@ -69,10 +71,10 @@ export const SellerRegistrationPage = () => {
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords don't match";
     }
-    if (!formData.phone.trim()) {
+    if (!formData.phone || !formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
-    } else if (!/^[0-9]{10}$/.test(formData.phone.replace(/\s/g, ''))) {
-      newErrors.phone = 'Invalid phone number (10 digits required)';
+    } else if (!isValidPhoneNumber(formData.phone)) {
+      newErrors.phone = 'Invalid phone number format';
     }
 
     setErrors(newErrors);
@@ -282,11 +284,20 @@ export const SellerRegistrationPage = () => {
                   {/* Phone */}
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
-                    <Input
+                    <PhoneInput
+                      international
+                      withCountryCallingCode
+                      countries={['LK']}
+                      defaultCountry="LK"
+                      addInternationalOption={false}
+                      countrySelectProps={{ disabled: true }}
                       id="phone"
                       value={formData.phone}
-                      onChange={(e) => handleChange('phone', e.target.value)}
-                      placeholder="0771234567"
+                      onChange={(val) => handleChange('phone', val || '')}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      numberInputProps={{
+                        className: "border-none bg-transparent outline-none w-full ml-2"
+                      }}
                     />
                     {errors.phone && (
                       <p className="text-sm text-red-600 flex items-center gap-1">

@@ -7,6 +7,9 @@ import { generateOTP } from '../utils/otp.js';
 import { sendOTPEmail, sendWelcomeEmail, sendRegistrationPendingEmail } from '../services/emailService.js';
 import { createWithPublicId } from '../utils/createWithPublicId.js';
 
+// E.164 international phone number regex
+const phoneRegex = /^\+[1-9]\d{1,14}$/;
+
 // Temporary user data storage (pending OTP verification)
 const pendingRegistrations = new Map();
 
@@ -15,6 +18,12 @@ const pendingRegistrations = new Map();
 // @access  Public
 const initiateRegistration = asyncHandler(async (req, res) => {
   const { role, name, email, password, phone, firstName, lastName, ...otherFields } = req.body;
+
+  // Phone validation
+  if (!phone || !phoneRegex.test(phone)) {
+    res.status(400);
+    throw new Error('Please provide a valid international phone number starting with country code');
+  }
 
   // Check if user already exists
   const userExists = await User.findOne({ email });
@@ -231,6 +240,12 @@ const resendRegistrationOTP = asyncHandler(async (req, res) => {
 const register = asyncHandler(async (req, res) => {
   const { role, name, email, password, phone, firstName, lastName, ...otherFields } = req.body;
 
+  // Phone validation
+  if (!phone || !phoneRegex.test(phone)) {
+    res.status(400);
+    throw new Error('Please provide a valid international phone number starting with country code');
+  }
+
   // Check if user exists
   const userExists = await User.findOne({ email });
   if (userExists) {
@@ -438,7 +453,13 @@ const updateProfile = asyncHandler(async (req, res) => {
     // Update basic fields only if provided
     if (req.body.name !== undefined) user.name = req.body.name;
     if (req.body.email !== undefined) user.email = req.body.email;
-    if (req.body.phone !== undefined) user.phone = req.body.phone;
+    if (req.body.phone !== undefined) {
+      if (!phoneRegex.test(req.body.phone)) {
+        res.status(400);
+        throw new Error('Please provide a valid international phone number starting with country code');
+      }
+      user.phone = req.body.phone;
+    }
     if (req.body.district !== undefined) user.district = req.body.district;
     if (req.body.address !== undefined) user.address = req.body.address;
 
