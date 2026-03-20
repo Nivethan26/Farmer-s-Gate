@@ -4,7 +4,7 @@ import OTPVerification from '../models/OTPVerification.js';
 import SellerApprovalRequest from '../models/SellerApprovalRequest.js';
 import { generateToken } from '../utils/jwt.js';
 import { generateOTP } from '../utils/otp.js';
-import { sendOTPEmail, sendWelcomeEmail, sendRegistrationPendingEmail } from '../services/emailService.js';
+import { sendOTPEmail, sendWelcomeEmail, sendRegistrationPendingEmail, sendPasswordResetOTPEmail } from '../services/emailService.js';
 import { createWithPublicId } from '../utils/createWithPublicId.js';
 
 // Temporary user data storage (pending OTP verification)
@@ -378,7 +378,11 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   otpStore.set(email, { otp, expiryTime });
 
-  await sendOTPEmail(email, otp);
+  await sendPasswordResetOTPEmail(
+    email,
+    otp,
+    user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User'
+  );
 
   res.json({ message: 'OTP sent to your email' });
 });
