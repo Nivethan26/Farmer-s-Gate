@@ -103,6 +103,31 @@ const sendOTPEmail = async (email, otp, name = '', role = 'buyer') => {
   return await sendEmail(email, subject, html);
 };
 
+const sendPasswordResetOTPEmail = async (email, otp, name = '') => {
+  const subject = "Reset Your Password - Farmer's Gate";
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #2d5a27;">Farmer's Gate - Password Reset</h2>
+      <p>Dear ${name || 'User'},</p>
+      <p>We received a request to reset your password for your Farmer's Gate account.</p>
+      <p>Your OTP for password reset is:</p>
+      
+      <div style="background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; margin: 20px 0; letter-spacing: 5px; border-radius: 8px;">
+        ${otp}
+      </div>
+
+      <p style="color: #ff6b6b; font-weight: bold;">⚠️ This OTP will expire in 10 minutes.</p>
+      <p>If you did not request a password reset, please ignore this email. Your account will remain secure.</p>
+      
+      <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+      <p style="color: #666; font-size: 12px;">Best regards,<br>Farmer's Gate Team</p>
+    </div>
+  `;
+
+  return await sendEmail(email, subject, html);
+};
+
 const sendWelcomeEmail = async (email, name) => {
   const subject = 'Welcome to Farmer\'s Gate!';
   const html = `
@@ -275,6 +300,7 @@ export {
   sendRegistrationPendingEmail, 
   sendSellerApprovedEmail, 
   sendSellerRejectedEmail,
-  sendAgentCredentialsEmail 
-  ,sendPasswordResetEmail
+  sendAgentCredentialsEmail, 
+  sendPasswordResetEmail,
+  sendPasswordResetOTPEmail,
 };
