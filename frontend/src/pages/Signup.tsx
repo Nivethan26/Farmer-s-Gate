@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { authAPI } from "@/services/authService";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -84,7 +86,7 @@ const buyerSchema = z
     email: z.string().email("Invalid email address"),
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string(),
-    phone: z.string().min(10, "Phone number must be at least 10 digits"),
+    phone: z.string().refine((val) => val && isValidPhoneNumber(val), { message: "Invalid phone number format" }),
     nic: z
       .string()
       .regex(
@@ -341,12 +343,27 @@ const Signup = () => {
                     >
                       {t("profile.phone")} *
                     </Label>
-                    <Input
-                      id="buyer-phone"
-                      {...buyerForm.register("phone")}
-                      placeholder="+94771234567"
-                      className="border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
-                      disabled={isLoading}
+                    <Controller
+                      name="phone"
+                      control={buyerForm.control}
+                      render={({ field }) => (
+                        <PhoneInput
+                          international
+                          withCountryCallingCode
+                          countries={['LK']}
+                          defaultCountry="LK"
+                          addInternationalOption={false}
+                          countrySelectProps={{ disabled: true }}
+                          id="buyer-phone"
+                          value={field.value as string}
+                          onChange={field.onChange}
+                          className="flex h-10 w-full rounded-md border border-green-300 bg-white px-3 py-2 text-sm focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-200 transition-all duration-300"
+                          numberInputProps={{
+                            className: "border-none bg-transparent outline-none w-full ml-2"
+                          }}
+                          disabled={isLoading}
+                        />
+                      )}
                     />
                     {buyerForm.formState.errors.phone && (
                       <p className="text-sm text-red-600 mt-1">
