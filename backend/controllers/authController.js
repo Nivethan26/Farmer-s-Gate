@@ -4,7 +4,7 @@ import OTPVerification from '../models/OTPVerification.js';
 import SellerApprovalRequest from '../models/SellerApprovalRequest.js';
 import { generateToken } from '../utils/jwt.js';
 import { generateOTP } from '../utils/otp.js';
-import { sendOTPEmail, sendWelcomeEmail, sendRegistrationPendingEmail } from '../services/emailService.js';
+import { sendOTPEmail, sendWelcomeEmail, sendRegistrationPendingEmail, sendPasswordResetOTPEmail } from '../services/emailService.js';
 import { createWithPublicId } from '../utils/createWithPublicId.js';
 
 // E.164 international phone number regex
@@ -12,6 +12,16 @@ const phoneRegex = /^\+[1-9]\d{1,14}$/;
 
 // Temporary user data storage (pending OTP verification)
 const pendingRegistrations = new Map();
+
+// In-memory OTP store for password reset (email -> { otp, expiryTime })
+const otpStore = new Map();
+// In-memory store for OTP verification status (email -> { verified: true, expiresAt })
+const otpVerifiedStore = new Map();
+
+// Helper to validate OTP and expiry
+function isOTPValid(inputOtp, storedOtp, expiryTime) {
+  return inputOtp === storedOtp && Date.now() < expiryTime;
+}
 
 // @desc    Initiate registration - Send OTP without creating user
 // @route   POST /api/auth/register/initiate
@@ -383,35 +393,54 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   otpStore.set(email, { otp, expiryTime });
 
-  await sendOTPEmail(email, otp);
+  await sendPasswordResetOTPEmail(
+    email,
+    otp,
+    user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User'
+  );
 
   res.json({ message: 'OTP sent to your email' });
 });
 
-// @desc    Reset password with OTP
+
+// @desc    Verify OTP for password reset (step 1)
+// @route   POST /api/auth/verify-reset-otp
+// @access  Public
+const verifyResetOTP = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    return res.status(400).json({ message: 'Email and OTP are required' });
+  }
+  const storedOTP = otpStore.get(email);
+  if (!storedOTP || !isOTPValid(otp, storedOTP.otp, storedOTP.expiryTime)) {
+    return res.status(400).json({ message: 'Invalid or expired OTP' });
+  }
+  // Mark OTP as verified for this email (valid for 10 min)
+  otpVerifiedStore.set(email, { verified: true, expiresAt: Date.now() + 10 * 60 * 1000 });
+  return res.json({ message: 'OTP verified successfully' });
+});
+
+// @desc    Reset password with verified OTP (step 2)
 // @route   POST /api/auth/reset-password
 // @access  Public
 const resetPassword = asyncHandler(async (req, res) => {
-  const { email, otp, newPassword } = req.body;
-
-  const storedOTP = otpStore.get(email);
-  if (!storedOTP || !isOTPValid(otp, storedOTP.otp, storedOTP.expiryTime)) {
-    res.status(400);
-    throw new Error('Invalid or expired OTP');
+  const { email, newPassword } = req.body;
+  if (!email || !newPassword) {
+    return res.status(400).json({ message: 'Email and new password are required' });
   }
-
+  const verified = otpVerifiedStore.get(email);
+  if (!verified || !verified.verified || Date.now() > verified.expiresAt) {
+    return res.status(400).json({ message: 'OTP not verified or expired. Please verify OTP again.' });
+  }
   const user = await User.findOne({ email });
   if (!user) {
-    res.status(404);
-    throw new Error('User not found');
+    return res.status(404).json({ message: 'User not found' });
   }
-
   user.password = newPassword;
   await user.save();
-
+  otpVerifiedStore.delete(email);
   otpStore.delete(email);
-
-  res.json({ message: 'Password reset successfully' });
+  return res.json({ message: 'Password reset successfully' });
 });
 
 // @desc    Get current user profile
@@ -516,6 +545,7 @@ export {
   register,
   login,
   forgotPassword,
+  verifyResetOTP,
   resetPassword,
   getProfile,
   updateProfile,

@@ -9,6 +9,7 @@ import {
   resetPassword,
   getProfile,
   updateProfile,
+  verifyResetOTP
 } from '../controllers/authController.js';
 import { protect } from '../middlewares/authMiddleware.js';
 
@@ -27,6 +28,7 @@ router.post('/login', login);
 
 // Password management
 router.post('/forgot-password', forgotPassword);
+router.post('/verify-reset-otp', verifyResetOTP);
 router.post('/reset-password', resetPassword);
 
 // Profile management
