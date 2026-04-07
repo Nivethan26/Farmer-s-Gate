@@ -193,18 +193,19 @@ export const PriceAndPurchaseSection = ({
               <Button
                 className="w-full h-12 mt-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 text-sm sm:text-base font-semibold"
                 onClick={() => {
-                  dispatch(
-                    addToCart({
-                      productId: product.id,
-                      productName: product.name,
-                      pricePerKg: product.pricePerKg,
-                      qty,
-                      image: product.image,
-                      sellerId: product.sellerId,
-                      sellerName: product.sellerName,
-                    })
-                  );
-                  navigate('/buyer/cart');
+                  navigate('/buyer/cart', {
+                    state: {
+                      buyNowItem: {
+                        productId: product.id,
+                        productName: product.name,
+                        pricePerKg: product.pricePerKg,
+                        qty,
+                        image: product.image,
+                        sellerId: product.sellerId,
+                        sellerName: product.sellerName,
+                      },
+                    },
+                  });
                 }}
               >
                 <CreditCard className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
