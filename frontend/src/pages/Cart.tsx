@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import type { RootState } from "@/store";
@@ -12,6 +12,7 @@ import {
   updateCartItemAPI,
   clearCartAPI,
   updateRedeemedPointsAPI,
+  type CartItem,
 } from "@/store/cartSlice";
 import { createOrder } from "@/store/ordersSlice";
 import { redeemRewardPoints, addRewardPoints, fetchUserProfile } from "@/store/authSlice";
@@ -75,14 +76,35 @@ interface BankDetails {
   color: string;
 }
 
+const calculateDeliveryFee = (totalWeight: number): number => {
+  if (totalWeight <= 0) return 0;
+  if (totalWeight <= 1) return 180;
+  if (totalWeight <= 2) return 300;
+  return 300 + (totalWeight - 2) * 120;
+};
+
+const calculateCartTotals = (items: CartItem[], redeemedPoints: number = 0) => {
+  const subtotal = items.reduce((sum, item) => sum + item.pricePerKg * item.qty, 0);
+  const totalWeight = items.reduce((sum, item) => sum + item.qty, 0);
+  const deliveryFee = calculateDeliveryFee(totalWeight);
+  const pointsDiscount = Math.min(redeemedPoints, subtotal + deliveryFee);
+  const total = Math.max(0, subtotal + deliveryFee - pointsDiscount);
+
+  return { subtotal, deliveryFee, total, totalWeight, redeemedPoints: pointsDiscount };
+};
+
 const Cart = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
   const user = useAppSelector((state: RootState) => state.auth.user);
   const cart = useAppSelector((state: RootState) => state.cart);
+  const buyNowItem = location.state?.buyNowItem as CartItem | undefined;
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [buyNowItems, setBuyNowItems] = useState<CartItem[]>(buyNowItem ? [buyNowItem] : []);
+  const [buyNowRedeemedPoints, setBuyNowRedeemedPoints] = useState(0);
   // Remove local pointsToRedeem state - use cart.redeemedPoints directly
   const [selectedBank, setSelectedBank] = useState<string>("boc");
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -94,6 +116,27 @@ const Cart = () => {
     referenceNumber: "",
     amount: cart.total.toFixed(2),
   });
+  const isBuyNowMode = buyNowItems.length > 0;
+  const activeCart = isBuyNowMode
+    ? {
+        ...calculateCartTotals(buyNowItems, buyNowRedeemedPoints),
+        items: buyNowItems,
+      }
+    : cart;
+
+  useEffect(() => {
+    if (buyNowItem) {
+      setBuyNowItems([buyNowItem]);
+      setBuyNowRedeemedPoints(0);
+    }
+  }, [buyNowItem, location.state]);
+
+  useEffect(() => {
+    setPaymentForm((prev) => ({
+      ...prev,
+      amount: activeCart.total.toFixed(2),
+    }));
+  }, [activeCart.total]);
 
   // Bank details configuration
   const bankDetails: BankDetails[] = [
@@ -120,6 +163,22 @@ const Cart = () => {
   const selectedBankDetail = bankDetails.find(bank => bank.id === selectedBank);
 
   const handleUpdateQty = (productId: string, newQty: number) => {
+    if (isBuyNowMode) {
+      if (newQty <= 0) {
+        setBuyNowItems([]);
+        setCheckoutOpen(false);
+        navigate("/buyer/cart", { replace: true, state: null });
+        return;
+      }
+
+      setBuyNowItems((prev) =>
+        prev.map((item) =>
+          item.productId === productId ? { ...item, qty: newQty } : item
+        )
+      );
+      return;
+    }
+
     if (newQty <= 0) {
       // Optimistic update for immediate UI feedback
       dispatch(removeFromCart(productId));
@@ -141,6 +200,48 @@ const Cart = () => {
         });
       }
     }
+  };
+
+  const handleRemoveItem = (productId: string) => {
+    if (isBuyNowMode) {
+      setBuyNowItems((prev) => prev.filter((item) => item.productId !== productId));
+      setCheckoutOpen(false);
+      navigate("/buyer/cart", { replace: true, state: null });
+      return;
+    }
+
+    dispatch(removeFromCart(productId));
+    if (user) {
+      apiClient.refreshToken();
+      dispatch(removeFromCartAPI(productId)).catch(() => {
+        toast.error('Failed to sync item removal to server');
+      });
+    }
+  };
+
+  const handleClearCart = () => {
+    if (isBuyNowMode) {
+      setBuyNowItems([]);
+      setBuyNowRedeemedPoints(0);
+      setCheckoutOpen(false);
+      navigate("/buyer/cart", { replace: true, state: null });
+      return;
+    }
+
+    dispatch(clearCart());
+    if (user) {
+      apiClient.refreshToken();
+      dispatch(clearCartAPI()).catch(() => {
+        toast.error('Failed to sync cart clear to server');
+      });
+    }
+  };
+
+  const handleShowSavedCart = () => {
+    setBuyNowItems([]);
+    setBuyNowRedeemedPoints(0);
+    setCheckoutOpen(false);
+    navigate("/buyer/cart", { replace: true, state: null });
   };
 
   const handleCheckout = () => {
@@ -191,11 +292,11 @@ const Cart = () => {
     }
 
     // Calculate points earned (1 point per Rs. 100 spent, rounded down)
-    const pointsEarned = Math.floor(cart.total / 100);
-    const redeemedPoints = cart.redeemedPoints;
-    const itemsBySeller: Record<string, typeof cart.items> = {};
+    const pointsEarned = Math.floor(activeCart.total / 100);
+    const redeemedPoints = activeCart.redeemedPoints;
+    const itemsBySeller: Record<string, typeof activeCart.items> = {};
 
-    cart.items.forEach((item) => {
+    activeCart.items.forEach((item) => {
       if (!itemsBySeller[item.sellerId]) {
         itemsBySeller[item.sellerId] = [];
       }
@@ -208,7 +309,7 @@ const Cart = () => {
     }
 
     const orderData = {
-      items: cart.items.map((item) => ({
+      items: activeCart.items.map((item) => ({
         productId: item.productId,
         productName: item.productName,
         sellerId: item.sellerId,
@@ -217,9 +318,9 @@ const Cart = () => {
         pricePerKg: item.pricePerKg,
       })),
       address: user!.address || 'Default Address - Please update in profile', // Provide fallback address
-      subtotal: cart.subtotal,
-      deliveryFee: cart.deliveryFee,
-      total: cart.total,
+      subtotal: activeCart.subtotal,
+      deliveryFee: activeCart.deliveryFee,
+      total: activeCart.total,
       redeemedPoints: redeemedPoints > 0 ? redeemedPoints : undefined,
       receiptFile: receiptFile, // Pass the actual file for upload
     };
@@ -344,8 +445,14 @@ const Cart = () => {
         }
 
         // Reset everything
-        dispatch(clearCart());
-        if (user) {
+        if (isBuyNowMode) {
+          setBuyNowItems([]);
+          setBuyNowRedeemedPoints(0);
+          navigate("/buyer/cart", { replace: true, state: null });
+        } else {
+          dispatch(clearCart());
+        }
+        if (user && !isBuyNowMode) {
           apiClient.refreshToken();
           dispatch(clearCartAPI()).catch(() => {
             console.warn('Failed to clear cart on server after order');
@@ -382,7 +489,7 @@ const Cart = () => {
     }
   };
 
-  if (cart.items.length === 0) {
+  if (activeCart.items.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50/30">
         <Navbar />
@@ -434,7 +541,7 @@ const Cart = () => {
               {t("cart.title")}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              {t(cart.items.length === 1 ? "cart.itemsInCart_one" : "cart.itemsInCart_other", { count: cart.items.length })}
+              {t(activeCart.items.length === 1 ? "cart.itemsInCart_one" : "cart.itemsInCart_other", { count: activeCart.items.length })}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -445,56 +552,61 @@ const Cart = () => {
             >
               {t("cart.continueShopping")}
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                dispatch(clearCart());
-                if (user) {
-                  apiClient.refreshToken();
-                  dispatch(clearCartAPI()).catch(() => {
-                    toast.error('Failed to sync cart clear to server');
-                  });
-                }
-                // Custom toast with green styling
-                toast.custom(
-                  () => (
-                    <div className="bg-white rounded-lg shadow-xl border-2 border-green-200 p-3 min-w-[300px] relative overflow-hidden animate-[slideInRight_0.3s_ease-out]">
-                      {/* Loading line animation */}
-                      <div className="absolute top-0 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 animate-[loading_2s_ease-in-out_forwards]"></div>
+            {isBuyNowMode ? (
+              <Button
+                variant="outline"
+                onClick={handleShowSavedCart}
+                className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
+              >
+                <ShoppingBag className="mr-2 h-4 w-4" />
+                Cart Products
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  handleClearCart();
+                  // Custom toast with green styling
+                  toast.custom(
+                    () => (
+                      <div className="bg-white rounded-lg shadow-xl border-2 border-green-200 p-3 min-w-[300px] relative overflow-hidden animate-[slideInRight_0.3s_ease-out]">
+                        {/* Loading line animation */}
+                        <div className="absolute top-0 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 animate-[loading_2s_ease-in-out_forwards]"></div>
 
-                      {/* Content */}
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
-                          <CheckCircle2 className="h-4 w-4 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold text-sm text-gray-900">
-                            Cart cleared
-                          </p>
-                          <p className="text-xs text-green-600 font-medium">
-                            All items have been removed from your cart.
-                          </p>
+                        {/* Content */}
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
+                            <CheckCircle2 className="h-4 w-4 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-sm text-gray-900">
+                              Cart cleared
+                            </p>
+                            <p className="text-xs text-green-600 font-medium">
+                              All items have been removed from your cart.
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ),
-                  {
-                    duration: 2500,
-                  }
-                );
-              }}
-              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              {t("cart.clearCart")}
-            </Button>
+                    ),
+                    {
+                      duration: 2500,
+                    }
+                  );
+                }}
+                className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {t("cart.clearCart")}
+              </Button>
+            )}
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           {/* Cart Items (main) */}
           <div className="lg:col-span-8 space-y-3 sm:space-y-4">
-            {cart.items.map((item) => (
+            {activeCart.items.map((item) => (
               <Card
                 key={item.productId}
                 className="border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm overflow-hidden group"
@@ -584,15 +696,7 @@ const Cart = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => {
-                              dispatch(removeFromCart(item.productId));
-                              if (user) {
-                                apiClient.refreshToken();
-                                dispatch(removeFromCartAPI(item.productId)).catch(() => {
-                                  toast.error('Failed to sync item removal to server');
-                                });
-                              }
-                            }}
+                            onClick={() => handleRemoveItem(item.productId)}
                             className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg"
                             aria-label="Remove item"
                           >
@@ -631,7 +735,7 @@ const Cart = () => {
                   <div className="flex justify-between text-sm py-2 border-b border-gray-200">
                     <span className="text-muted-foreground">Subtotal</span>
                     <span className="font-semibold text-gray-900">
-                      Rs. {cart.subtotal.toFixed(2)}
+                      Rs. {activeCart.subtotal.toFixed(2)}
                     </span>
                   </div>
 
@@ -641,7 +745,7 @@ const Cart = () => {
                       Delivery Fee
                     </span>
                     <span className="font-semibold text-gray-900">
-                      Rs. {cart.deliveryFee.toFixed(2)}
+                      Rs. {activeCart.deliveryFee.toFixed(2)}
                     </span>
                   </div>
 
@@ -669,9 +773,9 @@ const Cart = () => {
                           min="0"
                           max={Math.min(
                             user.rewardPoints,
-                            cart.subtotal + cart.deliveryFee
+                            activeCart.subtotal + activeCart.deliveryFee
                           )}
-                          value={cart.redeemedPoints || 0}
+                          value={activeCart.redeemedPoints || 0}
                           onChange={(e) => {
                             const value = Math.max(
                               0,
@@ -679,12 +783,16 @@ const Cart = () => {
                                 Number(e.target.value),
                                 Math.min(
                                   user!.rewardPoints || 0,
-                                  cart.subtotal + cart.deliveryFee
+                                  activeCart.subtotal + activeCart.deliveryFee
                                 )
                               )
                             );
-                            dispatch(setRedeemedPoints(value));
-                            if (user) {
+                            if (isBuyNowMode) {
+                              setBuyNowRedeemedPoints(value);
+                            } else {
+                              dispatch(setRedeemedPoints(value));
+                            }
+                            if (user && !isBuyNowMode) {
                               apiClient.refreshToken();
                               dispatch(updateRedeemedPointsAPI(value)).catch(() => {
                                 toast.error('Failed to sync redeemed points to server');
@@ -700,10 +808,14 @@ const Cart = () => {
                           onClick={() => {
                             const maxRedeem = Math.min(
                               user!.rewardPoints || 0,
-                              cart.subtotal + cart.deliveryFee
+                              activeCart.subtotal + activeCart.deliveryFee
                             );
-                            dispatch(setRedeemedPoints(maxRedeem));
-                            if (user) {
+                            if (isBuyNowMode) {
+                              setBuyNowRedeemedPoints(maxRedeem);
+                            } else {
+                              dispatch(setRedeemedPoints(maxRedeem));
+                            }
+                            if (user && !isBuyNowMode) {
                               apiClient.refreshToken();
                               dispatch(updateRedeemedPointsAPI(maxRedeem)).catch(() => {
                                 toast.error('Failed to sync redeemed points to server');
@@ -715,13 +827,13 @@ const Cart = () => {
                           Max
                         </Button>
                       </div>
-                      {cart.redeemedPoints > 0 && (
+                      {activeCart.redeemedPoints > 0 && (
                         <div className="flex justify-between text-sm bg-green-50 rounded-lg p-3 border border-green-200">
                           <span className="text-green-700 font-medium">
                             Points Discount:
                           </span>
                           <span className="font-bold text-green-700">
-                            -Rs. {cart.redeemedPoints.toFixed(2)}
+                            -Rs. {activeCart.redeemedPoints.toFixed(2)}
                           </span>
                         </div>
                       )}
@@ -736,15 +848,15 @@ const Cart = () => {
                           {t("cart.totalAmount")}:
                         </span>
                         <div className="sm:hidden text-xs text-muted-foreground">
-                          ({cart.items.length} {cart.items.length === 1 ? 'item' : 'items'})
+                          ({activeCart.items.length} {activeCart.items.length === 1 ? 'item' : 'items'})
                         </div>
                       </div>
                       <div className="flex flex-col sm:items-end gap-1">
                         <span className="text-2xl sm:text-3xl font-bold text-green-600">
-                          Rs. {cart.total.toFixed(2)}
+                          Rs. {activeCart.total.toFixed(2)}
                         </span>
                         <div className="hidden sm:block text-xs text-muted-foreground">
-                          ({cart.items.length} {cart.items.length === 1 ? 'item' : 'items'})
+                          ({activeCart.items.length} {activeCart.items.length === 1 ? 'item' : 'items'})
                         </div>
                       </div>
                     </div>
@@ -760,7 +872,7 @@ const Cart = () => {
                       <span className="truncate">
                         {t("cart.checkout")}
                         <span className="hidden sm:inline ml-2 opacity-90">
-                          ({t("cart.itemsInCart_other", { count: cart.items.length })})
+                          ({t("cart.itemsInCart_other", { count: activeCart.items.length })})
                         </span>
                       </span>
                     </Button>
@@ -812,7 +924,7 @@ const Cart = () => {
                   {t("cart.totalToPay")}
                 </Label>
                 <div className="text-2xl sm:text-3xl font-bold text-green-700">
-                  Rs. {cart.total.toFixed(2)}
+                  Rs. {activeCart.total.toFixed(2)}
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-2">
                   {t("cart.transferExact")}
@@ -820,7 +932,7 @@ const Cart = () => {
               </div>
 
               {/* Points Redemption */}
-              {cart.redeemedPoints > 0 && (
+              {activeCart.redeemedPoints > 0 && (
                 <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl p-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-purple-100">
@@ -828,10 +940,10 @@ const Cart = () => {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-purple-800">
-                        Redeeming {cart.redeemedPoints} reward points
+                        Redeeming {activeCart.redeemedPoints} reward points
                       </p>
                       <p className="text-xs text-purple-600">
-                        Rs. {cart.redeemedPoints.toFixed(2)} discount applied
+                        Rs. {activeCart.redeemedPoints.toFixed(2)} discount applied
                       </p>
                     </div>
                   </div>
