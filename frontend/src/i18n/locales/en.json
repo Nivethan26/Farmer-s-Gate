@@ -342,6 +342,7 @@
     "dashboard": "Dashboard",
     "itemsInCart": "{{count}} item(s) in your cart",
     "clearCart": "Clear Cart",
+    "cartProducts": "Cart Products",
     "cartCleared": "Cart cleared",
     "cartClearedDesc": "All items have been removed from your cart.",
     "secureCheckout": "Secure checkout • Admin will verify your payment receipt",

@@ -559,7 +559,7 @@ const Cart = () => {
                 className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
               >
                 <ShoppingBag className="mr-2 h-4 w-4" />
-                Cart Products
+                {t("cart.cartProducts")}
               </Button>
             ) : (
               <Button
